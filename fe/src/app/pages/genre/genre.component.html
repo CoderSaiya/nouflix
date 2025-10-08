@@ -1,0 +1,101 @@
+<div class="genre-page">
+  <div class="container">
+    <div class="genre-header" *ngIf="currentGenre">
+      <div class="genre-hero">
+        <div class="genre-icon">{{ getGenreIcon(currentGenre.id) }}</div>
+        <div class="genre-info">
+          <h1 class="genre-title">Phim {{ currentGenre.name }}</h1>
+          <p class="genre-description">
+            Khám phá bộ sưu tập phim {{ currentGenre.name }} đặc sắc với chất lượng cao và nội dung phong phú
+          </p>
+          <div class="genre-stats">
+            <div class="stat-item">
+              <span class="stat-value">{{ filteredMovies.length }}</span>
+              <span class="stat-label">Phim</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-value">{{ getAverageRating() }}</span>
+              <span class="stat-label">Đánh Giá TB</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="genre-nav">
+      <h2 class="genre-nav-title">Thể Loại Khác</h2>
+      <div class="genre-chips">
+        <a
+          *ngFor="let genre of allGenres"
+          [routerLink]="['/genre', genre.id]"
+          class="genre-chip"
+          [class.active]="currentGenre?.id === genre.id"
+        >
+          <span class="chip-icon">{{ genre.icon }}</span>
+          <span class="chip-label">{{ genre.name }}</span>
+        </a>
+      </div>
+    </div>
+
+    <div class="control-bar">
+      <div class="control-left">
+        <h2 class="results-count">
+          {{ filteredMovies.length }} phim {{ currentGenre?.name }}
+        </h2>
+      </div>
+      <div class="control-right">
+        <label class="sort-label">Sắp xếp:</label>
+        <select class="sort-select" [(ngModel)]="sortBy" (change)="onSortChange()">
+          <option *ngFor="let option of sortOptions" [value]="option.value">
+            {{ option.label }}
+          </option>
+        </select>
+      </div>
+    </div>
+
+    <div class="loading-state" *ngIf="isLoading">
+      <div class="spinner"></div>
+      <p>Đang tải phim...</p>
+    </div>
+
+    <div class="empty-state" *ngIf="!isLoading && filteredMovies.length === 0">
+      <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <rect x="2" y="7" width="20" height="15" rx="2" ry="2"></rect>
+        <polyline points="17 2 12 7 7 2"></polyline>
+      </svg>
+      <h3>Chưa có phim trong thể loại này</h3>
+      <p>Hãy thử khám phá các thể loại khác</p>
+    </div>
+
+    <div class="movie-grid" *ngIf="!isLoading && filteredMovies.length > 0">
+      <div *ngFor="let movie of filteredMovies" class="movie-card">
+        <a [routerLink]="['/movie', movie.id]" class="movie-card-link">
+          <div class="movie-poster">
+            <img [src]="movie.posterUrl" [alt]="movie.title" />
+            <div class="movie-overlay">
+              <button class="play-btn">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor">
+                  <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                </svg>
+              </button>
+            </div>
+            <div class="movie-rating">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+              </svg>
+              {{ movie.avgRating.toFixed(1) }}
+            </div>
+          </div>
+          <div class="movie-info">
+            <h3 class="movie-title">{{ movie.title }}</h3>
+            <div class="movie-meta">
+              <span>{{ getReleaseYear(movie.releaseDate) }}</span>
+              <span>•</span>
+              <span>{{ movie.genres[0]?.name }}</span>
+            </div>
+          </div>
+        </a>
+      </div>
+    </div>
+  </div>
+</div>

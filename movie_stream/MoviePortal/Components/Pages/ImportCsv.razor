@@ -1,0 +1,120 @@
+﻿@page "/tools/import-csv"
+@rendermode InteractiveServer
+
+<PageTitle>Nhập CSV</PageTitle>
+
+<h3 class="mb-3 d-flex align-items-center gap-2">
+  <i class="bi bi-filetype-csv"></i> Nhập CSV (Episodes)
+</h3>
+
+<div class="alert alert-secondary">
+  <div class="fw-bold mb-1">Định dạng CSV được hỗ trợ (có header):</div>
+  <pre class="mb-1 small">
+MovieId,MovieSlug,MovieTitle,SeasonNumber,Number,Title,Synopsis,DurationMinutes,ReleaseDate,Status,Quality,IsVipOnly
+,the-witcher,,1,1,"Tập 1","Mô tả...",60,2025-09-25,Published,High,false
+,,"The Witcher",1,2,"Tập 2","...",62,2025-10-02,InReview,Medium,true
+42,,,,3,"Tập 3","...",58,,Draft,Low,false
+  </pre>
+  <div class="small text-muted">
+    • Ít nhất một trong <code>MovieId</code> / <code>MovieSlug</code> / <code>MovieTitle</code> phải có.<br />
+    • <code>ReleaseDate</code> dạng yyyy-MM-dd (có thể trống). <code>Status</code>/<code>Quality</code> chấp nhận tên enum hoặc số.
+  </div>
+</div>
+
+<div class="card mb-3">
+  <div class="card-header">1) Chọn file & tuỳ chọn</div>
+  <div class="card-body">
+    <div class="row g-3">
+      <div class="col-md-6">
+        <InputFile OnChange="OnFileSelected" accept=".csv,text/csv" />
+        @if (!string.IsNullOrEmpty(_fileName))
+        {
+          <div class="small text-muted mt-1">Đã chọn: @_fileName (@_fileSizeStr)</div>
+        }
+      </div>
+      <div class="col-md-6">
+        <div class="form-check">
+          <input class="form-check-input" type="radio" id="modeCreate" name="mode" checked="@(!_overwrite)" @onchange="()=>_overwrite=false" />
+          <label class="form-check-label" for="modeCreate">Chỉ tạo mới (bỏ qua tập đã tồn tại)</label>
+        </div>
+        <div class="form-check">
+          <input class="form-check-input" type="radio" id="modeOverwrite" name="mode" checked="@(_overwrite)" @onchange="()=>_overwrite=true" />
+          <label class="form-check-label" for="modeOverwrite">Cập nhật đè nếu tập đã tồn tại</label>
+        </div>
+
+        <div class="form-check mt-2">
+          <input class="form-check-input" type="checkbox" id="autoSeason" @bind="_autoCreateSeason" />
+          <label class="form-check-label" for="autoSeason">Tự tạo Season nếu chưa có (khi có SeasonNumber)</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-3 d-flex gap-2">
+      <button class="btn btn-outline-secondary" @onclick="ParseAndPreview" disabled="@(!CanParse)">
+        <i class="bi bi-eye me-1"></i> Xem trước
+      </button>
+      <button class="btn btn-primary" @onclick="ImportAsync" disabled="@(!CanImport)">
+        <i class="bi bi-upload me-1"></i> Nhập dữ liệu
+      </button>
+    </div>
+  </div>
+</div>
+
+@if (_preview is not null)
+{
+  <div class="card mb-3">
+    <div class="card-header d-flex justify-content-between">
+      <div>2) Xem trước</div>
+      <div class="small text-muted">Tổng: @_preview.Count • Hợp lệ: @_preview.Count(r=>r.IsValid) • Lỗi: @_preview.Count(r=>!r.IsValid)</div>
+    </div>
+    <div class="card-body p-0">
+      <table class="table table-sm mb-0 align-middle">
+        <thead>
+          <tr>
+            <th style="width:70px">#</th>
+            <th>Phim</th>
+            <th style="width:90px">Tập</th>
+            <th>Tiêu đề</th>
+            <th style="width:130px">Ngày phát</th>
+            <th style="width:110px">Trạng thái</th>
+            <th style="width:100px">Chất lượng</th>
+            <th style="width:90px" class="text-center">Đã có?</th>
+            <th>Lỗi</th>
+          </tr>
+        </thead>
+        <tbody>
+          @foreach (var r in _preview)
+          {
+            <tr class="@(!r.IsValid ? "table-danger" : r.Exists ? (_overwrite ? "table-warning" : "table-light") : "")">
+              <td>@r.RowNumber</td>
+              <td>
+                <div class="fw-semibold">@r.MovieDisplay</div>
+                @if (r.SeasonNumber is not null)
+                {
+                  <div class="small text-muted">Season: @r.SeasonNumber</div>
+                }
+              </td>
+              <td>@r.Number</td>
+              <td>@r.Title</td>
+              <td>@(r.ReleaseDate?.ToString("dd/MM/yyyy") ?? "")</td>
+              <td>@r.StatusText</td>
+              <td>@r.QualityText</td>
+              <td class="text-center">@((r.Exists) ? (MarkupString)"<i class='bi bi-check-circle'></i>" : (MarkupString)"<i class='bi bi-dash'></i>")</td>
+              <td class="small">@r.Error</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+      <div class="p-2 small text-muted">
+        Chế độ: @(_overwrite ? "Cập nhật đè các tập đã tồn tại" : "Chỉ tạo các tập chưa có; bỏ qua khi trùng")
+      </div>
+    </div>
+  </div>
+}
+
+@if (!string.IsNullOrEmpty(_result))
+{
+  <div class="alert alert-success">
+    @_result
+  </div>
+}

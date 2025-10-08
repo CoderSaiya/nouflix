@@ -1,0 +1,46 @@
+﻿@page "/movies/edit/{id:int?}"
+@rendermode InteractiveServer
+@using MoviePortal.Components.Shared
+@inherits MoviePortal.Components.Pages.MovieEditPage
+
+@if (Loading) { <p>Đang tải...</p> }
+else if (Movie is null) { <div class="alert alert-warning">Không tìm thấy phim.</div> }
+else
+{
+    <h3>@(IsCreate ? "Tạo phim" : $"Sửa phim: {Movie.Title}")</h3>
+
+    <ul class="nav nav-tabs mb-3">
+        <li class="nav-item">
+            <button class="nav-link @(Tab=="info"?"active":"")" @onclick="@(()=>Tab="info")">Thông tin</button>
+        </li>
+
+        @if (!IsCreate)
+        {
+            <li class="nav-item">
+                <button class="nav-link @(Tab=="images"?"active":"")" @onclick="@(()=>Tab="images")">Ảnh</button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link @(Tab=="episodes"?"active":"")" @onclick="@(()=>Tab="episodes")">Tập & Video</button>
+            </li>
+        }
+    </ul>
+
+    @if (Tab=="info")
+    {
+        <MovieEditInfo Movie="Movie"
+                       AllGenres="AllGenres"
+                       SelectedGenreIds="SelectedGenreIds"
+                       AllStudios="AllStudios"
+                       SelectedStudioIds="SelectedStudioIds"
+                       OnSave="SaveAsync"
+                       OnCancel="GoBack" />
+    }
+    else if (Tab=="images" && !IsCreate)
+    {
+        <MovieEditImages MovieId="Movie.Id" />
+    }
+    else if (Tab=="episodes" && !IsCreate)
+    {
+        <MovieEditEpisodes Movie="Movie" />
+    }
+}

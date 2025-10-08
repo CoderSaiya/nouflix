@@ -1,0 +1,41 @@
+﻿@page "/movies"
+@rendermode InteractiveServer
+@using MoviePortal.Models.Entities
+@inherits MoviePortal.Components.Pages.MoviesPage
+
+<PageTitle>Phim</PageTitle>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h3 class="mb-0">Danh sách phim</h3>
+    <button class="btn btn-primary" @onclick='NewMovie'>
+        <i class="bi bi-plus-circle"></i> Thêm phim
+    </button>
+</div>
+
+<input class="form-control mb-3" placeholder="Tìm theo tiêu đề..." @bind="Search" @bind:event="oninput" />
+
+<Virtualize TItem="Movie" ItemsProvider="LoadMovies" Context="m">
+    <div class="card mb-2">
+        <div class="card-body">
+            <div class="d-flex justify-content-between">
+                <div>
+                    <h5 class="card-title mb-1">@m.Title</h5>
+                    <div class="text-muted small">
+                        @m.Status | @m.Type | @m.ReleaseDate?.ToShortDateString() | Views: @m.ViewCount | Rating: @m.Rating
+                    </div>
+                </div>
+                <div class="text-nowrap">
+                    <button class="btn btn-sm btn-outline-primary me-2" @onclick='() => PreviewMovie(m.Id)'>
+                        Xem thử
+                    </button>
+                    <button class="btn btn-sm btn-outline-primary me-2" @onclick='() => EditMovie(m.Id)'>
+                        Sửa
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger" @onclick="() => DeleteAsync(m.Id)">
+                        Xoá
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</Virtualize>

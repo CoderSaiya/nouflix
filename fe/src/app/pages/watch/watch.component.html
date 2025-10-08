@@ -1,0 +1,70 @@
+<div class="watch-page" [class.theater-mode]="isTheaterMode">
+  @if (isLoading) {
+    <div class="loading-container">
+      <div class="spinner"></div>
+      <p>Đang tải phim...</p>
+    </div>
+  } @else if (movie) {
+    <div class="watch-container">
+      <div class="player-section">
+        <app-video-player
+          [movie]="movie"
+          [isTheaterMode]="isTheaterMode"
+          [masterUrl]="masterUrl"
+          (theaterModeToggle)="toggleTheaterMode()"
+          (movieEnd)="onMovieEnd()"
+        />
+      </div>
+
+      <div class="content-section" [class.hidden]="isTheaterMode">
+        <div class="main-content">
+          <app-watch-info [movie]="movie" />
+
+          @if (movie.type === 'series' && seasons.length > 0) {
+            <div class="episodes-section">
+              <h2>Tập Phim</h2>
+
+              <div class="season-selector">
+                @for (season of seasons; track season.id) {
+                  <button
+                    class="season-btn"
+                    [class.active]="season.number === currentSeason"
+                    (click)="currentSeason = season.number; loadEpisodes(movie.id, season.number)"
+                  >
+                    Mùa {{ season.number }}
+                  </button>
+                }
+              </div>
+
+              <div class="episodes-grid">
+                @for (ep of episodes; track ep.id) {
+                  <button
+                    class="ep-btn"
+                    [class.active]="ep.number === currentEpisode && ep.seasonNumber === currentSeason"
+                    (click)="selectEpisode(ep.seasonNumber, ep.number)"
+                    [attr.aria-label]="'Tập ' + ep.number"
+                  >
+                    Tập {{ ep.number }}
+                    @if (ep.number === currentEpisode && ep.seasonNumber === currentSeason) {
+                      <span class="playing-dot" aria-hidden="true"></span>
+                    }
+                  </button>
+                }
+              </div>
+            </div>
+          }
+
+          <div class="recommendations-section">
+            <h2>Phim Tương Tự</h2>
+            <app-recommendations [movies]="similarMovies" />
+          </div>
+        </div>
+      </div>
+    </div>
+  } @else {
+    <div class="error-container">
+      <h2>Không tìm thấy phim</h2>
+      <a routerLink="/" class="btn-home">Về Trang Chủ</a>
+    </div>
+  }
+</div>

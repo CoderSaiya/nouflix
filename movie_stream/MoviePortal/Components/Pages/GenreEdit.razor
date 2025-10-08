@@ -1,0 +1,13 @@
+﻿@page "/genres/edit/{id:int?}"
+@rendermode InteractiveServer
+@using MoviePortal.Components.Shared
+@inherits MoviePortal.Components.Pages.GenreEditPage
+
+<h3>@(Id is null ? "Thêm thể loại" : "Sửa thể loại")</h3>
+
+@if (Loading) { <p>Đang tải...</p> }
+else if (Model is null) { <div class="alert alert-warning">Không tìm thấy.</div> }
+else
+{
+    <GenreForm Model="Model" OnSubmitSuccess="GoBack" OnCancel="GoBack" SaveFunc="SaveAsync" />
+}

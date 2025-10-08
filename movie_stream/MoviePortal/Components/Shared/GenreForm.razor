@@ -1,0 +1,35 @@
+﻿@using MoviePortal.Models.Entities
+
+<EditForm Model="Model" OnValidSubmit="HandleSave">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="mb-3">
+        <label class="form-label">Tên thể loại</label>
+        <InputText class="form-control" @bind-Value="Model.Name" />
+    </div>
+
+    <div class="mt-3">
+        <button class="btn btn-primary" type="submit">
+            <span class="bi bi-save me-1"></span> Lưu
+        </button>
+        <button class="btn btn-secondary ms-2" type="button" @onclick="OnCancel">
+            Quay lại
+        </button>
+    </div>
+</EditForm>
+
+@code {
+    [Parameter] public Genre Model { get; set; } = default!;
+    [Parameter] public EventCallback OnSubmitSuccess { get; set; }
+    [Parameter] public EventCallback OnCancel { get; set; }
+    [Parameter] public Func<Genre, Task>? SaveFunc { get; set; } // DI từ trang cha
+
+    private async Task HandleSave()
+    {
+        if (SaveFunc is not null)
+            await SaveFunc(Model);
+        if (OnSubmitSuccess.HasDelegate)
+            await OnSubmitSuccess.InvokeAsync();
+    }
+}
