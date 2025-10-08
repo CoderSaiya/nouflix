@@ -1,0 +1,218 @@
+<div class="search-page">
+  <div class="container">
+    <div class="search-header">
+      <h1 class="page-title">Tìm Kiếm Phim</h1>
+      <p class="page-description">
+        Khám phá hàng ngàn bộ phim với công cụ tìm kiếm và bộ lọc thông minh
+      </p>
+
+      <div class="search-bar-large">
+        <svg class="search-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"></circle>
+          <path d="m21 21-4.35-4.35"></path>
+        </svg>
+        <input
+          type="text"
+          placeholder="Nhập tên phim, diễn viên, đạo diễn..."
+          [(ngModel)]="searchQuery"
+          (keyup.enter)="onSearch()"
+          class="search-input"
+        />
+        <button class="search-btn" (click)="onSearch()">
+          Tìm Kiếm
+        </button>
+      </div>
+    </div>
+
+    <div class="filters-section" *ngIf="hasSearched">
+      <div class="filters-header">
+        <h2 class="filters-title">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+          </svg>
+          Bộ Lọc
+        </h2>
+        <button class="clear-filters-btn" (click)="clearFilters()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+          Xóa Bộ Lọc
+        </button>
+      </div>
+
+      <div class="filters-grid">
+        <div class="filter-group">
+          <label class="filter-label">Thể Loại</label>
+          <select
+            class="filter-select"
+            [(ngModel)]="selectedGenre"
+            (change)="onFilterChange()"
+          >
+            <option value="">Tất Cả Thể Loại</option>
+            <option *ngFor="let genre of genres" [value]="genre.id">
+              {{ genre.name }}
+            </option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label class="filter-label">Năm Phát Hành</label>
+          <select
+            class="filter-select"
+            [(ngModel)]="selectedYear"
+            (change)="onFilterChange()"
+          >
+            <option value="">Tất Cả Năm</option>
+            <option *ngFor="let year of years" [value]="year">
+              {{ year }}
+            </option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label class="filter-label">Đánh Giá</label>
+          <select
+            class="filter-select"
+            [(ngModel)]="selectedRating"
+            (change)="onFilterChange()"
+          >
+            <option *ngFor="let rating of ratings" [value]="rating.value">
+              {{ rating.label }}
+            </option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label class="filter-label">Sắp Xếp Theo</label>
+          <select
+            class="filter-select"
+            [(ngModel)]="sortBy"
+            (change)="onFilterChange()"
+          >
+            <option *ngFor="let option of sortOptions" [value]="option.value">
+              {{ option.label }}
+            </option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="results-section" *ngIf="hasSearched">
+      <div class="results-header">
+        <h2 class="results-title">
+          <span *ngIf="!isLoading">
+            Tìm thấy {{ filteredMovies.length }} kết quả
+            <span *ngIf="searchQuery"> cho "{{ searchQuery }}"</span>
+          </span>
+          <span *ngIf="isLoading">Đang tìm kiếm...</span>
+        </h2>
+      </div>
+
+      <div class="loading-state" *ngIf="isLoading">
+        <div class="spinner"></div>
+        <p>Đang tìm kiếm phim...</p>
+      </div>
+
+      <div class="empty-state" *ngIf="!isLoading && filteredMovies.length === 0">
+        <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <circle cx="11" cy="11" r="8"></circle>
+          <path d="m21 21-4.35-4.35"></path>
+        </svg>
+        <h3>Không tìm thấy kết quả</h3>
+        <p>Thử tìm kiếm với từ khóa khác hoặc điều chỉnh bộ lọc</p>
+      </div>
+
+      <div class="movie-grid" *ngIf="!isLoading && filteredMovies.length > 0">
+        <div *ngFor="let movie of filteredMovies" class="movie-card">
+          <a [routerLink]="['/movie', movie.id]" class="movie-card-link">
+            <div class="movie-poster">
+              <img [src]="movie.posterUrl" [alt]="movie.title" />
+              <div class="movie-overlay">
+                <button class="play-btn">
+                  <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor">
+                    <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                  </svg>
+                </button>
+              </div>
+              <div class="movie-rating">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                </svg>
+                {{ movie.avgRating.toFixed(1) }}
+              </div>
+            </div>
+            <div class="movie-info">
+              <h3 class="movie-title">{{ movie.title }}</h3>
+              <div class="movie-meta">
+                <span>{{ getReleaseYear(movie.releaseDate) }}</span>
+                <span>•</span>
+                <span>{{ movie.genres[0]?.name }}</span>
+              </div>
+            </div>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <div class="initial-state" *ngIf="!hasSearched">
+      <div class="suggestions">
+        <h2 class="suggestions-title">Gợi Ý Tìm Kiếm</h2>
+        <div class="suggestions-grid">
+          <button class="suggestion-chip" (click)="searchQuery = 'Hành động'; onSearch()">
+            Phim Hành Động
+          </button>
+          <button class="suggestion-chip" (click)="searchQuery = 'Tình cảm'; onSearch()">
+            Phim Tình Cảm
+          </button>
+          <button class="suggestion-chip" (click)="searchQuery = 'Kinh dị'; onSearch()">
+            Phim Kinh Dị
+          </button>
+          <button class="suggestion-chip" (click)="searchQuery = 'Khoa học viễn tưởng'; onSearch()">
+            Khoa Học Viễn Tưởng
+          </button>
+          <button class="suggestion-chip" (click)="searchQuery = 'Hài hước'; onSearch()">
+            Phim Hài
+          </button>
+          <button class="suggestion-chip" (click)="searchQuery = 'Phiêu lưu'; onSearch()">
+            Phim Phiêu Lưu
+          </button>
+        </div>
+      </div>
+
+      <div class="popular-searches">
+        <h2 class="popular-title">Phim Phổ Biến</h2>
+        <div class="movie-grid">
+          <div *ngFor="let movie of movies.slice(0, 8)" class="movie-card">
+            <a [routerLink]="['/movie', movie.id]" class="movie-card-link">
+              <div class="movie-poster">
+                <img [src]="movie.posterUrl" [alt]="movie.title" />
+                <div class="movie-overlay">
+                  <button class="play-btn">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor">
+                      <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                    </svg>
+                  </button>
+                </div>
+                <div class="movie-rating">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                  </svg>
+                  {{ movie.avgRating.toFixed(1) }}
+                </div>
+              </div>
+              <div class="movie-info">
+                <h3 class="movie-title">{{ movie.title }}</h3>
+                <div class="movie-meta">
+                  <span>{{ getReleaseYear(movie.releaseDate) }}</span>
+                  <span>•</span>
+                  <span>{{ movie.genres[0]?.name }}</span>
+                </div>
+              </div>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

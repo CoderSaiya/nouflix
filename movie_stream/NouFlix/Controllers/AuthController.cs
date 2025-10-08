@@ -1,0 +1,107 @@
+﻿using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using NouFlix.Adapters;
+using NouFlix.DTOs;
+using NouFlix.Models.Common;
+using NouFlix.Services;
+
+namespace NouFlix.Controllers;
+
+[ApiController]
+[Route("api/[controller]")]
+public class AuthController(
+    AuthService svc,
+    ExternalAuth external,
+    AuthUrlBuilder url,
+    TokenCookieWriter cookie,
+    AspNetExternalTicketReader tr
+) : Controller
+{
+    [HttpPost("register")]
+    [AllowAnonymous]
+    [ProducesResponseType(StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    public async Task<IActionResult> Register(RegisterReq req)
+    {
+        await svc.RegisterAsync(req);
+        return Created($"/api/auth/users/{Uri.EscapeDataString(req.Email)}",
+            GlobalResponse<string>.Success("Đăng ký thành công"));
+    }
+
+    [HttpPost("login")]
+    [AllowAnonymous]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> Login([FromForm] LoginReq req)
+    {
+        var res = await svc.LoginAsync(req);
+
+        cookie.WriteRefresh(Response, res.RefreshToken);
+
+        return Ok(GlobalResponse<AuthRes>.Success(res));
+    }
+
+    [HttpPost("refresh-token")]
+    [AllowAnonymous]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> RefreshToken([FromBody] string refreshToken)
+    {
+        var res = await svc.RefreshTokenAsync(refreshToken);
+        if (res is null) return BadRequest(GlobalResponse<string>.Error("Refresh token expired or invalid."));
+
+        return Ok(GlobalResponse<object>.Success(new { AccessToken = res }));
+    }
+    
+    [HttpGet("external/{provider}/start")]
+    [AllowAnonymous]
+    public IActionResult ExternalStart(string provider, [FromQuery] string? returnUrl)
+    {
+        ExternalChallenge c;
+        try
+        {
+            c = external.BuildChallenge(provider, returnUrl);
+        }
+        catch (UnsupportedProviderException)
+        {
+            return BadRequest("Unsupported provider");
+        }
+
+        // Controller tự tạo AuthenticationProperties (thuần HTTP concern)
+        var props = new AuthenticationProperties { RedirectUri = c.RedirectPath };
+        return Challenge(props, c.Scheme);
+    }
+
+    [HttpGet("external/callback")]
+    [AllowAnonymous]
+    public async Task<IActionResult> ExternalCallback([FromQuery] string? returnUrl)
+    {
+        var ticket = await tr.ReadAsync(HttpContext, "External");
+        if (ticket is null) return Redirect(url.LoginWithError("external_failed"));
+
+        var result = await external.SignInWithExternalAsync(ticket);
+        if (!result.Succeeded) return Redirect(url.LoginWithError(result.Error!));
+
+        cookie.WriteRefresh(Response, result.RefreshToken!);
+        var successUrl = url.Success(returnUrl, result.AccessToken!, result.ExpiresAt!.Value, result.User!);
+        return Redirect(successUrl);
+    }
+    
+    [HttpGet("me")]
+    [Authorize]
+    public async Task<IActionResult> Me()
+    {
+        var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrEmpty(userIdStr))
+            return Unauthorized(GlobalResponse<string>.Error("Missing sub/NameIdentifier.", StatusCodes.Status401Unauthorized));
+
+        var userId = Guid.Parse(userIdStr);
+        var dto = await svc.GetCurrentUserAsync(userId);
+        return Ok(GlobalResponse<UserRes>.Success(dto));
+    }
+}

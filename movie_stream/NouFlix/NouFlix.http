@@ -1,0 +1,6 @@
+@NouFlix_HostAddress = http://localhost:5270
+
+GET {{NouFlix_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

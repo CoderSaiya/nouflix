@@ -1,0 +1,396 @@
+<div class="movie-detail-page" *ngIf="!loading && movie">
+  <section class="detail-hero">
+    <div class="hero-backdrop">
+      <img [src]="movie.backdropUrl" [alt]="movie.title" />
+    </div>
+    <div class="hero-overlay"></div>
+
+    <div class="container">
+      <div class="hero-content">
+        <div class="movie-poster-wrapper">
+          <img [src]="movie.posterUrl" [alt]="movie.title" class="detail-poster" />
+        </div>
+
+        <div class="movie-main-info">
+          <h1 class="detail-title">{{ movie.title }}</h1>
+          <p class="detail-tagline" *ngIf="movie.tagline">{{ movie.tagline }}</p>
+
+          <div class="detail-meta">
+            <div class="rating-badge">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                <path
+                  d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+                />
+              </svg>
+              <span>{{ movie.avgRating.toFixed(1) }}</span>
+            </div>
+            <span class="meta-item">{{ formatDate(movie.releaseDate) }}</span>
+            <ng-container *ngIf="movie.type === 'series'; else movieRuntime">
+              <span class="meta-item">{{ movie.numberOfSeasons }} Mùa</span>
+              <span class="meta-item">{{ movie.numberOfEpisodes }} Tập</span>
+            </ng-container>
+            <ng-template #movieRuntime>
+              <span class="meta-item">{{ formatRuntime(movie.runtime) }}</span>
+            </ng-template>
+            <span class="meta-item">{{ movie.status }}</span>
+          </div>
+
+          <div class="genres">
+            <span class="genre-tag" *ngFor="let genre of movie.genres">
+              {{ genre.name }}
+            </span>
+          </div>
+
+          <p class="detail-overview">{{ movie.overview }}</p>
+
+          <div class="detail-actions">
+            <a [routerLink]="['/watch', movie.slug]" class="btn btn-primary">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M8 5v14l11-7z" />
+              </svg>
+              Xem Phim
+            </a>
+            <button class="btn btn-secondary">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 5v14M5 12h14" />
+              </svg>
+              Thêm Vào Danh Sách
+            </button>
+            <button class="btn btn-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path
+                  d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"
+                />
+              </svg>
+            </button>
+          </div>
+
+          <div class="key-crew" *ngIf="crew.length > 0">
+            <div class="crew-item" *ngIf="getDirector() as director">
+              <span class="crew-label">Đạo Diễn:</span>
+              <span class="crew-name">{{ director.name }}</span>
+            </div>
+            <div class="crew-item" *ngIf="getComposer() as composer">
+              <span class="crew-label">Nhạc:</span>
+              <span class="crew-name">{{ composer.name }}</span>
+            </div>
+            <div class="crew-item" *ngIf="getProducers().length > 0">
+              <span class="crew-label">Sản Xuất:</span>
+              <span class="crew-name">{{ getProducers()[0].name }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="detail-tabs">
+    <div class="container">
+      <div class="tabs-nav">
+        <button
+          class="tab-btn"
+          [class.active]="activeTab === 'overview'"
+          (click)="setActiveTab('overview')"
+        >
+          Tổng Quan
+        </button>
+<!--        <button-->
+<!--          class="tab-btn"-->
+<!--          [class.active]="activeTab === 'cast'"-->
+<!--          (click)="setActiveTab('cast')"-->
+<!--        >-->
+<!--          Diễn Viên & Ekip-->
+<!--        </button>-->
+        <button
+          class="tab-btn"
+          [class.active]="activeTab === 'reviews'"
+          (click)="setActiveTab('reviews')"
+        >
+          Đánh Giá ({{ reviews.length }})
+        </button>
+        <button
+          class="tab-btn"
+          [class.active]="activeTab === 'videos'"
+          (click)="setActiveTab('videos')"
+        >
+          Videos & Trailers
+        </button>
+        <button
+          class="tab-btn"
+          *ngIf="movie.type === 'series'"
+          [class.active]="activeTab === 'seasons'"
+          (click)="setActiveTab('seasons')"
+        >
+          Các Mùa
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <section class="detail-content">
+    <div class="container">
+      <div class="tab-panel" *ngIf="activeTab === 'overview'">
+        <div class="overview-grid">
+          <div class="overview-main">
+            <h2 class="section-title">Thông Tin Chi Tiết</h2>
+            <div class="info-grid">
+              <div class="info-item">
+                <span class="info-label">Tên Gốc:</span>
+                <span class="info-value">{{ movie.alternateTitle }}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Ngày Phát Hành:</span>
+                <span class="info-value">{{ formatDate(movie.releaseDate) }}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Thời Lượng:</span>
+                <span class="info-value">{{ formatRuntime(movie.runtime) }}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Trạng Thái:</span>
+                <span class="info-value">{{ movie.status }}</span>
+              </div>
+<!--              <div class="info-item">-->
+<!--                <span class="info-label">Ngân Sách:</span>-->
+<!--                <span class="info-value">{{ formatCurrency(movie.budget) }}</span>-->
+<!--              </div>-->
+<!--              <div class="info-item">-->
+<!--                <span class="info-label">Doanh Thu:</span>-->
+<!--                <span class="info-value">{{ formatCurrency(movie.revenue) }}</span>-->
+<!--              </div>-->
+              <div class="info-item">
+                <span class="info-label">Đánh Giá:</span>
+                <span class="info-value">{{ movie.avgRating.toFixed(1) }}/10 ({{ movie.voteCount }} votes)</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Độ Phổ Biến:</span>
+                <span class="info-value">{{ movie.popularity.toFixed(0) }}</span>
+              </div>
+            </div>
+
+<!--            <div class="info-section">-->
+<!--              <h3 class="subsection-title">Quốc Gia Sản Xuất</h3>-->
+<!--              <div class="countries">-->
+<!--                <span class="country-tag" *ngFor="let country of movie.productionCountries">-->
+<!--                  {{ country.name }}-->
+<!--                </span>-->
+<!--              </div>-->
+<!--            </div>-->
+
+<!--            <div class="info-section">-->
+<!--              <h3 class="subsection-title">Ngôn Ngữ</h3>-->
+<!--              <div class="languages">-->
+<!--                <span class="language-tag" *ngFor="let lang of movie.spokenLanguages">-->
+<!--                  {{ lang.name }}-->
+<!--                </span>-->
+<!--              </div>-->
+<!--            </div>-->
+          </div>
+
+          <div class="overview-sidebar">
+            <div class="stats-card">
+              <h3 class="stats-title">Thống Kê</h3>
+              <div class="stat-item">
+                <div class="stat-icon">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                    <path
+                      d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+                    />
+                  </svg>
+                </div>
+                <div class="stat-info">
+                  <div class="stat-value">{{ movie.avgRating.toFixed(1) }}/10</div>
+                  <div class="stat-label">Điểm Đánh Giá</div>
+                </div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-icon">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                    <circle cx="9" cy="7" r="4" />
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
+                  </svg>
+                </div>
+                <div class="stat-info">
+                  <div class="stat-value">{{ movie.voteCount.toLocaleString() }}</div>
+                  <div class="stat-label">Lượt Đánh Giá</div>
+                </div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-icon">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+                  </svg>
+                </div>
+                <div class="stat-info">
+                  <div class="stat-value">{{ movie.popularity.toFixed(0) }}</div>
+                  <div class="stat-label">Độ Phổ Biến</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-panel" *ngIf="activeTab === 'cast'">
+        <div class="cast-crew-section">
+          <h2 class="section-title">Diễn Viên</h2>
+          <div class="cast-grid">
+            <div class="cast-card" *ngFor="let member of cast">
+              <div class="cast-photo">
+                <img [src]="member.profilePath" [alt]="member.name" />
+              </div>
+              <div class="cast-info">
+                <h3 class="cast-name">{{ member.name }}</h3>
+                <p class="cast-character">{{ member.character }}</p>
+              </div>
+            </div>
+          </div>
+
+          <h2 class="section-title" style="margin-top: 4rem">Ekip Sản Xuất</h2>
+          <div class="crew-grid">
+            <div class="crew-card" *ngFor="let member of crew">
+              <div class="crew-photo">
+                <img [src]="member.profilePath" [alt]="member.name" />
+              </div>
+              <div class="crew-info">
+                <h3 class="crew-name">{{ member.name }}</h3>
+                <p class="crew-job">{{ member.job }}</p>
+                <p class="crew-department">{{ member.department }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-panel" *ngIf="activeTab === 'reviews'">
+        <h2 class="section-title">Đánh Giá Từ Khán Giả</h2>
+        <div class="reviews-list">
+          <div class="review-card" *ngFor="let review of reviews">
+            <div class="review-header">
+              <div class="review-author">
+                <img [src]="review.authorDetails.avatarUrl" [alt]="review.authorDetails.name" class="author-avatar" />
+                <div class="author-info">
+                  <h3 class="author-name">{{ review.authorDetails.name }}</h3>
+                  <p class="review-date">{{ formatDate(review.createdAt) }}</p>
+                </div>
+              </div>
+              <div class="review-rating">
+                <svg
+                  *ngFor="let star of getRatingStars(review.authorDetails.rating)"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  [attr.fill]="star === 1 ? 'currentColor' : 'none'"
+                  [attr.stroke]="star === 0 ? 'currentColor' : 'none'"
+                  stroke-width="2"
+                >
+                  <path
+                    d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+                  />
+                </svg>
+                <span class="rating-value">{{ review.authorDetails.rating }}/10</span>
+              </div>
+            </div>
+            <div class="review-content">
+              <p>{{ review.content }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-panel" *ngIf="activeTab === 'videos'">
+        <h2 class="section-title">Videos & Trailers</h2>
+        <div class="videos-grid">
+          <div class="video-card" *ngFor="let video of videos">
+            <div class="video-wrapper">
+              <iframe
+                [src]="getYouTubeEmbedUrl(video.key)"
+                [title]="video.name"
+                frameborder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowfullscreen
+              ></iframe>
+            </div>
+            <div class="video-info">
+              <h3 class="video-title">{{ video.name }}</h3>
+              <p class="video-type">{{ video.type }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-panel" *ngIf="activeTab === 'seasons' && movie.type === 'series'">
+        <h2 class="section-title">Các Mùa</h2>
+
+        <div class="seasons-list">
+          <div class="season-card" *ngFor="let season of seasons">
+            <div class="season-poster">
+              <img [src]="movie.posterUrl" [alt]="' Phần ' + season.number" />
+            </div>
+            <div class="season-info">
+              <h3 class="season-title">{{ ' Phần ' + season.number }}</h3>
+              <p class="season-meta">
+                <span>{{ season.episodeCount }} tập</span>
+                <span>•</span>
+                <span>{{ season.year }}</span>
+              </p>
+
+              <a
+                [routerLink]="['/watch', movie.slug]"
+                [queryParams]="{ season: season.number, episode: 1 }"
+                class="btn btn-secondary"
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M8 5v14l11-7z" />
+                </svg>
+                Xem Ngay
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="similar-movies" *ngIf="similarMovies.length > 0">
+    <div class="container">
+      <h2 class="section-title">Phim Tương Tự</h2>
+      <div class="movie-grid">
+        <div class="movie-card" *ngFor="let similarMovie of similarMovies">
+          <a [routerLink]="['/movie', similarMovie.slug]" class="movie-card-link">
+            <div class="movie-poster">
+              <img [src]="similarMovie.posterUrl" [alt]="similarMovie.title" />
+              <div class="movie-overlay">
+                <button class="play-btn">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M8 5v14l11-7z" />
+                  </svg>
+                </button>
+              </div>
+              <div class="movie-rating">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                  <path
+                    d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+                  />
+                </svg>
+                {{ similarMovie.avgRating.toFixed(1) }}
+              </div>
+            </div>
+            <div class="movie-info">
+              <h3 class="movie-title">{{ similarMovie.title }}</h3>
+              <div class="movie-meta">
+                <span>{{ similarMovie.releaseDate.split('-')[0] }}</span>
+              </div>
+            </div>
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<div class="loading-container" *ngIf="loading">
+  <div class="spinner"></div>
+  <p>Đang tải thông tin phim...</p>
+</div>

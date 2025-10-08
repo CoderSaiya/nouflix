@@ -1,0 +1,217 @@
+﻿@page "/"
+@rendermode InteractiveServer
+@inherits MoviePortal.Components.Pages.DashboardPage
+
+<PageTitle>Dashboard</PageTitle>
+
+<h3 class="mb-3 d-flex align-items-center gap-2">
+    <i class="bi bi-speedometer2"></i> Dashboard
+</h3>
+
+@if (_loading)
+{
+    <div class="alert alert-info">Đang tải số liệu…</div>
+}
+else
+{
+    <!-- KPIs -->
+    <div class="row g-3 mb-3">
+        <div class="col-6 col-lg-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="text-muted small">Tổng phim</div>
+                    <div class="display-6">@Kpis.TotalMovies</div>
+                    <div class="small text-muted">Published: @Kpis.PublishedMovies • Draft/InReview: @Kpis.DraftMovies</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="text-muted small">Tổng tập</div>
+                    <div class="display-6">@Kpis.TotalEpisodes</div>
+                    <div class="small text-muted">Tập thiếu video: @Kpis.EpisodesMissingVideo</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="text-muted small">Assets</div>
+                    <div class="display-6">@Kpis.TotalAssets</div>
+                    <div class="small text-muted">Images: @Kpis.TotalImages • Videos: @Kpis.TotalVideos</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="text-muted small">Dung lượng ước tính</div>
+                    <div class="display-6">@FormatBytes(Kpis.TotalBytes)</div>
+                    <div class="small text-muted">Images: @FormatBytes(Kpis.ImageBytes) • Videos: @FormatBytes(Kpis.VideoBytes)</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TODO / Issues -->
+    <div class="row g-3 mb-3">
+        <div class="col-lg-6">
+            <div class="card h-100">
+                <div class="card-header d-flex align-items-center gap-2">
+                    <i class="bi bi-exclamation-triangle"></i> Việc cần làm (issues)
+                </div>
+                <div class="card-body">
+                    @if (Issues.Count == 0)
+                    {
+                        <div class="text-success">Không có vấn đề nổi bật 🎉</div>
+                    }
+                    else
+                    {
+                        <ul class="list-group list-group-flush">
+                            @foreach (var it in Issues)
+                            {
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <div class="fw-bold">@it.Title</div>
+                                        <div class="small text-muted">@it.Description</div>
+                                    </div>
+                                    @if (!string.IsNullOrWhiteSpace(it.Link))
+                                    {
+                                        <a class="btn btn-sm btn-outline-primary" href="@it.Link">Xử lý</a>
+                                    }
+                                </li>
+                            }
+                        </ul>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card h-100">
+                <div class="card-header d-flex align-items-center gap-2">
+                    <i class="bi bi-lightning-charge"></i> Quick actions
+                </div>
+                <div class="card-body d-flex flex-wrap gap-2">
+                    <a class="btn btn-primary" href="movies/edit"><i class="bi bi-plus-circle me-1"></i> Tạo phim</a>
+                    <a class="btn btn-outline-secondary" href="tools/bulk-episodes"><i class="bi bi-list-ol me-1"></i> Bulk Episodes</a>
+                    <a class="btn btn-outline-secondary" href="tools/import-csv"><i class="bi bi-filetype-csv me-1"></i> Import CSV</a>
+                    <a class="btn btn-outline-secondary" href="ops/storage"><i class="bi bi-hdd-network me-1"></i> Storage</a>
+                    <a class="btn btn-outline-secondary" href="ops/audit-logs"><i class="bi bi-clipboard-check me-1"></i> Audit logs</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recently updated & Top movies -->
+    <div class="row g-3 mb-3">
+        <div class="col-lg-6">
+            <div class="card h-100">
+                <div class="card-header d-flex align-items-center gap-2">
+                    <i class="bi bi-clock-history"></i> Phim cập nhật gần đây
+                </div>
+                <div class="card-body p-0">
+                    <table class="table table-sm mb-0 align-middle">
+                        <thead><tr><th>Tiêu đề</th><th>Trạng thái</th><th class="text-end">Cập nhật</th></tr></thead>
+                        <tbody>
+                        @foreach (var m in RecentMovies)
+                        {
+                            <tr>
+                                <td>
+                                    <div class="fw-semibold">@m.Title</div>
+                                    <div class="small text-muted">Views: @m.ViewCount • Rating: @m.Rating</div>
+                                </td>
+                                <td>@m.Status</td>
+                                <td class="text-end">
+                                    @m.UpdatedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm")
+                                    <div>
+                                        <a class="small" href="@($"movies/edit/{m.Id}")">Sửa</a> ·
+                                        <a class="small" href="@($"movies/view/{m.Id}")">Xem</a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card h-100">
+                <div class="card-header d-flex align-items-center gap-2">
+                    <i class="bi bi-trophy"></i> Top phim
+                </div>
+                <div class="card-body p-0">
+                    <ul class="list-group list-group-flush">
+                        @foreach (var m in TopByViews)
+                        {
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <div class="fw-semibold">@m.Title</div>
+                                    <div class="small text-muted">Views: @m.ViewCount • Rating: @m.Rating</div>
+                                </div>
+                                <a class="btn btn-sm btn-outline-primary" href="@($"movies/view/{m.Id}")">Xem</a>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Assets & Taxonomies -->
+    <div class="row g-3">
+        <div class="col-lg-6">
+            <div class="card h-100">
+                <div class="card-header d-flex align-items-center gap-2">
+                    <i class="bi bi-images"></i> Tài nguyên (Assets)
+                </div>
+                <div class="card-body p-0">
+                    <table class="table table-sm mb-0">
+                        <tbody>
+                        <tr><td>Ảnh</td><td>@Kpis.TotalImages</td><td class="text-end">@FormatBytes(Kpis.ImageBytes)</td></tr>
+                        <tr><td>Video</td><td>@Kpis.TotalVideos</td><td class="text-end">@FormatBytes(Kpis.VideoBytes)</td></tr>
+                        <tr class="@((Kpis.OrphanAssets>0)?"table-warning":"")"><td>Orphan assets</td><td colspan="2">@Kpis.OrphanAssets</td></tr>
+                        </tbody>
+                    </table>
+                    @if (OrphanSamples.Count > 0)
+                    {
+                        <div class="p-2 small text-muted">Ví dụ orphan (5):</div>
+                        <ul class="list-group list-group-flush">
+                            @foreach (var a in OrphanSamples)
+                            {
+                                <li class="list-group-item small">
+                                    @a.Bucket / @a.ObjectKey
+                                </li>
+                            }
+                        </ul>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card h-100">
+                <div class="card-header d-flex align-items-center gap-2">
+                    <i class="bi bi-diagram-3"></i> Thể loại / Studio
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <div class="display-6">@Taxo.Genres</div>
+                            <div class="text-muted small">Genres</div>
+                            <a class="btn btn-sm btn-outline-primary mt-2" href="genres">Quản lý</a>
+                        </div>
+                        <div class="col-6">
+                            <div class="display-6">@Taxo.Studios</div>
+                            <div class="text-muted small">Studios</div>
+                            <a class="btn btn-sm btn-outline-primary mt-2" href="studios">Quản lý</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
