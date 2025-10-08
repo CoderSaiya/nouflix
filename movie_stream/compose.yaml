@@ -1,0 +1,65 @@
+﻿services:
+#  nouflix:
+#    image: nouflix
+#    build:
+#      context: .
+#      dockerfile: NouFlix/Dockerfile
+
+  nouflix.minio:
+    image: minio/minio
+    container_name: nouflixminio
+    volumes:
+      - minio_data:/data
+    ports:
+      - "9009:9000"
+      - "9091:9001"
+    environment:
+      MINIO_ROOT_USER: admin
+      MINIO_ROOT_PASSWORD: nhatcuong04
+    command: server /data --console-address ":9001"
+    
+  nouflix.redis:
+    image: redis:latest
+    container_name: nouflixredis
+    restart: always
+    environment:
+      - REDIS_PASSWORD=nhatcuong04
+    volumes:
+      - redis_volume_data:/data
+    ports:
+      - 6379:6379
+
+  nouflix.redis_insight:
+    image: redislabs/redisinsight:latest
+    container_name: nouflix.redis_insight
+    restart: always
+    ports:
+      - 8001:5540
+    volumes:
+      - redis_insight_volume_data:/db
+
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: mssql
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=${SA_PASSWORD}
+      - MSSQL_PID=Developer  # Dev miễn phí; production cần license
+      - MSSQL_MEMORY_LIMIT_MB=2048
+    # Không map port 1433 ra ngoài để an toàn
+    volumes:
+      - mssql_data:/var/opt/mssql
+    healthcheck:
+      test: [ "CMD", "/opt/mssql-tools18/bin/sqlcmd", "-S", "localhost", "-U", "sa", "-P", "${SA_PASSWORD}", "-C", "-Q", "SELECT 1" ]
+      interval: 10s
+      timeout: 3s
+      retries: 30
+    mem_limit: 3g
+    mem_reservation: 1g
+    cpus: 1.5
+    restart: unless-stopped
+
+volumes:
+  minio_data:
+  redis_volume_data:
+  redis_insight_volume_data:
