@@ -1,8 +1,9 @@
-﻿using MoviePortal.Models.ValueObject;
+﻿using MoviePortal.Models.Common;
+using MoviePortal.Models.ValueObject;
 
 namespace MoviePortal.Models.Entities;
 
-public class ImageAsset
+public class ImageAsset : AssetBase
 {
     public int Id { get; set; }
     public int? MovieId { get; set; }
@@ -15,9 +16,6 @@ public class ImageAsset
     public string Alt { get; set; } = "";
 
     // S3 MinIO
-    public string Bucket { get; set; } = "";
-    public string ObjectKey { get; set; } = "";
-    public string? Endpoint { get; set; } // https://minio.example.com
     public string? CdnBase { get; set; } // https://cdn.example.com
     public string? ContentType { get; set; }
     public long? SizeBytes { get; set; }

@@ -1,13 +1,9 @@
-﻿services:
-#  nouflix:
-#    image: nouflix
-#    build:
-#      context: .
-#      dockerfile: NouFlix/Dockerfile
+﻿name: nouflix
 
+services:
   nouflix.minio:
     image: minio/minio
-    container_name: nouflixminio
+    container_name: nouflix.minio
     volumes:
       - minio_data:/data
     ports:
@@ -20,7 +16,7 @@
     
   nouflix.redis:
     image: redis:latest
-    container_name: nouflixredis
+    container_name: nouflix.redis
     restart: always
     environment:
       - REDIS_PASSWORD=nhatcuong04
@@ -38,9 +34,9 @@
     volumes:
       - redis_insight_volume_data:/db
 
-  db:
+  mssql:
     image: mcr.microsoft.com/mssql/server:2022-latest
-    container_name: mssql
+    container_name: nouflix.mssql
     environment:
       - ACCEPT_EULA=Y
       - MSSQL_SA_PASSWORD=${SA_PASSWORD}
@@ -58,8 +54,91 @@
     mem_reservation: 1g
     cpus: 1.5
     restart: unless-stopped
+    
+  nouflix.api:
+    build:
+      context: .. # trỏ tới folder chứa .csproj và Dockerfile
+      dockerfile: NouFlix/Dockerfile
+    container_name: nouflix.api
+    environment:
+      - ASPNETCORE_URLS=http://+:8083
+      - ASPNETCORE_ENVIRONMENT=Development
+
+      - ConnectionStrings__Default=Server=mssql,1433;Database=MoviePortalDB;User Id=sa;Password=${SA_PASSWORD};Encrypt=True;TrustServerCertificate=True
+      - ConnectionStrings__Redis=nouflix.redis:6379,password=${REDIS_PASSWORD},ssl=False,abortConnect=False
+
+      - Storage__S3__Endpoint=nouflix.minio:9000
+      - Storage__S3__PublicEndpoint=minio-nouflix.nhatcuong.io.vn
+      - Storage__S3__AccessKey=${MINIO_ROOT_USER}
+      - Storage__S3__SecretKey=${MINIO_ROOT_PASSWORD}
+      - Storage__S3__UseSSL=false
+        
+      - Jwt__Key=${JWT_KEY}
+      - Jwt__Issuer=${JWT_ISSUER}
+      - Jwt__Audience=${JWT_AUDIENCE}
+
+      - Auth__External__Google__ClientId=${GOOGLE_CLIENT_ID}
+      - Auth__External__Google__ClientSecret=${GOOGLE_CLIENT_SECRET}
+      - Auth__External__Github__ClientId=${GITHUB_CLIENT_ID}
+      - Auth__External__Github__ClientSecret=${GITHUB_CLIENT_SECRET}
+    ports:
+      - "5003:8083"
+    depends_on:
+      mssql:
+        condition: service_healthy
+    # Không cần expose port khi dùng Tunnel
+    mem_limit: 512m
+    mem_reservation: 256m
+    cpus: 0.75
+    restart: unless-stopped 
+    
+  nouflix.portal:
+    build:
+      context: .. # trỏ tới folder chứa .csproj và Dockerfile
+      dockerfile: MoviePortal/Dockerfile
+    container_name: nouflix.portal
+    environment:
+      - ASPNETCORE_URLS=http://+:8084
+      - ASPNETCORE_ENVIRONMENT=Development
+
+      - ConnectionStrings__Default=Server=mssql,1433;Database=MoviePortalDB;User Id=sa;Password=${SA_PASSWORD};Encrypt=True;TrustServerCertificate=True
+
+      - Storage__S3__Endpoint=nouflix.minio:9000
+      - Storage__S3__AccessKey=${MINIO_ROOT_USER}
+      - Storage__S3__SecretKey=${MINIO_ROOT_PASSWORD}
+      - Storage__S3__UseSSL=false
+        
+      - Ffmpeg__Path=/usr/bin/ffmpeg
+    ports:
+      - "5004:8084"
+    depends_on:
+      mssql:
+        condition: service_healthy
+    # Không cần expose port khi dùng Tunnel
+    mem_limit: 512m
+    mem_reservation: 256m
+    cpus: 0.75
+    restart: unless-stopped
+
+  nouflix.cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: nouflix.cloudflared
+    command: tunnel run
+    environment:
+      - TUNNEL_TOKEN=${CLOUDFLARE_TUNNEL_TOKEN}
+    volumes:
+      - ./cloudflared:/etc/cloudflared
+    depends_on:
+      - nouflix.api
+      - nouflix.minio
+      - nouflix.portal
+    mem_limit: 128m
+    mem_reservation: 64m
+    cpus: 0.25
+    restart: unless-stopped
 
 volumes:
   minio_data:
   redis_volume_data:
   redis_insight_volume_data:
+  mssql_data:

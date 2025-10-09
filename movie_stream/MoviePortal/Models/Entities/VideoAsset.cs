@@ -1,8 +1,9 @@
-﻿using MoviePortal.Models.ValueObject;
+﻿using MoviePortal.Models.Common;
+using MoviePortal.Models.ValueObject;
 
 namespace MoviePortal.Models.Entities;
 
-public class VideoAsset
+public class VideoAsset : AssetBase
 {
     public int Id { get; set; }
     public int? MovieId { get; set; }
@@ -16,10 +17,7 @@ public class VideoAsset
     public string Language { get; set; } = "vi";
     public string? Subtitles { get; set; }
 
-    // Azure Blob
-    public string Bucket { get; set; } = "";
-    public string ObjectKey { get; set; } = "";
-    public string? Endpoint { get; set; }
+    // S3 MinnIo
     public string? CdnBase { get; set; }
     public string? ContentType { get; set; }
     public long? SizeBytes { get; set; }

@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NouFlix.DTOs;
 using NouFlix.Models.Common;
@@ -12,6 +13,7 @@ namespace NouFlix.Controllers;
 public class MovieController(MovieService svc) : Controller
 {
     [HttpGet("most-viewed")]
+    [AllowAnonymous]
     public async Task<IActionResult> MostViewed([FromQuery, Range(1, 100)] int take = 12, CancellationToken ct = default)
     {
         var movies = await svc.GetMostViewed(take, ct);
@@ -19,6 +21,7 @@ public class MovieController(MovieService svc) : Controller
     }
     
     [HttpGet("trending")]
+    [AllowAnonymous]
     public async Task<IActionResult> Trending([FromQuery, Range(1, 100)] int take = 12, CancellationToken ct = default)
     {
         var movies = await svc.GetTrending(take, ct);
@@ -26,6 +29,7 @@ public class MovieController(MovieService svc) : Controller
     }
     
     [HttpGet("popular")]
+    [AllowAnonymous]
     public async Task<IActionResult> Popular([FromQuery, Range(1, 100)] int take = 12, CancellationToken ct = default)
     {
         var movies = await svc.GetPopular(take, ct);
@@ -33,6 +37,7 @@ public class MovieController(MovieService svc) : Controller
     }
     
     [HttpGet("most-rating")]
+    [AllowAnonymous]
     public async Task<IActionResult> MostRating([FromQuery, Range(1, 100)] int take = 12, CancellationToken ct = default)
     {
         var movies = await svc.GetMostRating(take, ct);
@@ -40,6 +45,7 @@ public class MovieController(MovieService svc) : Controller
     }
     
     [HttpGet("new")]
+    [AllowAnonymous]
     public async Task<IActionResult> New([FromQuery, Range(1, 100)] int take = 12, CancellationToken ct = default)
     {
         var movies = await svc.GetNew(take, ct);
@@ -47,6 +53,7 @@ public class MovieController(MovieService svc) : Controller
     }
 
     [HttpGet("{slug}")]
+    [AllowAnonymous]
     public async Task<IActionResult> GetDetail([FromRoute] string slug, CancellationToken ct = default)
     {
         var movie = await svc.GetBySlug(slug, ct);
@@ -55,6 +62,7 @@ public class MovieController(MovieService svc) : Controller
     }
     
     [HttpGet("similar/{movieId:int}")]
+    [AllowAnonymous]
     public async Task<IActionResult> GetSimilarity([FromRoute] int movieId, CancellationToken ct = default)
     {
         var movie = await svc.GetSimilar(movieId, ct: ct);
@@ -63,6 +71,7 @@ public class MovieController(MovieService svc) : Controller
     }
 
     [HttpGet("id/{id:int}")]
+    [AllowAnonymous]
     public async Task<IActionResult> GetById([FromRoute] int id, CancellationToken ct = default)
     {
         var movie = await svc.GetById(id, ct);

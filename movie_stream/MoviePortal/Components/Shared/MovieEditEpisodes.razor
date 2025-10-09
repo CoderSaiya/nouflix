@@ -400,7 +400,6 @@ else
         profiles: profiles,
         language: Movie.Language ?? "vi"
       );
-
       _movieVideos = await Db.VideoAssets
         .Where(v => v.MovieId == Movie.Id && v.EpisodeId == null)
         .AsNoTracking()

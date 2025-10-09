@@ -1,0 +1,166 @@
+﻿@page "/admin/movies/{MovieId:int}/subtitles/{Lang?}"
+@page "/admin/movies/{MovieId:int}/episodes/{EpisodeId:int}/subtitles/{Lang?}"
+@rendermode InteractiveServer
+
+@using Microsoft.Extensions.Options
+@using MoviePortal.Adapters
+@using MoviePortal.Data
+@using MoviePortal.Models.Specification
+
+@inject AppDbContext Db
+@inject FfmpegHlsTranscoder Transcoder
+@inject IOptions<StorageOptions> Opts
+
+<h5 class="mb-3">
+  @if (EpisodeId is null)
+  {
+    <text>Phụ đề — Phim @(_movie?.Title)</text>
+  }
+  else
+  {
+    <text>Phụ đề — @(_movie?.Title) • Tập @_episode?.Number (@_episode?.Title)</text>
+  }
+</h5>
+
+@if (_error is not null)
+{
+  <div class="alert alert-danger">@_error</div>
+}
+
+@if (_isBusy)
+{
+  <div class="position-fixed top-0 start-0 w-100 h-100 bg-dark bg-opacity-50 d-flex align-items-center justify-content-center" style="z-index:1050;">
+    <div class="bg-white rounded-3 shadow p-4 text-center" style="min-width:320px">
+      <div class="spinner-border mb-3" role="status"></div>
+      <div class="fw-semibold">@_busyText</div>
+      <div class="text-muted small">Vui lòng đợi…</div>
+    </div>
+  </div>
+}
+
+@if (!_hasMaster)
+{
+  <div class="alert alert-warning">
+    Chưa tìm thấy <code>master.m3u8</code> cho @(EpisodeId is null ? "phim" : "tập") này.
+    Hãy transcode video trước (nút Upload video) rồi quay lại đây để gắn phụ đề vào HLS.
+  </div>
+}
+
+<div class="row g-3">
+  <div class="col-lg-6">
+
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h6 class="card-title mb-3">A) Upload VTT (raw)</h6>
+        <div class="row g-2 align-items-center">
+          <div class="col-4">
+            <label class="form-label mb-1">Ngôn ngữ (code)</label>
+            <InputText class="form-control form-control-sm" @bind-Value="_lang" />
+            <div class="form-text">vd: vi, en, ja…</div>
+          </div>
+          <div class="col-8">
+            <label class="form-label mb-1">Nhãn hiển thị</label>
+            <InputText class="form-control form-control-sm" @bind-Value="_label" />
+          </div>
+        </div>
+
+        <div class="mt-2">
+          <label class="form-label mb-1">Chọn file .vtt</label>
+          <InputFile @key="_rawKey" OnChange="UploadRawVtt" accept=".vtt" />
+        </div>
+
+        <div class="text-muted small mt-2">
+          Tuỳ chọn này chỉ upload VTT “thô” (không sửa master). Player của bạn sẽ cần tự trỏ tới file VTT.
+        </div>
+      </div>
+    </div>
+
+    <div class="card shadow-sm mt-3">
+      <div class="card-body">
+        <h6 class="card-title mb-3">B) Segment VTT & gắn vào HLS master</h6>
+
+        <div class="row g-2 align-items-center">
+          <div class="col-4">
+            <label class="form-label mb-1">Ngôn ngữ (code)</label>
+            <InputText class="form-control form-control-sm" @bind-Value="_langAttach" />
+          </div>
+          <div class="col-8">
+            <label class="form-label mb-1">Nhãn hiển thị</label>
+            <InputText class="form-control form-control-sm" @bind-Value="_labelAttach" />
+          </div>
+        </div>
+
+        <div class="mt-2">
+          <label class="form-label mb-1">Dán nội dung VTT</label>
+          <textarea class="form-control" rows="6" @bind="_vttText"></textarea>
+        </div>
+
+        <div class="d-flex gap-2 mt-2">
+          <button class="btn btn-sm btn-primary" @onclick="AttachFromText" disabled="@(!_hasMaster)">Gắn từ text</button>
+          <div class="vr"></div>
+          <div>
+            <div class="form-text mb-1">Hoặc chọn file .vtt</div>
+            <InputFile @key="_attachKey" OnChange="AttachFromFile" accept=".vtt" />
+          </div>
+        </div>
+
+        <div class="text-muted small mt-2">
+          Tuỳ chọn này sẽ segment VTT thành HLS (m3u8 + các seg_*.vtt) và tự cập nhật <code>master.m3u8</code>
+          với <code>#EXT-X-MEDIA</code> &amp; <code>SUBTITLES="subs"</code>.
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="col-lg-6">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h6 class="card-title mb-3">Phụ đề hiện có</h6>
+
+        @if (_subs.Count == 0)
+        {
+          <div class="alert alert-info mb-0">Chưa có phụ đề nào.</div>
+        }
+        else
+        {
+          <ul class="list-group">
+            @foreach (var s in _subs.OrderByDescending(x => x.Id))
+            {
+              <li class="list-group-item d-flex justify-content-between align-items-center">
+                <div>
+                  <div class="fw-semibold">@s.Label (@s.Language)</div>
+                  <div class="small text-muted">
+                    @s.Bucket / @s.ObjectKey
+                  </div>
+                </div>
+                <div class="btn-group">
+                  <a class="btn btn-sm btn-outline-secondary"
+                     href="@BuildPublicUrl(s)" target="_blank" rel="noopener">
+                    Mở
+                  </a>
+                  <button class="btn btn-sm btn-outline-danger" @onclick="@(()=>DeleteSubtitle(s))">
+                    Xoá
+                  </button>
+                </div>
+              </li>
+            }
+          </ul>
+        }
+      </div>
+    </div>
+
+    @if (_hasMaster && _master is not null)
+    {
+      <div class="card shadow-sm mt-3">
+        <div class="card-body">
+          <h6 class="card-title mb-2">Master hiện tại</h6>
+          <div class="small text-muted">@_master.Bucket / @_master.ObjectKey</div>
+          <a class="btn btn-sm btn-outline-secondary mt-2" href="@BuildPublicUrl(_master)" target="_blank" rel="noopener">
+            Mở master.m3u8
+          </a>
+        </div>
+      </div>
+    }
+  </div>
+</div>

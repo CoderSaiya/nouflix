@@ -25,6 +25,8 @@ export class VideoPlayerComponent implements OnChanges, OnDestroy {
   @Input() isTheaterMode = false;
   /** URL master.m3u8: phim lẻ => /movies/{id}/master.m3u8; series => /movies/{id}/episodes/{episodeId}/master.m3u8 */
   @Input() masterUrl: string | null = null;
+  /** URL subtitle: phim lẻ => /movies/{id}/sub/vi/index.vtt; series => /movies/{id}/episodes/{episodeId}/sub/vi/index.vtt */
+  @Input() subtitleUrl: string | null = null;
 
   @Output() theaterModeToggle = new EventEmitter<void>();
   @Output() movieEnd = new EventEmitter<void>();
@@ -56,6 +58,11 @@ export class VideoPlayerComponent implements OnChanges, OnDestroy {
 
   // tốc độ
   playbackRates = [0.5, 1, 1.25, 1.5, 2];
+
+  // phụ đề
+  subtitleLang  = 'vi';
+  subtitleLabel = 'Tiếng Việt';
+  subtitleEnabled = true;
 
   // lifecycle
   ngOnChanges(changes: SimpleChanges): void {
@@ -152,6 +159,7 @@ export class VideoPlayerComponent implements OnChanges, OnDestroy {
     video.onloadedmetadata = () => {
       this.duration = isFinite(video.duration) ? video.duration : 0;
       this.updateBuffered(video);
+      this.ensureSubtitleDisplay(video);
     };
     video.ontimeupdate = () => {
       this.currentTime = video.currentTime || 0;
@@ -161,6 +169,7 @@ export class VideoPlayerComponent implements OnChanges, OnDestroy {
     video.onplay = () => {
       this.isPlaying = true;
       this.onMouseMove(); // auto-hide timer
+      this.ensureSubtitleDisplay(video);
     };
     video.onpause = () => {
       this.isPlaying = false;
@@ -171,6 +180,9 @@ export class VideoPlayerComponent implements OnChanges, OnDestroy {
       this.isMuted = video.muted || video.volume === 0;
       this.volume = video.volume;
     };
+    try {
+      video.textTracks.addEventListener('addtrack', () => this.ensureSubtitleDisplay(video));
+    } catch {}
   }
 
   private updateBuffered(video: HTMLVideoElement) {
@@ -299,6 +311,18 @@ export class VideoPlayerComponent implements OnChanges, OnDestroy {
     return h > 0
       ? `${h}:${m.toString().padStart(2, "0")}:${r.toString().padStart(2, "0")}`
       : `${m}:${r.toString().padStart(2, "0")}`;
+  }
+
+  ensureSubtitleDisplay(video: HTMLVideoElement) {
+    for (let i = 0; i < video.textTracks.length; i++) {
+      const t = video.textTracks[i];
+      if (t.kind === 'subtitles') t.mode = this.subtitleEnabled ? 'showing' : 'hidden';
+    }
+  }
+
+  toggleSubtitles(): void {
+    this.subtitleEnabled = !this.subtitleEnabled;
+    this.ensureSubtitleDisplay(this.videoElement.nativeElement);
   }
 
   get progressPercent(): number {

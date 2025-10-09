@@ -1,4 +1,4 @@
-﻿namespace NouFlix.Models.Specification;
+﻿namespace MoviePortal.Models.Specification;
 
 public class S3Settings
 {

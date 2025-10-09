@@ -145,7 +145,7 @@ public class StreamService(
      private async Task ProxyObjectAsync(HttpContext ctx, string key, string contentType, TimeSpan ttl, CancellationToken ct)
     {
         var client = http.CreateClient("origin");
-        var url = await storage.GetReadSignedUrlAsync(Bucket, key, ttl, ct);
+        var url = await storage.GetReadSignedUrlAsync(Bucket, key, ttl, 0, ct);
         var req = new HttpRequestMessage(HttpMethod.Get, url);
 
         if (ctx.Request.Headers.TryGetValue("Range", out var range))
@@ -174,7 +174,7 @@ public class StreamService(
     private async Task<string> DownloadTextAsync(string key, CancellationToken ct)
     {
         var client = http.CreateClient("origin");
-        var url = await storage.GetReadSignedUrlAsync(Bucket, key, TimeSpan.FromMinutes(5), ct);
+        var url = await storage.GetReadSignedUrlAsync(Bucket, key, TimeSpan.FromMinutes(5), 0, ct);
         return await client.GetStringAsync(url, ct);
     }
 

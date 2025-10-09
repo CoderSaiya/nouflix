@@ -1,6 +1,8 @@
-﻿namespace MoviePortal.Models.Entities;
+﻿using MoviePortal.Models.Common;
 
-public class SubtitleAsset
+namespace MoviePortal.Models.Entities;
+
+public class SubtitleAsset : AssetBase
 {
     public int Id { get; set; }
     public int? MovieId { get; set; }
@@ -12,10 +14,6 @@ public class SubtitleAsset
     public string Kind { get; set; } = "subtitles";
     public string Language { get; set; } = "vi";
     public string Label { get; set; } = "Tiếng Việt";
-
-    public string Bucket { get; set; } = "";
-    public string ObjectKey { get; set; } = "";
-    public string? Endpoint { get; set; }
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 }

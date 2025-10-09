@@ -18,6 +18,8 @@ public class MinioObjectStorage
     public MinioObjectStorage(IOptions<StorageOptions> options)
     {
         _cfg = options.Value.S3;
+        
+        Console.Write("Endpoint minio: " + _cfg.Endpoint);
 
         var b = new MinioClient()
             .WithEndpoint(_cfg.Endpoint)
@@ -33,14 +35,31 @@ public class MinioObjectStorage
     {
         // ensure bucket
         bool found = await _client.BucketExistsAsync(new BucketExistsArgs().WithBucket(bucket), ct);
+        Console.Write("is bucket found: " + found.ToString());
         if (!found) await _client.MakeBucketAsync(new MakeBucketArgs().WithBucket(bucket), ct);
 
+        Stream uploadStream = stream;
+        long size;
+
+        if (!stream.CanSeek)
+        {
+            var ms = new MemoryStream();
+            await stream.CopyToAsync(ms, ct);
+            ms.Position = 0;
+            uploadStream = ms;
+            size = ms.Length;
+        }
+        else
+        {
+            if (stream.Position != 0) stream.Position = 0;
+            size = stream.Length;
+        }
         // upload
         var put = new PutObjectArgs()
             .WithBucket(bucket)
             .WithObject(objectName)
-            .WithStreamData(stream)
-            .WithObjectSize(stream.Length)
+            .WithStreamData(uploadStream)
+            .WithObjectSize(size)
             .WithContentType(contentType ?? "application/octet-stream");
 
         await _client.PutObjectAsync(put, ct);

@@ -5,9 +5,20 @@
       #videoElement
       playsinline
       preload="metadata"
+      crossorigin="use-credentials"
       [attr.poster]="movie.backdropUrl || null"
       style="position:absolute; inset:0; width:100%; height:100%; object-fit:contain; background:#000; z-index:1;"
-    ></video>
+    >
+      @if (subtitleUrl) {
+        <track
+          kind="subtitles"
+          [attr.src]="subtitleUrl"
+          [attr.srclang]="subtitleLang"
+          [attr.label]="subtitleLabel"
+          default
+        />
+      }
+    </video>
 
     <!-- placeholder chỉ hiển thị khi chưa play -->
     <div
@@ -140,6 +151,13 @@
                     <span>{{ selectedQuality }} ›</span>
                   </div>
                   <div class="settings-divider"></div>
+
+                  <div class="settings-item" (click)="toggleSubtitles()">
+                    <span>Phụ đề</span>
+                    <span>{{ subtitleEnabled ? 'Bật' : 'Tắt' }}</span>
+                  </div>
+                  <div class="settings-divider"></div>
+
                   <div class="settings-label">Tốc độ phát</div>
                   @for (rate of playbackRates; track rate) {
                     <div

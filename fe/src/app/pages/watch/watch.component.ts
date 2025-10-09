@@ -37,6 +37,7 @@ export class WatchComponent implements OnInit, OnDestroy {
   episodes: Episode[] = []
   selectedEpisode: Episode | undefined
   masterUrl: string | null = null
+  subtitleUrl: string | null = null
 
   private destroy$ = new Subject<void>()
 
@@ -73,6 +74,7 @@ export class WatchComponent implements OnInit, OnDestroy {
               this.loadSeriesData(id)
             } else {
               this.masterUrl = this.streamSvc.movieMasterUrl(movie.id);
+              this.subtitleUrl = this.streamSvc.movieSubtitleUrl(movie.id);
             }
           } else {
             this.router.navigate(["/"])
@@ -110,6 +112,7 @@ export class WatchComponent implements OnInit, OnDestroy {
           if (this.movie && this.movie.type === 'series' && this.selectedEpisode) {
             this.currentEpisode = this.selectedEpisode.number;
             this.masterUrl = this.streamSvc.episodeMasterUrl(this.movie.id, this.selectedEpisode.id);
+            this.subtitleUrl = this.streamSvc.episodeSubtitleUrl(this.movie.id, this.selectedEpisode.id);
           }
         },
       })

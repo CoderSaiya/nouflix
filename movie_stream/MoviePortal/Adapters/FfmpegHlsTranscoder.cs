@@ -370,8 +370,8 @@ public class FfmpegHlsTranscoder(
 
         var bucket = opt.Value.Buckets.Videos ?? "videos";
         var key = episodeId is null
-            ? $"hls/movies/{movieId}/sub/{language}/{Guid.NewGuid():N}.vtt"
-            : $"hls/movies/{movieId}/ep{episodeNumber}/sub/{language}/{Guid.NewGuid():N}.vtt";
+            ? $"hls/movies/{movieId}/sub/{language}/index.vtt"
+            : $"hls/movies/{movieId}/ep{episodeNumber}/sub/{language}/index.vtt";
 
         await using var fs = file.OpenReadStream(100 * 1024 * 1024, ct);
         await storage.UploadAsync(bucket, fs, key, "text/vtt", ct);

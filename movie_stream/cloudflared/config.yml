@@ -1,0 +1,11 @@
+tunnel: 2641f7d4-ee3d-456c-8225-2f9fc62dc11c
+credentials-file: /etc/cloudflared/2641f7d4-ee3d-456c-8225-2f9fc62dc11c.json
+
+ingress:
+#  - hostname: portal.your-domain.com
+#    service: http://nouflix.portal:8084
+  - hostname: api-nouflix.nhatcuong.io.vn
+    service: http://nouflix.api:8083
+  - hostname: minio-nouflix.nhatcuong.io.vn
+    service: http://nouflix.minio:9001
+  - service: http_status:404

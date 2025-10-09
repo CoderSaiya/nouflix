@@ -20,7 +20,7 @@ public static class UserMapper
                 img.Bucket,
                 img.ObjectKey,
                 TimeSpan.FromMinutes(10),
-                ct)).ToString();
+                ct: ct)).ToString();
         
         
         return new UserRes(

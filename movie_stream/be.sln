@@ -4,8 +4,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NouFlix", "NouFlix\NouFlix.
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{941914E8-8063-405B-AD84-758899EB22B8}"
 	ProjectSection(SolutionItems) = preProject
-		.env = .env
 		docker\compose.yaml = docker\compose.yaml
+		docker\.env = docker\.env
+		cloudflared\config.yml = cloudflared\config.yml
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MoviePortal", "MoviePortal\MoviePortal.csproj", "{5AC8C300-EBCE-4C65-A145-CE73EC80ABAB}"

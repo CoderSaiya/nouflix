@@ -17,7 +17,7 @@ public static class MovieMapper
         var posterUrl = img is null
             ? string.Empty
             : (await storage.GetReadSignedUrlAsync(
-                img.Bucket, img.ObjectKey, TimeSpan.FromMinutes(10), ct)).ToString();
+                img.Bucket, img.ObjectKey, TimeSpan.FromMinutes(10), ct: ct)).ToString();
 
         var genres = m.MovieGenres?
             .Select(mg => new GenreRes(mg.Genre.Id, mg.Genre.Name))
@@ -50,12 +50,12 @@ public static class MovieMapper
         var posterUrl = poster is null
             ? string.Empty
             : (await storage.GetReadSignedUrlAsync(
-                poster.Bucket, poster.ObjectKey, TimeSpan.FromMinutes(10), ct)).ToString();
+                poster.Bucket, poster.ObjectKey, TimeSpan.FromMinutes(10), ct: ct)).ToString();
         
         var backdropUrl = backdrop is null
             ? string.Empty
             : (await storage.GetReadSignedUrlAsync(
-                backdrop.Bucket, backdrop.ObjectKey, TimeSpan.FromMinutes(10), ct)).ToString();
+                backdrop.Bucket, backdrop.ObjectKey, TimeSpan.FromMinutes(10), ct: ct)).ToString();
 
         var genres = m.MovieGenres?
             .Select(mg => new GenreRes(mg.Genre.Id, mg.Genre.Name))

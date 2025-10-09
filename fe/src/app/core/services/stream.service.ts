@@ -18,6 +18,14 @@ export class StreamService {
   fetchText(url: string) {
     return this.http.get(url, { responseType: 'text' });
   }
+
+  movieSubtitleUrl(movieId: number) {
+    return `${this.base}/movies/${movieId}/sub/vi/index.vtt`;
+  }
+
+  episodeSubtitleUrl(movieId: number, episodeId: number) {
+    return `${this.base}/movies/${movieId}/episodes/${episodeId}/sub/vi/index.vtt`;
+  }
 }
 
 function joinUrl(...parts: string[]) {

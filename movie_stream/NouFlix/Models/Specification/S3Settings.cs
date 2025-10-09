@@ -3,6 +3,7 @@
 public class S3Settings
 {
     public string Endpoint { get; set; } = "";
+    public string? PublicEndpoint { get; set; }
     public bool UseSSL { get; set; } = false;
     public string AccessKey { get; set; } = "";
     public string SecretKey { get; set; } = "";

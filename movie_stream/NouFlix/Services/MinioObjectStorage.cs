@@ -9,25 +9,25 @@ namespace NouFlix.Services;
 public class MinioObjectStorage
 {
     private readonly IMinioClient _client;
+    private readonly IMinioClient _publicSigner;
     private readonly S3Settings _cfg;
 
     public MinioObjectStorage(IOptions<StorageOptions> options)
     {
         _cfg = options.Value.S3;
 
-        var b = new MinioClient()
-            .WithEndpoint(_cfg.Endpoint)
-            .WithCredentials(_cfg.AccessKey, _cfg.SecretKey);
+        _client = BuildClient(NormalizeEndpoint(_cfg.Endpoint), useSsl: _cfg.UseSSL);
 
-        if (_cfg.UseSSL) b = b.WithSSL();
-        if (!string.IsNullOrWhiteSpace(_cfg.Region)) b = b.WithRegion(_cfg.Region);
-
-        _client = b.Build();
+        // Nếu có PublicEndpoint thì dùng nó cho việc ký URL, ngược lại fallback về Endpoint
+        var (pubEp, pubSsl) = NormalizePublic(_cfg.PublicEndpoint ?? _cfg.Endpoint, _cfg.UseSSL);
+        _publicSigner = BuildClient(pubEp, useSsl: pubSsl);
     }
 
-    public async Task<Uri> GetReadSignedUrlAsync(string bucket, string objectKey, TimeSpan ttl, CancellationToken ct = default)
+    public async Task<Uri> GetReadSignedUrlAsync(string bucket, string objectKey, TimeSpan ttl, int audience = 1, CancellationToken ct = default)
     {
-        var url = await _client.PresignedGetObjectAsync(
+        var cli = audience == 1 ? _publicSigner : _client;
+        
+        var url = await cli.PresignedGetObjectAsync(
             new PresignedGetObjectArgs()
                 .WithBucket(bucket)
                 .WithObject(objectKey)
@@ -66,5 +66,35 @@ public class MinioObjectStorage
         var stat = await _client.StatObjectAsync(new StatObjectArgs().WithBucket(bucket).WithObject(objectName), ct);
 
         return new UploadResult(bucket, objectName, contentType, stat.Size, stat.ETag);
+    }
+    
+    private static string NormalizeEndpoint(string ep)
+        => ep.StartsWith("http", StringComparison.OrdinalIgnoreCase) ? new Uri(ep).Authority : ep;
+
+    // Nếu PublicEndpoint có kèm scheme (https://), suy ra SSL cho signer; nếu không thì dùng cờ UseSSL
+    private static (string endpoint, bool useSsl) NormalizePublic(string? publicEp, bool fallbackSsl)
+    {
+        if (string.IsNullOrWhiteSpace(publicEp))
+            return (publicEp ?? string.Empty, fallbackSsl);
+
+        if (publicEp.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+        {
+            var u = new Uri(publicEp);
+            var host = u.IsDefaultPort ? u.Host : $"{u.Host}:{u.Port}";
+            return (host, u.Scheme.Equals("https", StringComparison.OrdinalIgnoreCase));
+        }
+        return (publicEp, fallbackSsl);
+    }
+
+    private IMinioClient BuildClient(string endpoint, bool useSsl)
+    {
+        var b = new MinioClient()
+            .WithEndpoint(endpoint)
+            .WithCredentials(_cfg.AccessKey, _cfg.SecretKey);
+
+        if (useSsl) b = b.WithSSL();
+        if (!string.IsNullOrWhiteSpace(_cfg.Region)) b = b.WithRegion(_cfg.Region);
+
+        return b.Build();
     }
 }

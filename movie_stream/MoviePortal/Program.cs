@@ -9,12 +9,12 @@ using MoviePortal.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Configuration.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
+// builder.Configuration.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
 
 // EF Core (DbContext pooling + resiliency)
 builder.Services.AddDbContextPool<AppDbContext>(opt =>
 {
-    var cs = builder.Configuration["ConnectionStrings:DefaultConnection"];
+    var cs = builder.Configuration["ConnectionStrings:Default"];
     opt.UseSqlServer(cs, sql =>
     {
         sql.EnableRetryOnFailure(5, TimeSpan.FromSeconds(5), null);

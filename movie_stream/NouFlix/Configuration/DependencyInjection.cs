@@ -146,7 +146,8 @@ public static class DependencyInjection
             options.AddDefaultPolicy(policy =>
             {
                 policy.WithOrigins(
-                        "http://localhost:4200")
+                        "http://localhost:4200",
+                        "https://nouflix.nhatcuong.io.vn")
                     .AllowAnyHeader()
                     .AllowAnyMethod()
                     .AllowCredentials();
