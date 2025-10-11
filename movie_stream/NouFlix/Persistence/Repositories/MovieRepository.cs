@@ -110,4 +110,15 @@ public class MovieRepository(AppDbContext db) : Repository<Movie>(db), IMovieRep
             .Include(m => m.MovieStudios)
             .ToListAsync(ct);
     }
+
+    public async Task<int> UpdateViewAsync(int movieId, int count = 1, CancellationToken ct = default)
+    {
+        var affected = await Db.Movies
+            .Where(m => m.Id == movieId)
+            .ExecuteUpdateAsync(s => s
+                    .SetProperty(m => m.ViewCount, m => m.ViewCount + count)
+                , ct);
+
+        return affected;
+    }
 }

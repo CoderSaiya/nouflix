@@ -9,4 +9,5 @@ public interface IMovieRepository : IRepository<Movie>
     Task<int> CountAsync(string? q, CancellationToken ct = default);
     Task<List<Movie>> TopByViewsAsync(int take, CancellationToken ct = default);
     Task<List<Movie>> FindCandidatesAsync(Movie seed, int max, bool includeVip, CancellationToken ct = default);
+    Task<int> UpdateViewAsync(int movieId, int count = 1, CancellationToken ct = default);
 }

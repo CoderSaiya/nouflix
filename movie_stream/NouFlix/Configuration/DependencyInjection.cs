@@ -76,6 +76,7 @@ public static class DependencyInjection
         services.AddScoped<AspNetExternalTicketReader>();
         services.AddScoped<AuthUrlBuilder>();
         services.AddScoped<TokenCookieWriter>();
+        services.AddScoped<ViewCounter>();
         
         // Services
         services.AddScoped<MinioObjectStorage>();

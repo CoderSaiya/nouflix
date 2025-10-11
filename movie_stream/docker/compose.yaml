@@ -1,6 +1,18 @@
 ﻿name: nouflix
 
 services:
+  n8n:
+    image: docker.n8n.io/n8nio/n8n:latest
+    ports:
+      - "5678:5678"
+    environment:
+      - BACKEND_BASE_URL=${BACKEND_BASE_URL}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - SLACK_WEBHOOK_URL=${SLACK_WEBHOOK_URL}
+      - GENERIC_TIMEZONE=Asia/Ho_Chi_Minh
+    volumes:
+      - n8n_data:/home/node/.n8n
+  
   nouflix.minio:
     image: minio/minio
     container_name: nouflix.minio
@@ -142,3 +154,4 @@ volumes:
   redis_volume_data:
   redis_insight_volume_data:
   mssql_data:
+  n8n_data:

@@ -11,7 +11,7 @@ public class StreamController(StreamService svc) : Controller
     [HttpGet("movies/{movieId:int}/master.m3u8")]
     [AllowAnonymous]
     public Task<IResult> MovieMaster([FromRoute] int movieId, CancellationToken ct)
-        => svc.GetMovieMasterAsync(movieId, Request, ct);
+        => svc.GetMovieMasterAsync(movieId, Request, Response, ct);
 
     [HttpGet("movies/{movieId:int}/{quality}/index.m3u8")]
     [AllowAnonymous]

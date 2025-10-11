@@ -2,6 +2,8 @@
 using System.Text;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Options;
+using NouFlix.Adapters;
+using NouFlix.Helpers;
 using NouFlix.Models.Specification;
 using NouFlix.Persistence.Repositories.Interfaces;
 
@@ -12,14 +14,15 @@ public class StreamService(
     MinioObjectStorage storage,
     IHttpClientFactory http,
     IOptions<StorageOptions> opts,
-    IUnitOfWork uow
+    IUnitOfWork uow,
+    ViewCounter counter
     )
 {
     private string Bucket => opts.Value.Buckets.Videos ?? "videos";
     private static string BasePrefix(int movieId, int? episodeNumber = null)
         => episodeNumber is null ? $"hls/movies/{movieId}" : $"hls/movies/{movieId}/ep{episodeNumber}";
     
-    public async Task<IResult> GetMovieMasterAsync(int movieId, HttpRequest req, CancellationToken ct)
+    public async Task<IResult> GetMovieMasterAsync(int movieId, HttpRequest req, HttpResponse res, CancellationToken ct)
     {
         // auth/authorize
         var vip = req.HttpContext.User?.Claims?.FirstOrDefault(c => c.Type == "vip")?.Value;
@@ -51,6 +54,15 @@ public class StreamService(
 
         var key = $"{BasePrefix(movieId)}/{quality}/{file}";
         await ProxyObjectAsync(ctx, key, "video/mp2t", TimeSpan.FromMinutes(10), ct);
+        
+        var (shouldCount, _) = counter.NoteSegment(movieId, file, ctx);
+        if (shouldCount)
+        {
+            await uow.Movies.UpdateViewAsync(movieId, ct: ct);
+            
+            await uow.CommitAsync(ct);
+        }
+        
         return Results.Empty;
     }
 
@@ -255,4 +267,21 @@ public class StreamService(
         }
         return string.Join("\n", lines);
     }
+    private static string AppendQueryToSegments(string m3u8, string query)
+    {
+        var sb = new StringBuilder();
+        foreach (var raw in m3u8.Replace("\r\n", "\n").Split('\n'))
+        {
+            var line = raw.TrimEnd();
+            if (line.Length > 0 && !line.StartsWith("#") &&
+                !line.StartsWith("http", StringComparison.OrdinalIgnoreCase) &&
+                !line.StartsWith("/", StringComparison.Ordinal))
+            {
+                line = line.Contains('?') ? $"{line}&{query}" : $"{line}?{query}";
+            }
+            sb.AppendLine(line);
+        }
+        return sb.ToString();
+    }
+    
 }
