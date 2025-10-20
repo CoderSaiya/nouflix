@@ -1,13 +1,13 @@
-import {Component, type OnInit, type OnDestroy, inject} from "@angular/core"
-import { CommonModule } from "@angular/common"
-import { ActivatedRoute, Router, RouterLink } from "@angular/router"
-import { Title, Meta } from "@angular/platform-browser"
-import { Subject, takeUntil } from "rxjs"
-import { MovieService } from "../../core/services/movie.service"
-import type {Episode, Movie, Season} from "../../models/movie.model"
-import { VideoPlayerComponent } from "../../components/video-player/video-player.component"
-import { WatchInfoComponent } from "../../components/watch-info/watch-info.component"
-import { RecommendationsComponent } from "../../components/recommendations/recommendations.component"
+import {Component, inject, type OnDestroy, type OnInit} from "@angular/core"
+import {CommonModule} from "@angular/common"
+import {ActivatedRoute, Router, RouterLink} from "@angular/router"
+import {Meta, Title} from "@angular/platform-browser"
+import {Subject, takeUntil} from "rxjs"
+import {MovieService} from "../../core/services/movie.service"
+import {Episode, Movie, MovieType, Season} from "../../models/movie.model"
+import {VideoPlayerComponent} from "../../components/video-player/video-player.component"
+import {WatchInfoComponent} from "../../components/watch-info/watch-info.component"
+import {RecommendationsComponent} from "../../components/recommendations/recommendations.component"
 import {SeasonService} from '../../core/services/season.service';
 import {StreamService} from '../../core/services/stream.service';
 
@@ -70,7 +70,7 @@ export class WatchComponent implements OnInit, OnDestroy {
             const id = movie.id
             this.updateMetaTags(movie)
             this.loadSimilarMovies(id)
-            if (movie.type === "series") {
+            if (movie.type === MovieType.Series) {
               this.loadSeriesData(id)
             } else {
               this.masterUrl = this.streamSvc.movieMasterUrl(movie.id);
@@ -109,7 +109,7 @@ export class WatchComponent implements OnInit, OnDestroy {
           this.episodes = episodes
           this.selectedEpisode = episodes.find((e) => e.number === this.currentEpisode)
 
-          if (this.movie && this.movie.type === 'series' && this.selectedEpisode) {
+          if (this.movie && this.movie.type == MovieType.Series && this.selectedEpisode) {
             this.currentEpisode = this.selectedEpisode.number;
             this.masterUrl = this.streamSvc.episodeMasterUrl(this.movie.id, this.selectedEpisode.id);
             this.subtitleUrl = this.streamSvc.episodeSubtitleUrl(this.movie.id, this.selectedEpisode.id);
@@ -139,12 +139,12 @@ export class WatchComponent implements OnInit, OnDestroy {
     this.metaSvc.updateTag({ property: "og:image", content: movie.backdropUrl })
     this.metaSvc.updateTag({
       property: "og:type",
-      content: movie.type === "series" ? "video.tv_show" : "video.single",
+      content: movie.type === MovieType.Series ? "video.tv_show" : "video.single",
     })
   }
 
   selectEpisode(seasonNumber: number, episodeNumber: number): void {
-    if (this.movie && this.movie.type === "series") {
+    if (this.movie && this.movie.type === MovieType.Series) {
       this.currentSeason = seasonNumber
       this.currentEpisode = episodeNumber
       this.router.navigate([], {
@@ -157,7 +157,7 @@ export class WatchComponent implements OnInit, OnDestroy {
   }
 
   playNextEpisode(): void {
-    if (this.movie && this.movie.type === "series") {
+    if (this.movie && this.movie.type === MovieType.Series) {
       const nextEpisode = this.episodes.find((e) => e.number === this.currentEpisode + 1)
       if (nextEpisode) {
         this.selectEpisode(this.currentSeason, this.currentEpisode + 1)
@@ -177,9 +177,11 @@ export class WatchComponent implements OnInit, OnDestroy {
 
   onMovieEnd(): void {
     // Auto-play next similar movie or show recommendations
-    if (this.movie?.type === "series") {
+    if (this.movie?.type === MovieType.Series) {
       this.playNextEpisode()
     }
     else console.log("Movie ended")
   }
+
+  protected readonly MovieType = MovieType;
 }

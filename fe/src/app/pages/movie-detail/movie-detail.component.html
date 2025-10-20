@@ -25,7 +25,7 @@
               <span>{{ movie.avgRating.toFixed(1) }}</span>
             </div>
             <span class="meta-item">{{ formatDate(movie.releaseDate) }}</span>
-            <ng-container *ngIf="movie.type === 'series'; else movieRuntime">
+            <ng-container *ngIf="movie.type === MovieType.Series; else movieRuntime">
               <span class="meta-item">{{ movie.numberOfSeasons }} Mùa</span>
               <span class="meta-item">{{ movie.numberOfEpisodes }} Tập</span>
             </ng-container>
@@ -117,7 +117,7 @@
         </button>
         <button
           class="tab-btn"
-          *ngIf="movie.type === 'series'"
+          *ngIf="movie.type === MovieType.Series"
           [class.active]="activeTab === 'seasons'"
           (click)="setActiveTab('seasons')"
         >
@@ -320,7 +320,7 @@
         </div>
       </div>
 
-      <div class="tab-panel" *ngIf="activeTab === 'seasons' && movie.type === 'series'">
+      <div class="tab-panel" *ngIf="activeTab === 'seasons' && movie.type === MovieType.Series">
         <h2 class="section-title">Các Mùa</h2>
 
         <div class="seasons-list">

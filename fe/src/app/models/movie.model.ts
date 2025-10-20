@@ -10,11 +10,11 @@ export interface Movie extends MovieItem {
   // spokenLanguages: SpokenLanguage[]
   // budget: number
   // revenue: number
-  status: string
+  status: PublishStatus
   tagline: string
   adult: boolean
   video: boolean
-  type: "single" | "series"
+  type: MovieType
   episodes?: Episode[]
   numberOfSeasons?: number
   numberOfEpisodes?: number
@@ -102,4 +102,22 @@ export interface Episode {
   overview: string
   releaseDate: string
   runtime: number
+}
+
+export enum MovieType {
+  Single = 1,
+  Series
+}
+
+export enum QualityLevel {
+  Low = 1,
+  Medium,
+  High
+}
+
+export enum PublishStatus {
+  Draft = 1,
+  Published,
+  Hidden,
+  InReview
 }

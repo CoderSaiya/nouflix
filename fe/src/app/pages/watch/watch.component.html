@@ -21,7 +21,7 @@
         <div class="main-content">
           <app-watch-info [movie]="movie" />
 
-          @if (movie.type === 'series' && seasons.length > 0) {
+          @if (movie.type === MovieType.Series && seasons.length > 0) {
             <div class="episodes-section">
               <h2>Tập Phim</h2>
 

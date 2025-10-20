@@ -1,9 +1,9 @@
-import { Component, type OnInit, inject } from "@angular/core"
+import {Component, inject, type OnInit} from "@angular/core"
 import {CommonModule} from "@angular/common"
-import { ActivatedRoute, Router, RouterLink } from "@angular/router"
-import { Title, Meta } from "@angular/platform-browser"
-import { MovieService } from "../../core/services/movie.service"
-import type {Movie, Cast, Crew, Review, Video, Season} from "../../models/movie.model"
+import {ActivatedRoute, Router, RouterLink} from "@angular/router"
+import {Meta, Title} from "@angular/platform-browser"
+import {MovieService} from "../../core/services/movie.service"
+import {Cast, Crew, Movie, MovieType, Review, Season, Video} from "../../models/movie.model"
 import {SeasonService} from '../../core/services/season.service';
 
 @Component({
@@ -74,7 +74,7 @@ export class MovieDetailComponent implements OnInit {
         this.similarMovies = similar
       })
 
-      if (movie.type === "series") {
+      if (movie.type === MovieType.Series) {
         this.seasonSvc.getSeriesSeasons(id).subscribe((seasons) => {
           this.seasons = seasons
           console.log(seasons)
@@ -166,4 +166,6 @@ export class MovieDetailComponent implements OnInit {
       .fill(0)
       .map((_, i) => (i < stars ? 1 : 0))
   }
+
+  protected readonly MovieType = MovieType;
 }

@@ -1,8 +1,8 @@
 import {inject, Injectable} from "@angular/core"
 import {Observable, of} from "rxjs"
-import { map } from 'rxjs/operators';
-import type {Movie, Cast, Crew, Review, Video, MovieItem, Season, Episode} from "../../models/movie.model"
-import {MOCK_MOVIES, MOCK_CAST, MOCK_CREW, MOCK_REVIEWS, MOCK_VIDEOS, MOCK_SEASONS} from "../../data/mock-data"
+import {map} from 'rxjs/operators';
+import {Cast, Crew, Episode, Movie, MovieItem, MovieType, Review, Video} from "../../models/movie.model"
+import {MOCK_CAST, MOCK_CREW, MOCK_MOVIES, MOCK_REVIEWS, MOCK_SEASONS, MOCK_VIDEOS} from "../../data/mock-data"
 import {HttpClient} from '@angular/common/http';
 import {environment} from '../../../environments/environment';
 import {GlobalResponse} from '../../models/api-response.model';
@@ -19,11 +19,11 @@ export class MovieService {
   }
 
   getMoviesOnly(): Observable<Movie[]> {
-    return of(MOCK_MOVIES.filter((m) => m.type === "single"))
+    return of(MOCK_MOVIES.filter((m) => m.type === MovieType.Single))
   }
 
   getSeriesOnly(): Observable<Movie[]> {
-    return of(MOCK_MOVIES.filter((m) => m.type === "series"))
+    return of(MOCK_MOVIES.filter((m) => m.type === MovieType.Series))
   }
 
   getDetail(slug: string): Observable<Movie | undefined> {
