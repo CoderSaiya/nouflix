@@ -10,6 +10,7 @@ import {WatchInfoComponent} from "../../components/watch-info/watch-info.compone
 import {RecommendationsComponent} from "../../components/recommendations/recommendations.component"
 import {SeasonService} from '../../core/services/season.service';
 import {StreamService} from '../../core/services/stream.service';
+import {EpisodeService} from '../../core/services/episode.service';
 
 @Component({
   selector: "app-watch",
@@ -23,6 +24,7 @@ export class WatchComponent implements OnInit, OnDestroy {
   private router = inject(Router)
   private movieSvc = inject(MovieService)
   private seasonSvc = inject(SeasonService)
+  private episodeSvc = inject(EpisodeService)
   private titleSvc = inject(Title)
   private metaSvc = inject(Meta)
   private streamSvc = inject(StreamService)
@@ -101,7 +103,7 @@ export class WatchComponent implements OnInit, OnDestroy {
   }
 
   protected loadEpisodes(seriesId: number, seasonNumber: number): void {
-    this.seasonSvc
+    this.episodeSvc
       .getSeasonEpisodes(seriesId, seasonNumber)
       .pipe(takeUntil(this.destroy$))
       .subscribe({

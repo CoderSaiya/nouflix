@@ -9,13 +9,13 @@ import {map} from 'rxjs/operators';
 @Injectable({
   providedIn: "root",
 })
-export class SeasonService {
+export class EpisodeService {
   private http = inject(HttpClient)
-  private apiUrl = `${environment.apiUrl}/api/season`
+  private apiUrl = `${environment.apiUrl}/api/episode`
 
-  getSeriesSeasons(movieId: number): Observable<Season[]> {
+  getSeasonEpisodes(seriesId: number, seasonNumber: number): Observable<Episode[]> {
     return this.http
-      .get<GlobalResponse<Season[]>>(`${this.apiUrl}/${movieId}`)
+      .get<GlobalResponse<Episode[]>>(`${this.apiUrl}/season/${seasonNumber}/movie/${seriesId}`)
       .pipe(
         map(res => (res.data || []))
       )
