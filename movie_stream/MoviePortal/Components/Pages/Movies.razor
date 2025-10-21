@@ -1,6 +1,6 @@
 ﻿@page "/movies"
 @rendermode InteractiveServer
-@using MoviePortal.Models.Entities
+@using MoviePortal.Models.DTOs
 @inherits MoviePortal.Components.Pages.MoviesPage
 
 <PageTitle>Phim</PageTitle>
@@ -14,14 +14,14 @@
 
 <input class="form-control mb-3" placeholder="Tìm theo tiêu đề..." @bind="Search" @bind:event="oninput" />
 
-<Virtualize TItem="Movie" ItemsProvider="LoadMovies" Context="m">
+<Virtualize TItem="MovieDto.MovieSummary" ItemsProvider="LoadMovies" Context="m">
     <div class="card mb-2">
         <div class="card-body">
             <div class="d-flex justify-content-between">
                 <div>
                     <h5 class="card-title mb-1">@m.Title</h5>
                     <div class="text-muted small">
-                        @m.Status | @m.Type | @m.ReleaseDate?.ToShortDateString() | Views: @m.ViewCount | Rating: @m.Rating
+                        @m.Status | @m.Type | @m.ReleaseDate?.ToShortDateString() | Views: @m.ViewCount | Rating: @m.AvgRating
                     </div>
                 </div>
                 <div class="text-nowrap">

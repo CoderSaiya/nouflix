@@ -1,36 +1,36 @@
-﻿using Microsoft.AspNetCore.Components;
-using MoviePortal.Models.Entities;
+﻿using System.Globalization;
+using Microsoft.AspNetCore.Components;
+using MoviePortal.Api;
+using MoviePortal.Models.DTOs;
 using MoviePortal.Models.ValueObject;
-using MoviePortal.Services;
 
 namespace MoviePortal.Components.Pages;
 
 public class MovieEditPage : ComponentBase
 {
     [Parameter] public int? Id { get; set; }
-
-    [Inject] private MoviesService Movies { get; set; } = null!;
-    [Inject] private TaxonomyService Taxo { get; set; } = null!;
+    [Inject] private MovieApi MovApi { get; set; } = null!;
+    [Inject] private TaxonomyApi TaxoApi { get; set; } = null!;
     [Inject] private NavigationManager Nav { get; set; } = null!;
 
     protected bool Loading = true;
-    protected Movie? Movie;
+    protected MovieDto.Movie? Movie;
     protected string Tab = "info";
     protected bool IsCreate => !Id.HasValue || Id.Value == 0;
 
-    protected List<Genre> AllGenres = new();
+    protected List<MovieDto.Genre> AllGenres = new();
     protected HashSet<int> SelectedGenreIds = new();
-    protected List<Studio> AllStudios = new();
+    protected List<MovieDto.Studio> AllStudios = new();
     protected HashSet<int> SelectedStudioIds = new();
 
     protected override async Task OnInitializedAsync()
     {
-        AllGenres = await Taxo.SearchGenresAsync(null);
-        AllStudios = await Taxo.SearchStudiosAsync(null);
+        AllGenres = await TaxoApi.SearchGenresAsync(null);
+        AllStudios = await TaxoApi.SearchStudiosAsync(null);
 
         if (IsCreate)
         {
-            Movie = new Movie
+            Movie = new MovieDto.Movie
             {
                 Title = "",
                 Status = PublishStatus.Draft,
@@ -43,11 +43,11 @@ public class MovieEditPage : ComponentBase
             return;
         }
 
-        Movie = await Movies.GetAsync(Id!.Value);
+        Movie = await MovApi.GetAsync(Id!.Value);
         if (Movie is null) { Loading = false; return; }
 
-        SelectedGenreIds  = Movie.MovieGenres.Select(x => x.GenreId).ToHashSet();
-        SelectedStudioIds = Movie.MovieStudios.Select(x => x.StudioId).ToHashSet();
+        SelectedGenreIds = Movie.Genres.Select(x => x.Id).ToHashSet();
+        SelectedStudioIds = Movie.Studios.Select(x => x.Id).ToHashSet();
         Loading = false;
     }
 
@@ -55,14 +55,33 @@ public class MovieEditPage : ComponentBase
     {
         if (Movie is null) return;
 
+        var req = new MovieDto.UpsertMovieReq(
+            Movie.Title,
+            Movie.AlternateTitle,
+            Movie.Slug,
+            Movie.Overview,
+            Movie.Director,
+            Movie.Country,
+            Movie.Language,
+            Movie.AgeRating,
+            Movie.ReleaseDate,
+            Movie.Type,
+            Movie.Status,
+            Movie.Quality,
+            Movie.IsVipOnly,
+            SelectedGenreIds,
+            SelectedStudioIds
+        );
+
         if (IsCreate || Movie.Id == 0)
         {
-            var newId = await Movies.CreateAsync(Movie, SelectedGenreIds, SelectedStudioIds);
+            var newId = await MovApi.SaveAsync(req, 0);
             Nav.NavigateTo($"/movies/edit/{newId}", forceLoad: true);
         }
         else
         {
-            await Movies.UpdateAsync(Movie, SelectedGenreIds, SelectedStudioIds);
+            await MovApi.SaveAsync(req, Movie.Id);
+            Nav.NavigateTo($"/movies/edit/{Movie.Id}", forceLoad: true);
         }
     }
 

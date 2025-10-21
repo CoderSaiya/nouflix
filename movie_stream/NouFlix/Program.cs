@@ -1,5 +1,7 @@
+using Microsoft.EntityFrameworkCore;
 using NouFlix.Configuration;
 using NouFlix.Models.Specification;
+using NouFlix.Persistence.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,6 +15,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.Configure<StorageOptions>(builder.Configuration.GetSection("Storage"));
 builder.Services.Configure<AuthOptions>(builder.Configuration.GetSection("Auth:Auth"));
 builder.Services.Configure<AuthCookieOptions>(builder.Configuration.GetSection("Auth:Cookie"));
+builder.Services.Configure<FfmpegOptions>(builder.Configuration.GetSection("Ffmpeg"));
 
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddAuth(builder.Configuration);

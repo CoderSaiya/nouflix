@@ -18,4 +18,8 @@ public interface IRepository<T> where T : class
         CancellationToken ct = default);
     Task<int> CountAsync(Expression<Func<T, bool>>? predicate = null,
         CancellationToken ct = default);
+    
+    Task<bool> ExistsAsync(Expression<Func<T, bool>> predicate);
+    Task<bool> ExistsAsync(Guid id);
+    Task<bool> ExistsAsync(int id);
 }

@@ -3,6 +3,8 @@
 @using MoviePortal.Components.Shared
 @inherits MoviePortal.Components.Pages.MovieEditPage
 
+<PageTitle>@(Movie is null ? "Thêm phim" : $"Chỉnh sửa - {Movie.Title}")</PageTitle>
+
 @if (Loading) { <p>Đang tải...</p> }
 else if (Movie is null) { <div class="alert alert-warning">Không tìm thấy phim.</div> }
 else

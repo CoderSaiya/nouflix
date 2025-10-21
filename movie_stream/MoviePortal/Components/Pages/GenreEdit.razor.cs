@@ -1,27 +1,30 @@
 ﻿using Microsoft.AspNetCore.Components;
-using MoviePortal.Models.Entities;
-using MoviePortal.Services;
+using MoviePortal.Api;
+using MoviePortal.Models.DTOs;
 
 namespace MoviePortal.Components.Pages;
 
 public class GenreEditPage : ComponentBase
 {
     [Parameter] public int? Id { get; set; }
-    [Inject] private TaxonomyService Taxo { get; set; } = default!;
-    [Inject] private NavigationManager Nav { get; set; } = default!;
+    [Inject] private TaxonomyApi TaxoApi { get; set; } = null!;
+    [Inject] private NavigationManager Nav { get; set; } = null!;
 
     protected bool Loading = true;
-    protected Genre? Model;
+    protected MovieDto.Genre? Model;
 
     protected override async Task OnInitializedAsync()
     {
-        Model = Id is null ? new Genre { Name = "" } : await Taxo.GetGenreAsync(Id.Value);
+        Model = Id is null ?
+            new MovieDto.Genre { Id = 0, Name = "" } :
+            await TaxoApi.GetGenreAsync(Id.Value);
+        
         Loading = false;
     }
 
-    protected async Task SaveAsync(Genre g)
+    protected async Task SaveAsync(MovieDto.Genre g)
     {
-        await Taxo.SaveGenreAsync(g);
+        await TaxoApi.SaveGenreAsync(g);
     }
 
     protected void GoBack() => Nav.NavigateTo("/genres");

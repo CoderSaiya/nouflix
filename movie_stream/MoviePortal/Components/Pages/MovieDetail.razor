@@ -1,13 +1,10 @@
 ﻿@page "/movies/view/{id:int}"
 @rendermode InteractiveServer
-@using Microsoft.EntityFrameworkCore
-@using MoviePortal.Data
-@using MoviePortal.Models
-@using MoviePortal.Models.Entities
+@using MoviePortal.Api
+@using MoviePortal.Models.DTOs
 @using MoviePortal.Models.ValueObject
-@using MoviePortal.Services
-@inject AppDbContext Db
-@inject MinioObjectStorage Storage
+
+<PageTitle>@(_movie?.Title ?? "Chi tiết phim")</PageTitle>
 
 @if (_loading) { <p>Đang tải...</p> }
 else if (_movie is null) { <div class="alert alert-warning">Không tìm thấy phim.</div> }
@@ -32,9 +29,9 @@ else
 
     <div class="col-md-8">
       <div class="mb-2 text-muted">
-        @_movie.Status | @_movie.Type | @_movie.ReleaseDate?.ToShortDateString() | Chất lượng: @_movie.Quality
+        @_movie.Status | @_movie.Type | @_movie.ReleaseDate.ToShortDateString() | Chất lượng: @_movie.Quality
       </div>
-      <p>@_movie.Synopsis</p>
+      <p>@_movie.Overview</p>
 
       @if (_movie.Type == MovieType.Single)
       {
@@ -79,7 +76,7 @@ else
                 </h2>
                 <div id="@($"c{e.Id}")" class="accordion-collapse collapse" data-bs-parent="#eps">
                   <div class="accordion-body">
-                    <div class="small text-muted mb-2">Trạng thái: @e.Status | Ngày phát: @e.ReleaseDate?.ToShortDateString()</div>
+                    <div class="small text-muted mb-2">Trạng thái: @e.Status | Ngày phát: @e.ReleaseDate.ToShortDateString()</div>
                     @if (_videosByEpisode.TryGetValue(e.Id, out var vids) && vids.Count > 0)
                     {
                       <ul class="list-group">
@@ -124,51 +121,41 @@ else
 }
 
 @code {
-  [Parameter] public int id { get; set; }
+  [Parameter] public int Id { get; set; }
+  [Inject] public MovieApi MovApi { get; set; } = null!;
+  [Inject] public StorageApi StoApi { get; set; } = null!;
 
   private bool _loading = true;
-  private Movie? _movie;
+  private MovieDto.Movie? _movie;
   private string? _posterUrl;
 
-  private List<Episode> _episodes = new();
-  private List<VideoAsset> _movieVideos = new();
-  private Dictionary<int, List<VideoAsset>> _videosByEpisode = new();
+  private List<MovieDto.Episode> _episodes = new();
+  private List<MovieDto.VideoAssets> _movieVideos = new();
+  private Dictionary<int, List<MovieDto.VideoAssets>> _videosByEpisode = new();
 
   private string? _previewUrl;
 
   protected override async Task OnInitializedAsync()
   {
-    _movie = await Db.Movies.AsNoTracking().FirstOrDefaultAsync(m => m.Id == id);
-    if (_movie is null) { _loading = false; return; }
-
-    var poster = await Db.ImageAssets.AsNoTracking()
-                   .Where(i => i.MovieId == id)
-                   .OrderBy(i => i.Id)
-                   .FirstOrDefaultAsync();
-    
-    if (poster is not null)
+    _movie = await MovApi.GetAsync(Id);
+    if (_movie is null)
     {
-      _posterUrl = (await Storage.GetReadSignedUrlAsync(
-        poster.Bucket, poster.ObjectKey, TimeSpan.FromMinutes(30)
-      )).ToString();
+      _loading = false;
+      return;
     }
+
+    _posterUrl = await StoApi.GetImageUrl(Id);
 
     if (_movie.Type == MovieType.Single)
     {
-      _movieVideos = await Db.VideoAssets.AsNoTracking()
-                        .Where(v => v.MovieId == id)
-                        .OrderBy(v => v.Id).ToListAsync();
+      _movieVideos = await MovApi.GetVideosAsync(Id);
     }
     else
     {
-      _episodes = await Db.Episodes.AsNoTracking()
-                    .Where(e => e.MovieId == id)
-                    .OrderBy(e => e.Number).ToListAsync();
+      _episodes = await MovApi.GetEpisodesByMovieAsync(Id);
 
       var epIds = _episodes.Select(e => e.Id).ToArray();
-      var vids = await Db.VideoAssets.AsNoTracking()
-                    .Where(v => v.EpisodeId != null && epIds.Contains(v.EpisodeId!.Value))
-                    .OrderBy(v => v.Id).ToListAsync();
+      var vids = await MovApi.GetVideoByEpisodeIdsAsync(epIds);
 
       _videosByEpisode = vids.GroupBy(v => v.EpisodeId!.Value)
                              .ToDictionary(g => g.Key, g => g.ToList());
@@ -177,8 +164,8 @@ else
     _loading = false;
   }
 
-  private async Task PreviewAsync(VideoAsset v)
+  private async Task PreviewAsync(MovieDto.VideoAssets v)
   {
-    _previewUrl = (await Storage.GetReadSignedUrlAsync(v.Bucket, v.ObjectKey, TimeSpan.FromMinutes(10))).ToString();
+    _previewUrl = await StoApi.GetPreviewUrl(v.Bucket, v.ObjectKey);
   }
 }

@@ -17,6 +17,7 @@ public static class SeasonMapper
 
         return new SeasonRes(
             s.Id,
+            s.MovieId,
             s.Title,
             s.Number,
             s.Year?.ToString(),

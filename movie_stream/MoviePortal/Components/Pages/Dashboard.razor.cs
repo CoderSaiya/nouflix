@@ -1,27 +1,30 @@
 ﻿using Microsoft.AspNetCore.Components;
+using MoviePortal.Api;
 using MoviePortal.Models.DTOs;
-using MoviePortal.Models.Entities;
-using MoviePortal.Services;
 
 namespace MoviePortal.Components.Pages;
 
 public class DashboardPage : ComponentBase
 {
-    [Inject] private DashboardService Dash { get; set; } = null!;
+    [Inject] private DashboardApi Api { get; set; } = null!;
 
-    protected bool _loading = true;
+    protected bool Loading = true;
 
-    protected Kpis Kpis = null!;
-    protected TaxonomyCounts Taxo = null!;
-    protected List<Movie> RecentMovies = new();
-    protected List<Movie> TopByViews = new();
-    protected List<IssueItem> Issues = new();
-    protected List<ImageAsset> OrphanSamples = new();
+    protected SystemDto.Kpis Kpis = null!;
+    protected SystemDto.TaxonomyCounts Taxo = null!;
+    protected List<MovieDto.Movie> RecentMovies = new(); 
+    protected List<MovieDto.Movie> TopByViews = new();
+    protected List<SystemDto.IssueItem> Issues = new();
+    protected List<AssetsDto.Image> OrphanSamples = new();
 
     protected override async Task OnInitializedAsync()
     {
-        (Kpis, Taxo, RecentMovies, TopByViews, Issues, OrphanSamples) = await Dash.BuildAsync();
-        _loading = false;
+        var res = await Api.GetAsync();
+        if (res is null) return;
+
+        (Kpis, Taxo, RecentMovies, TopByViews, Issues, OrphanSamples) = res;
+        
+        Loading = false;
     }
 
     protected static string FormatBytes(long bytes)

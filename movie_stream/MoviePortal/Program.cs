@@ -1,55 +1,61 @@
-using Microsoft.EntityFrameworkCore;
-using MoviePortal.Adapters;
+using MoviePortal.Api;
 using MoviePortal.Components;
-using MoviePortal.Data;
-using MoviePortal.Models.Specification;
-using MoviePortal.Repositories;
-using MoviePortal.Repositories.Interfaces;
-using MoviePortal.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // builder.Configuration.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
 
-// EF Core (DbContext pooling + resiliency)
-builder.Services.AddDbContextPool<AppDbContext>(opt =>
+var baseUrl = builder.Configuration["BaseUrl:Backend"]!;
+builder.Services.AddHttpClient<TranscodeApi>(c =>
 {
-    var cs = builder.Configuration["ConnectionStrings:Default"];
-    opt.UseSqlServer(cs, sql =>
-    {
-        sql.EnableRetryOnFailure(5, TimeSpan.FromSeconds(5), null);
-        sql.CommandTimeout(30);
-    });
+    c.BaseAddress = new Uri(baseUrl);
+    c.Timeout = Timeout.InfiniteTimeSpan;
 });
 
-builder.Services.Configure<StorageOptions>(builder.Configuration.GetSection("Storage"));
-builder.Services.Configure<FfmpegOptions>(builder.Configuration.GetSection("Ffmpeg"));
+builder.Services.AddHttpClient<MovieApi>(c =>
+{
+    c.BaseAddress = new Uri(baseUrl);
+    c.Timeout = Timeout.InfiniteTimeSpan;
+});
 
-// Repositories
-builder.Services.AddScoped<IMovieRepository, MovieRepository>();
-builder.Services.AddScoped<IEpisodeRepository, EpisodeRepository>();
-builder.Services.AddScoped<IGenreRepository, GenreRepository>();
-builder.Services.AddScoped<IStudioRepository, StudioRepository>();
-builder.Services.AddScoped<IImageAssetRepository, ImageAssetRepository>();
-builder.Services.AddScoped<IVideoAssetRepository, VideoAssetRepository>();
-builder.Services.AddScoped<ISeasonRepository, SeasonRepository>();
+builder.Services.AddHttpClient<TaxonomyApi>(c =>
+{
+    c.BaseAddress = new Uri(baseUrl);
+    c.Timeout = Timeout.InfiniteTimeSpan;
+});
 
-// Unit of Work
-builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+builder.Services.AddHttpClient<SubtitlesApi>(c =>
+{
+    c.BaseAddress = new Uri(baseUrl);
+    c.Timeout = Timeout.InfiniteTimeSpan;
+});
+builder.Services.AddHttpClient<StorageApi>(c =>
+{
+    c.BaseAddress = new Uri(baseUrl);
+    c.Timeout = Timeout.InfiniteTimeSpan;
+});
+builder.Services.AddHttpClient<HealthApi>(c =>
+{
+    c.BaseAddress = new Uri(baseUrl);
+    c.Timeout = Timeout.InfiniteTimeSpan;
+});
+builder.Services.AddHttpClient<CsvApi>(c =>
+{
+    c.BaseAddress = new Uri(baseUrl);
+    c.Timeout = Timeout.InfiniteTimeSpan;
+});
+builder.Services.AddHttpClient<BulkEpisodeApi>(c =>
+{
+    c.BaseAddress = new Uri(baseUrl);
+    c.Timeout = Timeout.InfiniteTimeSpan;
+});
+builder.Services.AddHttpClient<DashboardApi>(c =>
+{
+    c.BaseAddress = new Uri(baseUrl);
+    c.Timeout = Timeout.InfiniteTimeSpan;
+});
 
-// Adapter
-builder.Services.AddScoped<FfmpegHlsTranscoder>();
-
-// Services
-builder.Services.AddSingleton<MinioObjectStorage>();
-builder.Services.AddScoped<StorageService>();
-builder.Services.AddScoped<MoviesService>();
-builder.Services.AddScoped<EpisodesService>();
-builder.Services.AddScoped<TaxonomyService>();
-builder.Services.AddScoped<EpisodeCsvService>();
-builder.Services.AddScoped<DashboardService>();
-builder.Services.AddScoped<BulkEpisodesService>();
-builder.Services.AddScoped<SystemHealthService>();
+builder.Services.AddScoped<JobPoller>();
 
 // Add services to the container.
 builder.Services.AddRazorComponents()

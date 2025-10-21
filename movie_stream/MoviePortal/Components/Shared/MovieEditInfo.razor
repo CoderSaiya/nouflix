@@ -1,7 +1,7 @@
 ﻿@using System.Globalization
 @using System.Text
 @using System.Text.RegularExpressions
-@using MoviePortal.Models.Entities
+@using MoviePortal.Models.DTOs
 @using MoviePortal.Models.ValueObject
 
 <EditForm Model="Movie" OnValidSubmit="OnSave">
@@ -30,7 +30,7 @@
     
     <div class="col-12">
       <label class="form-label">Tóm tắt</label>
-      <InputTextArea class="form-control" @bind-Value="Movie.Synopsis" rows="4" />
+      <InputTextArea class="form-control" @bind-Value="Movie.Overview" rows="4" />
     </div>
 
     <div class="col-md-3">
@@ -116,10 +116,10 @@
 </EditForm>
 
 @code {
-  [Parameter] public Movie Movie { get; set; } = null!;
-  [Parameter] public List<Genre> AllGenres { get; set; } = null!;
+  [Parameter] public MovieDto.Movie Movie { get; set; } = null!;
+  [Parameter] public List<MovieDto.Genre> AllGenres { get; set; } = null!;
   [Parameter] public HashSet<int> SelectedGenreIds { get; set; } = null!;
-  [Parameter] public List<Studio> AllStudios { get; set; } = null!;
+  [Parameter] public List<MovieDto.Studio> AllStudios { get; set; } = null!;
   [Parameter] public HashSet<int> SelectedStudioIds { get; set; } = null!;
 
   [Parameter] public EventCallback OnSave { get; set; }

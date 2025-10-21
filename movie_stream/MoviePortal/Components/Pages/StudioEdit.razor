@@ -1,8 +1,9 @@
 ﻿@page "/studios/edit/{id:int?}"
 @rendermode InteractiveServer
-@using MoviePortal.Models.Entities
 @using MoviePortal.Components.Shared
 @inherits MoviePortal.Components.Pages.StudioEditPage
+
+<PageTitle>@(Id is null ? "Thêm studio" : "Sửa studio")</PageTitle>
 
 <h3>@(Id is null ? "Thêm studio" : "Sửa studio")</h3>
 

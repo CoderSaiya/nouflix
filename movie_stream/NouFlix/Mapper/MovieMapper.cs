@@ -28,7 +28,10 @@ public static class MovieMapper
             m.Slug,
             m.Title,
             posterUrl,
+            m.Type.ToString(),
+            m.Status.ToString(),
             m.AvgRating,
+            m.ViewCount,
             m.ReleaseDate,
             genres
         );
@@ -57,9 +60,13 @@ public static class MovieMapper
             : (await storage.GetReadSignedUrlAsync(
                 backdrop.Bucket, backdrop.ObjectKey, TimeSpan.FromMinutes(10), ct: ct)).ToString();
 
-        var genres = m.MovieGenres?
+        var genres = m.MovieGenres
             .Select(mg => new GenreRes(mg.Genre.Id, mg.Genre.Name))
-            .ToList() ?? new List<GenreRes>();
+            .ToList();
+        
+        var studios = m.MovieStudios
+            .Select(mg => new StudioRes(mg.Studio.Id, mg.Studio.Name))
+            .ToList();
 
         return new MovieDetailRes(
             m.Id,
@@ -69,18 +76,24 @@ public static class MovieMapper
             m.Synopsis,
             posterUrl,
             backdropUrl,
-            m.ReleaseDate.ToString() ?? "",
+            m.ReleaseDate,
+            m.Director,
             m.TotalDurationMinutes,
             m.AvgRating,
+            m.AgeRating,
             m.VoteCount,
             m.ViewCount,
             genres,
+            studios,
             m.Country,
             m.Language,
-            m.Status.ToString(),
+            m.Status,
+            m.Type,
+            m.Quality,
             m.HasVideo,
-            m.Type.ToString().ToLowerInvariant(),
-            m.Director
+            m.IsVipOnly,
+            m.CreatedAt,
+            m.UpdatedAt
         );
     }
 

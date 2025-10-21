@@ -9,30 +9,88 @@ namespace NouFlix.Persistence.Repositories;
 
 public class MovieRepository(AppDbContext db) : Repository<Movie>(db), IMovieRepository
 {
+    private const string AI = "Vietnamese_100_CI_AI";
+
+    public override IQueryable<Movie> Query(bool asNoTracking = true)
+    {
+        return base
+            .Query(asNoTracking)
+            .Where(m => m.IsDeleted == false);
+    }
+
     public Task<Movie?> GetBySlugAsync(string slug, bool asNoTracking = true)
         => Query(asNoTracking)
-            .Include(m => m.Seasons)
-            .ThenInclude(s => s.Episodes)
             .Include(m => m.Images)
             .Include(m => m.MovieGenres)
             .ThenInclude(mg => mg.Genre)
+            .Include(m => m.MovieStudios)
+            .ThenInclude(ms => ms.Studio)
             .Include(m => m.Reviews)
             .FirstOrDefaultAsync(m => m.Slug == slug);
 
     public Task<List<Movie>> SearchAsync(string? q, int skip, int take, CancellationToken ct = default)
     {
-        var query = Query().OrderByDescending(m => m.UpdatedAt);
+        IQueryable<Movie> query = Query()
+            .AsSplitQuery()
+            .Include(m => m.Reviews)
+            .Include(m => m.Images.Where(i => i.Kind == ImageKind.Poster))
+            .Include(m => m.MovieGenres).ThenInclude(mg => mg.Genre);
+
         if (!string.IsNullOrWhiteSpace(q))
-            query = query.Where(m => EF.Functions.Like(m.Title, $"%{q.Trim()}%"))
-                .OrderByDescending(m => m.UpdatedAt);
-        return query.Skip(skip).Take(take).ToListAsync(ct);
+        {
+            var words = q.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .Select(EscapeLike)
+                .Select(w => "%" + w + "%")
+                .ToList();
+
+            if (words.Count > 0)
+            {
+                Expression<Func<Movie, bool>> predicate = _ => false;
+                foreach (var p in words)
+                {
+                    Expression<Func<Movie, bool>> term = m =>
+                        EF.Functions.Like(EF.Functions.Collate(m.Title, AI), p) ||
+                        EF.Functions.Like(EF.Functions.Collate(m.Slug, AI), p) ||
+                        EF.Functions.Like(EF.Functions.Collate(m.Synopsis, AI), p);
+                    predicate = OrElse(predicate, term);
+                }
+                query = query.Where(predicate);
+            }
+        }
+        
+        return query
+            .OrderByDescending(m => m.UpdatedAt).ThenBy(m => m.Id)
+            .Skip(skip * take)
+            .Take(take)
+            .ToListAsync(ct);
     }
 
-    public Task<int> CountAsync(string? q, CancellationToken ct = default)
+    public Task<int> CountAsync(string? q, int skip, int take, CancellationToken ct = default)
     {
         var query = Query();
+        
         if (!string.IsNullOrWhiteSpace(q))
-            query = query.Where(m => EF.Functions.Like(m.Title, $"%{q.Trim()}%"));
+        {
+            var words = q.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .Select(EscapeLike)
+                .Select(w => "%" + w + "%")
+                .ToList();
+
+            if (words.Count > 0)
+            {
+                Expression<Func<Movie, bool>> predicate = _ => false;
+                foreach (var p in words)
+                {
+                    Expression<Func<Movie, bool>> term = m =>
+                        EF.Functions.Like(EF.Functions.Collate(m.Title, AI), p) ||
+                        EF.Functions.Like(EF.Functions.Collate(m.Slug, AI), p) ||
+                        EF.Functions.Like(EF.Functions.Collate(m.Synopsis, AI), p);
+                    predicate = OrElse(predicate, term);
+                }
+                query = query.Where(predicate);
+            }
+        }
+        
         return query.CountAsync(ct);
     }
 
@@ -60,6 +118,8 @@ public class MovieRepository(AppDbContext db) : Repository<Movie>(db), IMovieRep
             .Include(m => m.Images)
             .Include(m => m.MovieGenres)
             .ThenInclude(mg => mg.Genre)
+            .Include(m => m.MovieStudios)
+            .ThenInclude(ms => ms.Studio)
             .Include(m => m.Reviews)
             .FirstOrDefaultAsync(m => m.Id == id);
     }
@@ -120,5 +180,22 @@ public class MovieRepository(AppDbContext db) : Repository<Movie>(db), IMovieRep
                 , ct);
 
         return affected;
+    }
+    
+    private static string EscapeLike(string s) =>
+        s.Replace("[", "[[]").Replace("%", "[%]").Replace("_", "[_]");
+    
+    static Expression<Func<T, bool>> OrElse<T>(Expression<Func<T, bool>> left, Expression<Func<T, bool>> right)
+    {
+       var param = Expression.Parameter(typeof(T), "m");
+        var leftBody  = new ParameterReplace(left.Parameters[0],  param).Visit(left.Body)!;
+        var rightBody = new ParameterReplace(right.Parameters[0], param).Visit(right.Body)!;
+        return Expression.Lambda<Func<T, bool>>(Expression.OrElse(leftBody, rightBody), param);
+    }
+    
+    sealed class ParameterReplace(ParameterExpression from, ParameterExpression to) : ExpressionVisitor
+    {
+        protected override Expression VisitParameter(ParameterExpression node)
+            => ReferenceEquals(node, from) ? to : base.VisitParameter(node);
     }
 }

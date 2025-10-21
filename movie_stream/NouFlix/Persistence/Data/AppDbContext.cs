@@ -21,6 +21,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> opt) : DbContext(opt)
     public DbSet<History> Histories => Set<History>();
     public DbSet<Playlist> Playlists => Set<Playlist>();
     public DbSet<SavedList> SavedLists => Set<SavedList>();
+    public DbSet<Review> Reviews => Set<Review>();
+    public DbSet<SubtitleAsset> SubtitleAssets => Set<SubtitleAsset>();
 
     protected override void OnModelCreating(ModelBuilder mb)
     {
@@ -42,6 +44,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> opt) : DbContext(opt)
         mb.Entity<Playlist>().ToTable("playlists");
         mb.Entity<SavedList>().ToTable("saved_lists");
         mb.Entity<Review>().ToTable("reviews");
+        mb.Entity<SubtitleAsset>().ToTable("subtitles_assets");
 
         // Index/unique
         mb.Entity<Movie>().HasIndex(x => x.Title);

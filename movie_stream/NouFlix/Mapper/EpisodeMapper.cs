@@ -11,11 +11,14 @@ public static class EpisodeMapper
         CancellationToken ct = default)
         => Task.FromResult(new EpisodeRes(
             e.Id,
+            e.MovieId,
+            e.SeasonId,
             e.Number,
             seasonNumber,
             e.Title,
             e.Synopsis,
             e.ReleaseDate,
+            e.Status,
             e.TotalDurationMinutes
         ));
 

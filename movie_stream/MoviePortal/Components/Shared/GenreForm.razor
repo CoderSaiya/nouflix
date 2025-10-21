@@ -1,4 +1,4 @@
-﻿@using MoviePortal.Models.Entities
+﻿@using MoviePortal.Models.DTOs
 
 <EditForm Model="Model" OnValidSubmit="HandleSave">
     <DataAnnotationsValidator />
@@ -20,10 +20,10 @@
 </EditForm>
 
 @code {
-    [Parameter] public Genre Model { get; set; } = default!;
+    [Parameter] public MovieDto.Genre Model { get; set; } = null!;
     [Parameter] public EventCallback OnSubmitSuccess { get; set; }
     [Parameter] public EventCallback OnCancel { get; set; }
-    [Parameter] public Func<Genre, Task>? SaveFunc { get; set; } // DI từ trang cha
+    [Parameter] public Func<MovieDto.Genre, Task>? SaveFunc { get; set; } // DI từ trang cha
 
     private async Task HandleSave()
     {

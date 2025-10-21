@@ -6,5 +6,6 @@ public enum ImageKind
     Backdrop,
     Thumbnail,
     Gallery,
-    Avatar
+    Avatar,
+    Keyframe
 }

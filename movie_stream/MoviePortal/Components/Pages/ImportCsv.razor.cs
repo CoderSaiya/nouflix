@@ -1,14 +1,14 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.JSInterop;
-using MoviePortal.Models.Views;
-using MoviePortal.Services;
+using MoviePortal.Api;
+using MoviePortal.Models.DTOs;
 
 namespace MoviePortal.Components.Pages;
 
 public partial class ImportCsv : ComponentBase
 {
-    [Inject] private EpisodeCsvService CsvService { get; set; } = null!;
+    [Inject] private CsvApi Api { get; set; } = null!;
     [Inject] private IJSRuntime Js { get; set; } = null!;
 
     // UI state
@@ -18,7 +18,7 @@ public partial class ImportCsv : ComponentBase
     private bool _overwrite = false;
     private bool _autoCreateSeason = true;
 
-    private List<EpisodeCsvPreviewRow>? _preview;
+    private List<SystemDto.EpisodeCsvPreviewRow>? _preview;
     private string? _result;
 
     private bool CanParse  => _file is not null;
@@ -42,7 +42,7 @@ public partial class ImportCsv : ComponentBase
         using var reader = new StreamReader(stream);
         var text = await reader.ReadToEndAsync();
 
-        _preview = await CsvService.BuildPreviewAsync(text);
+        _preview = await Api.PreviewEpisodeAsync(text);
     }
 
     private async Task ImportAsync()
@@ -51,7 +51,7 @@ public partial class ImportCsv : ComponentBase
         var ok = await Js.InvokeAsync<bool>("confirm", "Xác nhận nhập dữ liệu theo bảng xem trước?");
         if (!ok) return;
 
-        var result = await CsvService.ImportAsync(_preview, _overwrite, _autoCreateSeason);
+        var result = await Api.ImportAsync(_preview, _overwrite, _autoCreateSeason);
         _result = $"Hoàn tất. Tạo mới: {result.Created}, Cập nhật: {result.Updated}, Bỏ qua: {result.Skipped}, Lỗi: {result.Failed}.";
     }
 }

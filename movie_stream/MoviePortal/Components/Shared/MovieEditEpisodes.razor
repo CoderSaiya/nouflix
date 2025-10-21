@@ -1,17 +1,12 @@
-﻿@using Microsoft.EntityFrameworkCore
-@using Microsoft.Extensions.Options
-@using MoviePortal.Adapters
-@using MoviePortal.Data
-@using MoviePortal.Models
-@using MoviePortal.Models.Entities
-@using MoviePortal.Models.Specification
+﻿@using MoviePortal.Api
+@using MoviePortal.Models.DTOs
 @using MoviePortal.Models.ValueObject
-@using MoviePortal.Services
-@inject AppDbContext Db
-@inject MinioObjectStorage Storage
-@inject IOptions<StorageOptions> Opts
-@inject FfmpegHlsTranscoder Transcoder
+
 @inject NavigationManager Nav
+@inject TranscodeApi TranscodeApi
+@inject MovieApi MovApi
+@inject SubtitlesApi SubApi
+@inject JobPoller JobPoller
 
 @if (_isBusy)
 {
@@ -47,7 +42,7 @@
     {
       <li class="list-group-item d-flex justify-content-between align-items-center">
         <div>
-          <div class="fw-bold">@v.Kind - @v.Quality</div>
+          <div class="fw-bold">@v.Kind - @v.Quality</div>j
           <div class="small text-muted">@v.Bucket / @v.ObjectKey</div>
         </div>
         <div class="btn-group">
@@ -105,7 +100,7 @@ else
                 </thead>
                 <tbody>
                 @{
-                  var eps = _epsBySeason.TryGetValue(s.Id, out var list) ? list.OrderBy(x => x.Number).ToList() : new List<Episode>();
+                  var eps = _epsBySeason.TryGetValue(s.Id, out var list) ? list.OrderBy(x => x.Number).ToList() : new List<MovieDto.Episode>();
                 }
                 @foreach (var e in eps)
                 {
@@ -168,12 +163,12 @@ else
 }
 
 @code {
-  [Parameter] public Movie Movie { get; set; } = null!;
+  [Parameter] public MovieDto.Movie Movie { get; set; } = null!;
 
-  private List<Season> _seasons = new();
-  private Dictionary<int, List<Episode>> _epsBySeason = new(); // seasonId -> episodes
-  private List<VideoAsset> _movieVideos = new();
-  private Dictionary<int, List<VideoAsset>> _videosByEpisode = new(); // epId -> videos
+  private List<MovieDto.Season> _seasons = new();
+  private Dictionary<int, List<MovieDto.Episode>> _epsBySeason = new(); // seasonId -> episodes
+  private List<MovieDto.VideoAssets> _movieVideos = new();
+  private Dictionary<int, List<MovieDto.VideoAssets>> _videosByEpisode = new(); // epId -> videos
   
   private bool _isBusy;
   private string _busyText = "";
@@ -209,93 +204,70 @@ else
 
     if (Movie.Type == MovieType.Single)
     {
-      _movieVideos = await Db.VideoAssets.Where(v => v.MovieId == Movie.Id).AsNoTracking().ToListAsync();
+      _movieVideos = await MovApi.GetVideosAsync(Movie.Id);
       return;
     }
 
     // Series
-    _seasons = await Db.Seasons.Where(s => s.MovieId == Movie.Id)
-      .OrderBy(s => s.Number)
-      .AsNoTracking()
-      .ToListAsync();
+    _seasons = await MovApi.GetSeasonsAsync(Movie.Id);
+    
+    var seasonIds = _seasons
+      .Select(s => s.Id)
+      .ToArray();
+    var eps = await MovApi.GetEpisodeAsync(Movie.Id, seasonIds);
+    _epsBySeason = eps
+      .GroupBy(e => e.SeasonId!.Value)
+      .ToDictionary(g => g.Key, g => g.ToList());
 
-    // nếu chưa có mùa: không tự tạo ở DB, chỉ nhắc; (hoặc bạn có thể auto tạo Season 1 ở đây)
-    var seasonIds = _seasons.Select(s => s.Id).ToArray();
-    var eps = await Db.Episodes.Where(e => e.MovieId == Movie.Id && e.SeasonId != null && seasonIds.Contains(e.SeasonId!.Value))
-      .OrderBy(e => e.SeasonId).ThenBy(e => e.Number)
-      .AsNoTracking()
-      .ToListAsync();
-
-    _epsBySeason = eps.GroupBy(e => e.SeasonId!.Value).ToDictionary(g => g.Key, g => g.ToList());
-
-    var epIds = eps.Select(x => x.Id).ToArray();
-    var vids = await Db.VideoAssets.Where(v => v.EpisodeId != null && epIds.Contains(v.EpisodeId!.Value))
-      .AsNoTracking().ToListAsync();
-    _videosByEpisode = vids.GroupBy(v => v.EpisodeId!.Value).ToDictionary(g => g.Key, g => g.ToList());
+    var epIds = eps
+      .Select(x => x.Id)
+      .ToArray();
+    var vids = await MovApi.GetVideoByEpisodeIdsAsync(epIds);
+    _videosByEpisode = vids
+      .GroupBy(v => v.EpisodeId!.Value)
+      .ToDictionary(g => g.Key, g => g.ToList());
   }
   
   private async Task AddSeason()
   {
     var next = (_seasons.LastOrDefault()?.Number ?? 0) + 1;
-    var s = new Season
-    {
-      MovieId = Movie.Id,
-      Number = next,
-      Title = $"Season {next}",
-      Year = DateTime.UtcNow.Year
-    };
-    Db.Seasons.Add(s);
-    await Db.SaveChangesAsync();
+    
+    var s = await MovApi.CreateSeasonAsync(Movie.Id,
+      new MovieDto.CreateSeasonReq(
+        Number: next,
+        Title: $"Season {next}",
+        Year: DateTime.UtcNow.Year));
     _seasons.Add(s);
+    
     StateHasChanged();
   }
   
-  private async Task RenameSeason(Season s)
+  private async Task RenameSeason(MovieDto.Season s)
   {
-    s.Title = $"Season {s.Number}";
-    Db.Seasons.Update(s);
-    await Db.SaveChangesAsync();
+    var updated = await MovApi.UpdateSeasonAsync(s.Id, new MovieDto.UpdateSeasonReq($"Season {s.Number}"));
+    
+    var idx = _seasons.FindIndex(x => x.Id == s.Id);
+    if (idx >= 0) _seasons[idx] = updated;
   }
 
-  private async Task DeleteSeason(Season s)
+  private async Task DeleteSeason(MovieDto.Season s)
   {
-    // Xoá video objects của mọi tập trong mùa
-    var epIds = await Db.Episodes
-      .Where(e => e.SeasonId == s.Id)
-      .Select(e => e.Id)
-      .ToListAsync();
-    
-    var vids = await Db.VideoAssets
-      .Where(v => v.EpisodeId != null && epIds.Contains(v.EpisodeId!.Value))
-      
-      .ToListAsync();
-    foreach (var v in vids) 
-      await Storage.DeleteAsync(v.Bucket, v.ObjectKey);
-    Db.VideoAssets.RemoveRange(vids);
-
-    // Xoá tập
-    var eps = await Db.Episodes
-      .Where(e => e.SeasonId == s.Id)
-      .ToListAsync();
-    
-    Db.Episodes.RemoveRange(eps);
-
-    // Xoá mùa
-    Db.Seasons.Remove(s);
-    await Db.SaveChangesAsync();
+    await MovApi.DeleteSeasonAsync(s.Id);
 
     _seasons.RemoveAll(x => x.Id == s.Id);
-    foreach (var id in epIds)
-      _videosByEpisode.Remove(id);
-    
-    _epsBySeason.Remove(s.Id);
+
+    if (_epsBySeason.TryGetValue(s.Id, out var eps))
+    {
+      foreach (var e in eps) _videosByEpisode.Remove(e.Id);
+      _epsBySeason.Remove(s.Id);
+    }
   }
   
-  private void AddEpisode(Season s)
+  private void AddEpisode(MovieDto.Season s)
   {
-    var current = _epsBySeason.TryGetValue(s.Id, out var list) ? list : (_epsBySeason[s.Id] = new List<Episode>());
+    var current = _epsBySeason.TryGetValue(s.Id, out var list) ? list : (_epsBySeason[s.Id] = new List<MovieDto.Episode>());
     var next = (current.LastOrDefault()?.Number ?? 0) + 1;
-    var e = new Episode
+    var e = new MovieDto.Episode
     {
       MovieId = Movie.Id,
       SeasonId = s.Id,
@@ -308,40 +280,29 @@ else
     StateHasChanged();
   }
   
-  private async Task SaveEpisode(Episode e)
+  private async Task SaveEpisode(MovieDto.Episode e)
   {
-    if (e.Id == 0) Db.Episodes.Add(e); else Db.Episodes.Update(e);
-    await Db.SaveChangesAsync();
-
-    if (e.Id == 0)
-    {
-      // lấy lại Id vừa insert
-      var saved = await Db.Episodes.OrderByDescending(x => x.Id)
-        .FirstAsync(x => x.MovieId == e.MovieId && x.SeasonId == e.SeasonId && x.Number == e.Number);
-      e.Id = saved.Id;
-    }
+    var req = new MovieDto.UpsertEpisodeReq(
+      MovieId: Movie.Id,
+      SeasonId: e.SeasonId!.Value,
+      EpisodeNumber: e.Number,
+      Title: e.Title,
+      Status: e.Status,
+      ReleaseDate: e.ReleaseDate);
+    
+    var id = await MovApi.UpsertEpisodeAsync(req, e.Id);
+    e.Id = id;
   }
   
-  private async Task DeleteEpisode(Season s, Episode e)
+  private async Task DeleteEpisode(MovieDto.Season s, MovieDto.Episode e)
   {
-    var vids = await Db.VideoAssets
-      .Where(v => v.EpisodeId == e.Id)
-      .ToListAsync();
-    
-    foreach (var v in vids) 
-      await Storage.DeleteAsync(v.Bucket, v.ObjectKey);
-    
-    Db.VideoAssets.RemoveRange(vids);
-    Db.Episodes.Remove(e);
-    await Db.SaveChangesAsync();
-
+    await MovApi.DeleteEpisodeAsync(e.Id);
     if (_epsBySeason.TryGetValue(s.Id, out var list))
       list.RemoveAll(x => x.Id == e.Id);
-    
     _videosByEpisode.Remove(e.Id);
   }
 
-  private async Task OnEpisodeVideoSelected(Season s, Episode e, InputFileChangeEventArgs args)
+  private async Task OnEpisodeVideoSelected(MovieDto.Season s, MovieDto.Episode e, InputFileChangeEventArgs args)
   {
       if (args.FileCount == 0) return;
       var f = args.File;
@@ -358,23 +319,49 @@ else
           _ => new[] { "1080", "720", "480" }
         };
 
-        await Transcoder.TranscodeAndUploadAsync(
+        await using var stream = f.OpenReadStream(long.MaxValue);
+        var jobId = await TranscodeApi.UploadAndEnqueueAsync(
           movieId: Movie.Id,
           episodeId: e.Id,
           episodeNumber: e.Number,
-          file: f,
+          seasonId: s.Id,
+          seasonNumber: s.Number,
+          language: Movie.Language ?? "vi",
           profiles: profiles,
-          language: Movie.Language ?? "vi"
+          fileStream: stream,
+          fileName: f.Name,
+          contentType: f.ContentType
         );
 
-        var vids = await Db.VideoAssets
-          .Where(v => v.EpisodeId == e.Id)
-          .AsNoTracking()
-          .OrderByDescending(v => v.Kind) // ưu tiên Master trước
-          .ThenByDescending(v => v.Quality)
-          .ToListAsync();
-
-        _videosByEpisode[e.Id] = vids;
+        using var cts = new CancellationTokenSource();
+        await JobPoller.PollAsync(
+          getStatus: ct => TranscodeApi.GetStatusAsync(jobId, ct),
+          onProgress: st =>
+          {
+            _busyText = st.State switch
+            {
+              "Queued" => "Đang xếp hàng…",
+              "Running" => $"Đang xử lý… {st.Progress}%",
+              _ => "Đang xử lý…"
+            };
+            StateHasChanged();
+            return Task.CompletedTask;
+          },
+          onDone: async st =>
+          {
+            _busyText = "Hoàn tất.";
+            // Tải lại assets cho tập
+            var vids = await MovApi.GetVideoByEpisode(e.Id);
+            _videosByEpisode[e.Id] = vids
+              .OrderByDescending(v => v.Kind)
+              .ThenByDescending(v => v.Quality)
+              .ToList();;
+            
+            StateHasChanged();
+          },
+          interval: TimeSpan.FromSeconds(2),
+          ct: cts.Token
+        );
       });
   }
 
@@ -392,20 +379,49 @@ else
         _ => new[] { "1080", "720", "480" }
       };
 
-      await Transcoder.TranscodeAndUploadAsync(
+      await using var stream = f.OpenReadStream(long.MaxValue);
+      var jobId = await TranscodeApi.UploadAndEnqueueAsync(
         movieId: Movie.Id,
         episodeId: null,
         episodeNumber: null,
-        file: f,
+        seasonId: null,
+        seasonNumber: null,
+        language: Movie.Language ?? "vi",
         profiles: profiles,
-        language: Movie.Language ?? "vi"
+        fileStream: stream,
+        fileName: f.Name,
+        contentType: f.ContentType
       );
-      _movieVideos = await Db.VideoAssets
-        .Where(v => v.MovieId == Movie.Id && v.EpisodeId == null)
-        .AsNoTracking()
-        .OrderByDescending(v => v.Kind) // Master trước
-        .ThenByDescending(v => v.Quality)
-        .ToListAsync();
+      
+      using var cts = new CancellationTokenSource();
+      await JobPoller.PollAsync(
+        getStatus: ct => TranscodeApi.GetStatusAsync(jobId, ct),
+        onProgress: st =>
+        {
+          _busyText = st.State switch
+          {
+            "Queued" => "Đang xếp hàng…",
+            "Running" => $"Đang xử lý… {st.Progress}%",
+            _ => "Đang xử lý…"
+          };
+          StateHasChanged();
+          return Task.CompletedTask;
+        },
+        onDone: async st =>
+        {
+          _busyText = "Hoàn tất.";
+          // Tải lại assets cho tập
+          var vid = await MovApi.GetVideosAsync(Movie.Id);
+          _movieVideos = vid
+            .OrderByDescending(v => v.Kind)
+            .ThenByDescending(v => v.Quality)
+            .ToList();;
+          
+          StateHasChanged();
+        },
+        interval: TimeSpan.FromSeconds(2),
+        ct: cts.Token
+      );
     });
   }
   
@@ -413,24 +429,21 @@ else
   {
     if (args.FileCount == 0) return;
     var f = args.File;
-    await Transcoder.UploadSubtitleVttAsync(Movie.Id, null, null, f, "vi", "Tiếng Việt");
+    await SubApi.UploadRawVttAsync(Movie.Id, null, "vi", "Tiếng Việt", f);
   }
 
-  private async Task DeleteVideo(VideoAsset v)
-  {
-      await Storage.DeleteAsync(v.Bucket, v.ObjectKey);
-      Db.VideoAssets.Remove(v);
-      await Db.SaveChangesAsync();
-
+    private async Task DeleteVideo(MovieDto.VideoAssets v)
+    {
+      await MovApi.DeleteVideoAsync(v.Id);
       _movieVideos.RemoveAll(x=>x.Id==v.Id);
       if (v.EpisodeId is not null && _videosByEpisode.TryGetValue(v.EpisodeId.Value, out var list))
         list.RemoveAll(x => x.Id == v.Id);
   }
   
-  private void GoSubtitle(VideoAsset v)
+  private void GoSubtitle(MovieDto.VideoAssets v)
   {
     var lang = Movie.Language ?? "vi";
-    if (v.EpisodeId is int epId)
+    if (v.EpisodeId is { } epId)
       Nav.NavigateTo($"/admin/movies/{Movie.Id}/episodes/{epId}/subtitles/{lang}");
     else
       Nav.NavigateTo($"/admin/movies/{Movie.Id}/subtitles/{lang}");

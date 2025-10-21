@@ -19,8 +19,8 @@ public class StreamService(
     )
 {
     private string Bucket => opts.Value.Buckets.Videos ?? "videos";
-    private static string BasePrefix(int movieId, int? episodeNumber = null)
-        => episodeNumber is null ? $"hls/movies/{movieId}" : $"hls/movies/{movieId}/ep{episodeNumber}";
+    private static string BasePrefix(int movieId, int? seasonsNumber = null, int? episodeNumber = null)
+        => seasonsNumber is not null && episodeNumber is not null ? $"hls/movies/{movieId}/ss{seasonsNumber}/ep{episodeNumber}" : $"hls/movies/{movieId}";
     
     public async Task<IResult> GetMovieMasterAsync(int movieId, HttpRequest req, HttpResponse res, CancellationToken ct)
     {
@@ -96,7 +96,7 @@ public class StreamService(
         
         var ep = await uow.Episodes.FindAsync(episodeId, ct);
 
-        var key = $"{BasePrefix(movieId, ep!.Number)}/master.m3u8";
+        var key = $"{BasePrefix(movieId, ep!.Season!.Number, ep.Number)}/master.m3u8";
         var text = await DownloadTextAsync(key, ct);
         var rewritten = RewriteMaster(text, req, movieId, episodeId);
         return Results.Text(rewritten, "application/vnd.apple.mpegurl", Encoding.UTF8);
@@ -104,13 +104,14 @@ public class StreamService(
 
     public async Task<IResult> GetEpisodeVariantAsync(int movieId, int episodeId, string quality, HttpContext ctx, CancellationToken ct)
     {
+        Console.Write("ABC");
         var vip = ctx.User?.Claims?.FirstOrDefault(c => c.Type == "vip")?.Value;
         if (!await access.CanWatchEpisodeAsync(movieId, episodeId, vip, ct))
             return Results.StatusCode((int)HttpStatusCode.Forbidden);
         
         var ep = await uow.Episodes.FindAsync(episodeId, ct);
 
-        var key = $"{BasePrefix(movieId, ep!.Number)}/{quality}/index.m3u8";
+        var key = $"{BasePrefix(movieId, ep!.Season!.Number, ep.Number)}/{quality}/index.m3u8";
         await ProxyObjectAsync(ctx, key, "application/vnd.apple.mpegurl", TimeSpan.FromMinutes(10), ct);
         return Results.Empty;
     }
@@ -123,7 +124,7 @@ public class StreamService(
         
         var ep = await uow.Episodes.FindAsync(episodeId, ct);
 
-        var key = $"{BasePrefix(movieId, ep!.Number)}/{quality}/{file}";
+        var key = $"{BasePrefix(movieId, ep!.Season!.Number, ep.Number)}/{quality}/{file}";
         await ProxyObjectAsync(ctx, key, "video/mp2t", TimeSpan.FromMinutes(10), ct);
         return Results.Empty;
     }
@@ -136,7 +137,7 @@ public class StreamService(
         
         var ep = await uow.Episodes.FindAsync(episodeId, ct);
 
-        var key = $"{BasePrefix(movieId, ep!.Number)}/sub/{lang}/index.m3u8";
+        var key = $"{BasePrefix(movieId, ep!.Season!.Number, ep.Number)}/sub/{lang}/index.m3u8";
         await ProxyObjectAsync(ctx, key, "application/vnd.apple.mpegurl", TimeSpan.FromMinutes(5), ct);
         return Results.Empty;
     }
@@ -149,7 +150,7 @@ public class StreamService(
         
         var ep = await uow.Episodes.FindAsync(episodeId, ct);
 
-        var key = $"{BasePrefix(movieId, ep!.Number)}/sub/{lang}/{file}";
+        var key = $"{BasePrefix(movieId, ep!.Season!.Number, ep.Number)}/sub/{lang}/{file}";
         await ProxyObjectAsync(ctx, key, "text/vtt; charset=utf-8", TimeSpan.FromMinutes(5), ct);
         return Results.Empty;
     }

@@ -12,6 +12,7 @@ public class UnitOfWork(
     IStudioRepository studios,
     IImageAssetRepository imageAssets,
     IVideoAssetRepository videoAssets,
+    ISubtitleRepository subtitles,
     ISeasonRepository seasons,
     IUserRepository users,
     IRefreshTokenRepository refreshTokens)
@@ -23,6 +24,7 @@ public class UnitOfWork(
     public IStudioRepository Studios { get; } = studios;
     public IImageAssetRepository ImageAssets { get; } = imageAssets;
     public IVideoAssetRepository VideoAssets { get; } = videoAssets;
+    public ISubtitleRepository SubtitleAssets { get; } = subtitles;
     public ISeasonRepository Seasons { get; } = seasons;
     public IUserRepository Users { get; } = users;
     public IRefreshTokenRepository Refreshes { get; } = refreshTokens;

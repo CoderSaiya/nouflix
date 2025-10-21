@@ -5,7 +5,10 @@ public record MovieRes(
     string Slug,
     string Title,
     string PosterUrl,
+    string Type,
+    string Status,
     float AvgRating,
+    int ViewCount,
     DateTime? ReleaseDate,
     List<GenreRes> Genres
     );

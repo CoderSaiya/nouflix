@@ -3,6 +3,8 @@
 @using MoviePortal.Components.Shared
 @inherits MoviePortal.Components.Pages.GenreEditPage
 
+<PageTitle>@(Id is null ? "Thêm thể loại" : "Sửa thể loại")</PageTitle>
+
 <h3>@(Id is null ? "Thêm thể loại" : "Sửa thể loại")</h3>
 
 @if (Loading) { <p>Đang tải...</p> }

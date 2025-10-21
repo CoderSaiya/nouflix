@@ -3,14 +3,17 @@ using System.Security.Claims;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Microsoft.Extensions.Caching.StackExchangeRedis;
 using NouFlix.Adapters;
+using NouFlix.DTOs;
 using NouFlix.Persistence.Data;
 using NouFlix.Persistence.Repositories;
 using NouFlix.Persistence.Repositories.Interfaces;
 using NouFlix.Services;
+using NouFlix.Services.Backgroud;
 using NouFlix.Services.Interface;
 
 namespace NouFlix.Configuration;
@@ -64,6 +67,7 @@ public static class DependencyInjection
         services.AddScoped<IStudioRepository, StudioRepository>();
         services.AddScoped<IImageAssetRepository, ImageAssetRepository>();
         services.AddScoped<IVideoAssetRepository, VideoAssetRepository>();
+        services.AddScoped<ISubtitleRepository, SubtitleRepository>();
         services.AddScoped<ISeasonRepository, SeasonRepository>();
         services.AddScoped<INotificationRepository, NotificationRepository>();
         services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
@@ -87,9 +91,30 @@ public static class DependencyInjection
         services.AddScoped<MovieService>();
         services.AddScoped<SeasonService>();
         services.AddScoped<ExternalAuth>();
+        services.AddScoped<FfmpegHlsTranscoder>();
+        services.AddScoped<TaxonomyService>();
+        services.AddScoped<AssetService>();
+        services.AddScoped<EpisodeService>();
+        services.AddScoped<SystemHealthService>();
+        services.AddScoped<IMemoryCache, MemoryCache>();
+        services.AddScoped<CsvService>();
+        services.AddScoped<BulkEpisodesService>();
+        services.AddScoped<DashboardService>();
         
-        // App cache wrapper
         services.AddSingleton<IAppCache, DistributedCache>();
+        
+        var transcodeQ = new InMemoryQueue<TranscodeDto.TranscodeJob, TranscodeDto.TranscodeStatus>(
+            jobStatus => jobStatus.JobId);
+        services.AddSingleton<IQueue<TranscodeDto.TranscodeJob>>(transcodeQ);
+        services.AddSingleton<IStatusStorage<TranscodeDto.TranscodeStatus>>(transcodeQ);
+        
+        var subQ = new InMemoryQueue<SubtitleDto.SubtitleJob, SubtitleDto.SubtitleStatus>(
+            jobStatus => jobStatus.JobId);
+        services.AddSingleton<IQueue<SubtitleDto.SubtitleJob>>(subQ);
+        services.AddSingleton<IStatusStorage<SubtitleDto.SubtitleStatus>>(subQ);
+        
+        services.AddHostedService<TranscodeWorker>();
+        services.AddHostedService<SubtitleWorker>();
         
         return services;
     }
@@ -148,7 +173,9 @@ public static class DependencyInjection
             {
                 policy.WithOrigins(
                         "http://localhost:4200",
-                        "https://nouflix.nhatcuong.io.vn")
+                        "https://nouflix.nhatcuong.io.vn",
+                        "http://localhost:5004",
+                        "https://portal-nouflix.nhatcuong.io.vn")
                     .AllowAnyHeader()
                     .AllowAnyMethod()
                     .AllowCredentials();

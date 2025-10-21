@@ -10,6 +10,7 @@ public interface IUnitOfWork
     IStudioRepository Studios { get; }
     IImageAssetRepository ImageAssets { get; }
     IVideoAssetRepository VideoAssets { get; }
+    ISubtitleRepository SubtitleAssets { get; }
     ISeasonRepository Seasons { get; }
     IUserRepository Users { get; }
     IRefreshTokenRepository Refreshes { get; }

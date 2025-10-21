@@ -20,4 +20,24 @@ public class EpisodeRepository(AppDbContext db) : Repository<Episode>(db), IEpis
             .Include(e => e.Season)
             .Where(e => e.MovieId == movieId && e.Season!.Number == seasonNumber)
             .ToListAsync(ct);
+    
+    public Task<List<Episode>> GetByMovieAndSeasonIdsAsync(int movieId, int[] seasonId, CancellationToken ct = default)
+        => Query()
+            .Include(e => e.Season)
+            .Where(e =>
+                e.MovieId == movieId &&
+                e.SeasonId.HasValue &&
+                seasonId.Contains(e.SeasonId.Value))
+            .ToListAsync(ct);
+
+    public override Task<Episode?> FindAsync(params object[] keys)
+    {
+        if (keys[0] is not int id)
+            throw new ArgumentException("FindAsync(Movie) cần 1 khóa kiểu int", nameof(keys));
+
+        return Query()
+            .AsSplitQuery()
+            .Include(e => e.Season)
+            .FirstOrDefaultAsync(e => e.Id == id);
+    }
 }

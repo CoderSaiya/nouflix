@@ -156,6 +156,13 @@ namespace MoviePortal.Data.Migrations
                     b.Property<int>("Kind")
                         .HasColumnType("int");
 
+                    b.Property<string>("LastError")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ModelVersion")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int?>("MovieId")
                         .HasColumnType("int");
 
@@ -163,11 +170,27 @@ namespace MoviePortal.Data.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<long?>("Phash")
+                        .HasColumnType("bigint");
+
                     b.Property<Guid?>("ProfileId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<int>("RetryCount")
+                        .HasColumnType("int");
+
                     b.Property<long?>("SizeBytes")
                         .HasColumnType("bigint");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("TsSeconds")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<int?>("Width")
                         .HasColumnType("int");
@@ -181,6 +204,28 @@ namespace MoviePortal.Data.Migrations
                     b.HasIndex("ProfileId");
 
                     b.ToTable("image_assets", (string)null);
+                });
+
+            modelBuilder.Entity("NouFlix.Models.Entities.ImageVector", b =>
+                {
+                    b.Property<int>("ImageAssetId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ModelVersion")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<byte[]>("Embedding")
+                        .IsRequired()
+                        .HasColumnType("varbinary(max)");
+
+                    b.Property<int?>("TsSeconds")
+                        .HasColumnType("int");
+
+                    b.HasKey("ImageAssetId", "ModelVersion");
+
+                    b.HasIndex("ModelVersion");
+
+                    b.ToTable("image_vectors", (string)null);
                 });
 
             modelBuilder.Entity("NouFlix.Models.Entities.Movie", b =>
@@ -757,6 +802,17 @@ namespace MoviePortal.Data.Migrations
                     b.Navigation("Profile");
                 });
 
+            modelBuilder.Entity("NouFlix.Models.Entities.ImageVector", b =>
+                {
+                    b.HasOne("NouFlix.Models.Entities.ImageAsset", "Asset")
+                        .WithMany()
+                        .HasForeignKey("ImageAssetId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Asset");
+                });
+
             modelBuilder.Entity("NouFlix.Models.Entities.MovieGenre", b =>
                 {
                     b.HasOne("NouFlix.Models.Entities.Genre", "Genre")
@@ -912,13 +968,13 @@ namespace MoviePortal.Data.Migrations
             modelBuilder.Entity("NouFlix.Models.Entities.SavedList", b =>
                 {
                     b.HasOne("NouFlix.Models.Entities.Movie", "Movie")
-                        .WithMany()
+                        .WithMany("SavedList")
                         .HasForeignKey("MovieId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("NouFlix.Models.Entities.User", "User")
-                        .WithMany()
+                        .WithMany("SavedList")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -1010,6 +1066,8 @@ namespace MoviePortal.Data.Migrations
 
                     b.Navigation("Reviews");
 
+                    b.Navigation("SavedList");
+
                     b.Navigation("Seasons");
 
                     b.Navigation("Videos");
@@ -1042,6 +1100,8 @@ namespace MoviePortal.Data.Migrations
                     b.Navigation("RefreshTokens");
 
                     b.Navigation("Reviews");
+
+                    b.Navigation("SavedList");
 
                     b.Navigation("SenderNotification");
                 });

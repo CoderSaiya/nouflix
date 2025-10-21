@@ -1,26 +1,16 @@
-﻿@using Microsoft.EntityFrameworkCore
-@using Microsoft.Extensions.Options
-@using MoviePortal.Data
+﻿@using MoviePortal.Api
 @using MoviePortal.Helpers
-@using MoviePortal.Models.Entities
-@using MoviePortal.Models.Specification
+@using MoviePortal.Models.DTOs
 @using MoviePortal.Models.ValueObject
-@using MoviePortal.Services
-@inject AppDbContext Db
-@inject MinioObjectStorage Storage
-@inject IOptions<StorageOptions> Opts
-
-<div class="mb-3">
-  <label class="form-label">Thêm ảnh Poster (public)</label>
-  <InputFile OnChange="(e) => OnImageSelected(e)" />
-
-  <label class="form-label">Thêm ảnh nền (public)</label>
-  <InputFile OnChange="(e) => OnImageSelected(e, ImageKind.Backdrop)" />
-</div>
+@inject MovieApi MovApi
 
 @if (_poster.Count == 0)
 {
   <div class="text-muted">Chưa có poster.</div>
+  <div class="mb-3">
+    <label class="form-label">Thêm ảnh Poster (public)</label>
+    <InputFile OnChange="(e) => OnImageSelected(e)" />
+  </div>
 }
 else
 {
@@ -45,6 +35,10 @@ else
 @if (_backdrop.Count == 0)
 {
   <div class="text-muted">Chưa có ảnh nền.</div>
+  <div class="mb-3">
+    <label class="form-label">Thêm ảnh nền (public)</label>
+    <InputFile OnChange="(e) => OnImageSelected(e, ImageKind.Backdrop)" />
+  </div>
 }
 else
 {
@@ -69,58 +63,29 @@ else
 @code {
   [Parameter] public int MovieId { get; set; }
 
-  private List<ImageAsset> _poster = new();
-  private List<ImageAsset> _backdrop = new();
+  private List<AssetsDto.Image> _poster = new();
+  private List<AssetsDto.Image> _backdrop = new();
 
   protected override async Task OnInitializedAsync()
   {
-      _poster = await Db.ImageAssets
-        .Where(i => i.MovieId == MovieId && i.Kind == ImageKind.Poster)
-        .AsNoTracking()
-        .ToListAsync();
-
-      _backdrop = await Db.ImageAssets
-        .Where(i => i.MovieId == MovieId && i.Kind == ImageKind.Backdrop)
-        .AsNoTracking()
-        .ToListAsync();
+    _poster = await MovApi.GetImageByKindAsync(MovieId, ImageKind.Poster);
+    _backdrop = await MovApi.GetImageByKindAsync(MovieId, ImageKind.Backdrop);
   }
 
   private async Task OnImageSelected(InputFileChangeEventArgs e, ImageKind kind = ImageKind.Poster)
   {
-      if (e.FileCount == 0) return;
-      var f = e.File;
+    if (e.FileCount == 0) return;
+    var f = e.File;
 
-      var ext = Path.GetExtension(f.Name);
-      var bucket = Opts.Value.Buckets.Images ?? "images";
-      var key = $"movies/{MovieId}/images/{kind.ToString().ToLowerInvariant()}/{Guid.NewGuid():N}{ext}";
-
-      await using var s = f.OpenReadStream(10 * 1024 * 1024); // 10MB
-      var put = await Storage.UploadAsync(bucket, s, key, f.ContentType);
-      
-      var img = new ImageAsset
-      {
-          MovieId = MovieId,
-          Kind = kind,
-          Alt = "",
-          Bucket = bucket,
-          ObjectKey = key,
-          Endpoint = Opts.Value.S3.Endpoint,
-          ContentType = f.ContentType,
-          SizeBytes = put.SizeBytes,
-          ETag = put.ETag
-      };
-      Db.ImageAssets.Add(img);
-      await Db.SaveChangesAsync();
-
-      _poster.Add(img);
-      StateHasChanged();
+    var img = await MovApi.UploadImageAsync(f, MovieId, kind);
+    if (img is not null) _poster.Add(img);
+    
+    StateHasChanged();
   }
 
-  private async Task DeleteImage(ImageAsset img)
+  private async Task DeleteImage(AssetsDto.Image img)
   {
-      await Storage.DeleteAsync(img.Bucket, img.ObjectKey);
-      Db.ImageAssets.Remove(img);
-      await Db.SaveChangesAsync();
-      _poster.Remove(img);
+    await MovApi.DeleteImageAsync(img.Id);
+    _poster.Remove(img);
   }
 }

@@ -10,7 +10,7 @@ public class MinioObjectStorage
 {
     private readonly IMinioClient _client;
     private readonly IMinioClient _publicSigner;
-    private readonly S3Settings _cfg;
+    private readonly StorageOptions.S3Settings _cfg;
 
     public MinioObjectStorage(IOptions<StorageOptions> options)
     {
@@ -66,6 +66,85 @@ public class MinioObjectStorage
         var stat = await _client.StatObjectAsync(new StatObjectArgs().WithBucket(bucket).WithObject(objectName), ct);
 
         return new UploadResult(bucket, objectName, contentType, stat.Size, stat.ETag);
+    }
+    
+    public Task DeleteAsync(string bucket, string objectKey, CancellationToken ct = default)
+        => _client.RemoveObjectAsync(new RemoveObjectArgs().WithBucket(bucket).WithObject(objectKey), ct);
+    
+    public async Task<string> DownloadTextAsync(string bucket, string objectKey, CancellationToken ct = default)
+    {
+        using var ms = new MemoryStream();
+        
+        await _client.GetObjectAsync(
+            new GetObjectArgs()
+                .WithBucket(bucket)
+                .WithObject(objectKey)
+                .WithCallbackStream(s => s.CopyTo(ms)), ct);
+        
+        ms.Position = 0;
+        return System.Text.Encoding.UTF8.GetString(ms.ToArray());
+    }
+    
+    public async Task UploadTextAsync(string bucket, string objectKey, string text, string contentType, CancellationToken ct = default)
+    {
+        var bytes = System.Text.Encoding.UTF8.GetBytes(text);
+        using var ms = new MemoryStream(bytes);
+        await UploadAsync(bucket, ms, objectKey, contentType, ct);
+    }
+    
+    public async Task DownloadAsync(
+        string bucket,
+        string objectKey,
+        Stream destination,
+        CancellationToken ct = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(bucket);
+        ArgumentException.ThrowIfNullOrWhiteSpace(objectKey);
+        ArgumentNullException.ThrowIfNull(destination);
+
+        var args = new GetObjectArgs()
+            .WithBucket(bucket)
+            .WithObject(objectKey)
+            .WithCallbackStream(s =>
+            {
+                s.CopyTo(destination);
+            });
+
+        await _client.GetObjectAsync(args, ct);
+        if (destination.CanSeek) destination.Seek(0, SeekOrigin.Begin);
+    }
+    
+    public async Task<(bool Ok, string? Error)> CheckBucketAsync(
+        string bucket,
+        bool createIfMissing = false,
+        CancellationToken ct = default)
+    {
+        try
+        {
+            var exists = await _client.BucketExistsAsync(
+                new BucketExistsArgs().WithBucket(bucket), ct);
+
+            if (!exists)
+            {
+                if (!createIfMissing)
+                    return (false, "BucketNotFound");
+
+                await _client.MakeBucketAsync(
+                    new MakeBucketArgs().WithBucket(bucket), ct);
+
+                // xác nhận lại
+                exists = await _client.BucketExistsAsync(
+                    new BucketExistsArgs().WithBucket(bucket), ct);
+
+                if (!exists) return (false, "BucketCreateFailed");
+            }
+            
+            return (true, null);
+        }
+        catch (Exception ex)
+        {
+            return (false, ex.Message);
+        }
     }
     
     private static string NormalizeEndpoint(string ep)

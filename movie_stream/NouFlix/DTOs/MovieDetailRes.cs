@@ -1,4 +1,6 @@
-﻿namespace NouFlix.DTOs;
+﻿using NouFlix.Models.ValueObject;
+
+namespace NouFlix.DTOs;
 
 public record MovieDetailRes(
     int Id,
@@ -8,16 +10,22 @@ public record MovieDetailRes(
     string Overview,
     string PosterUrl,
     string BackdropUrl,
-    string ReleaseDate,
+    DateTime? ReleaseDate,
+    string Director,
     int Runtime,
     float AvgRating,
+    string AgeRating,
     int VoteCount,
     int Popularity,
     List<GenreRes> Genres,
+    List<StudioRes> Studios,
     string Country,
     string Language,
-    string Status,
+    PublishStatus Status,
+    MovieType Type,
+    QualityLevel Quality,
     bool Video,
-    string Type,
-    string Director
+    bool IsVipOnly,
+    DateTime CreatedAt,
+    DateTime UpdatedAt
     );

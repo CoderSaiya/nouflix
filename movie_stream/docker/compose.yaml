@@ -93,15 +93,17 @@ services:
       - Auth__External__Google__ClientSecret=${GOOGLE_CLIENT_SECRET}
       - Auth__External__Github__ClientId=${GITHUB_CLIENT_ID}
       - Auth__External__Github__ClientSecret=${GITHUB_CLIENT_SECRET}
+        
+      - Ffmpeg__Path=/usr/bin/ffmpeg
     ports:
       - "5003:8083"
     depends_on:
       mssql:
         condition: service_healthy
     # Không cần expose port khi dùng Tunnel
-    mem_limit: 512m
-    mem_reservation: 256m
-    cpus: 0.75
+    mem_limit: 3g
+    mem_reservation: 1g
+    cpus: 2.0
     restart: unless-stopped 
     
   nouflix.portal:
@@ -112,15 +114,8 @@ services:
     environment:
       - ASPNETCORE_URLS=http://+:8084
       - ASPNETCORE_ENVIRONMENT=Development
-
-      - ConnectionStrings__Default=Server=mssql,1433;Database=MoviePortalDB;User Id=sa;Password=${SA_PASSWORD};Encrypt=True;TrustServerCertificate=True
-
-      - Storage__S3__Endpoint=nouflix.minio:9000
-      - Storage__S3__AccessKey=${MINIO_ROOT_USER}
-      - Storage__S3__SecretKey=${MINIO_ROOT_PASSWORD}
-      - Storage__S3__UseSSL=false
         
-      - Ffmpeg__Path=/usr/bin/ffmpeg
+      - BaseUrl__Backend=http://nouflix.api:8083
     ports:
       - "5004:8084"
     depends_on:

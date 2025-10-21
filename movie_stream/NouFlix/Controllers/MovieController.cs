@@ -1,9 +1,9 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.Collections;
+using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NouFlix.DTOs;
 using NouFlix.Models.Common;
-using NouFlix.Models.Entities;
 using NouFlix.Services;
 
 namespace NouFlix.Controllers;
@@ -12,6 +12,15 @@ namespace NouFlix.Controllers;
 [Route("api/[controller]")]
 public class MovieController(MovieService svc) : Controller
 {
+    [HttpGet("search")]
+    [AllowAnonymous]
+    public async Task<IActionResult> Search(
+        [FromQuery] string? q = "",
+        [FromQuery] int skip = 0,
+        [FromQuery] int take = 20,
+        CancellationToken ct = default) 
+        => Ok(GlobalResponse<SearchRes<IEnumerable<MovieRes>>>.Success(await svc.SearchAsync(q, skip, take, ct)));
+    
     [HttpGet("most-viewed")]
     [AllowAnonymous]
     public async Task<IActionResult> MostViewed([FromQuery, Range(1, 100)] int take = 12, CancellationToken ct = default)
@@ -70,12 +79,38 @@ public class MovieController(MovieService svc) : Controller
         return Ok(GlobalResponse<IReadOnlyList<MovieRes>>.Success(movie));
     }
 
-    [HttpGet("id/{id:int}")]
+    [HttpGet("{id:int}")]
     [AllowAnonymous]
     public async Task<IActionResult> GetById([FromRoute] int id, CancellationToken ct = default)
     {
         var movie = await svc.GetById(id, ct);
 
         return Ok(GlobalResponse<MovieDetailRes>.Success(movie));
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> Create([FromBody] UpsertMovieReq req, CancellationToken ct)
+    {
+        if (!ModelState.IsValid) return ValidationProblem(ModelState);
+
+        var id = await svc.CreateAsync(req, ct);
+        return CreatedAtAction(nameof(GetById), GlobalResponse<int>.Success(id));
+    }
+    
+    [HttpPut("{id:int}")]
+    public async Task<IActionResult> Update(int id, [FromBody] UpsertMovieReq req, CancellationToken ct)
+    {
+        if (!ModelState.IsValid) return ValidationProblem(ModelState);
+
+        await svc.UpdateAsync(id, req, ct);
+        return NoContent();
+    }
+
+    [HttpDelete("{id:int}")]
+    public async Task<IActionResult> Delete([FromRoute] int id, CancellationToken ct = default)
+    {
+        await svc.DeleteAsync(id, ct);
+        
+        return NoContent();
     }
 }

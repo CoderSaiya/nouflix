@@ -1,4 +1,5 @@
-﻿using NouFlix.DTOs;
+﻿using System.Collections;
+using NouFlix.DTOs;
 using NouFlix.Mapper;
 using NouFlix.Models.Common;
 using NouFlix.Models.Entities;
@@ -104,6 +105,96 @@ public class MovieService(
             },
             ttl: TimeSpan.FromHours(6),
             ct);
+    }
+    
+    public async Task<SearchRes<IEnumerable<MovieRes>>> SearchAsync(
+        string? q, int skip, int take, CancellationToken ct = default)
+    {
+        // bảo vệ tham số
+        skip = Math.Max(0, skip);
+        take = Math.Clamp(take, 1, 200);
+
+        var total = await uow.Movies.CountAsync(q, skip, take, ct);
+        var items = await uow.Movies.SearchAsync(q, skip, take, ct);
+
+        return new SearchRes<IEnumerable<MovieRes>>(
+            Count: total,
+            Data: (await items.ToMovieResListAsync(storage, ct)).ToList()
+            );
+    }
+
+    public async Task<int> CreateAsync(UpsertMovieReq req, CancellationToken ct = default)
+    {
+        var newMov = new Movie
+        {
+            Title = req.Title,
+            AlternateTitle = req.AlternateTitle,
+            Slug = req.Slug,
+            Synopsis = req.Synopsis,
+            AgeRating = req.AgeRating,
+            ReleaseDate = req.ReleaseDate,
+            Director = req.Director,
+            Country = req.Country,
+            Language = req.Language,
+            Type = req.Type,
+            Quality = req.Quality,
+            Status = req.Status,
+            IsVipOnly = req.IsVipOnly
+        };
+        
+        await uow.Movies.AddAsync(newMov, ct);
+        await uow.SaveChangesAsync(ct);
+
+        return newMov.Id;
+    }
+    
+    public async Task UpdateAsync(int id, UpsertMovieReq req, CancellationToken ct = default)
+    {
+        var mov = await uow.Movies.FindAsync(id, ct);
+        if (mov is null) throw new NotFoundException("movie", id);
+        
+        mov.Title = req.Title;
+        mov.AlternateTitle = req.AlternateTitle;
+        mov.Slug = req.Slug;
+        mov.Synopsis = req.Synopsis;
+        mov.AgeRating = req.AgeRating;
+        mov.ReleaseDate = req.ReleaseDate;
+        mov.Director = req.Director;
+        mov.Country = req.Country;
+        mov.Language = req.Language;
+        mov.Type = req.Type;
+        mov.Quality = req.Quality;
+        mov.Status = req.Status;
+        mov.IsVipOnly = req.IsVipOnly;
+
+        var newGenres = req.GenreIds.ToHashSet();
+        var oldGenres = mov.MovieGenres.Select(x => x.GenreId).ToHashSet();
+        var toAddG = newGenres.Except(oldGenres);
+        var toRemoveG = oldGenres.Except(newGenres);
+        
+        foreach (var gid in toAddG)
+            mov.MovieGenres.Add(new MovieGenre { MovieId = mov.Id, GenreId = gid });
+        mov.MovieGenres = mov.MovieGenres.Where(x => !toRemoveG.Contains(x.GenreId)).ToList();
+        
+        var newStudios = req.StudioIds.ToHashSet();
+        var oldStudios = mov.MovieStudios.Select(x => x.StudioId).ToHashSet();
+        var toAddS = newStudios.Except(oldStudios);
+        var toRemoveS = oldStudios.Except(newStudios);
+        
+        foreach (var sid in toAddS)
+            mov.MovieStudios.Add(new MovieStudio { MovieId = mov.Id, StudioId = sid });
+        mov.MovieStudios = mov.MovieStudios.Where(x => !toRemoveS.Contains(x.StudioId)).ToList();
+        
+        uow.Movies.Update(mov);
+        await uow.SaveChangesAsync(ct);
+    }
+
+    public async Task DeleteAsync(int id, CancellationToken ct = default)
+    {
+        if(await uow.Movies.FindAsync(id) is not { } mov) 
+            throw new NotFoundException("movie", id);
+
+        mov.IsDeleted = true;
     }
     
     static double Jaccard(IEnumerable<int> a, IEnumerable<int> b)

@@ -1,10 +1,10 @@
-﻿using MoviePortal.Models.Entities;
+﻿using MoviePortal.Models.DTOs;
 
 namespace MoviePortal.Helpers;
 
 public static class StorageHelper
 {
-    public static string? BuildUrl(ImageAsset img)
+    public static string? BuildUrl(AssetsDto.Image img)
     {
         if (string.IsNullOrWhiteSpace(img.Endpoint)) return null;
 
@@ -18,7 +18,7 @@ public static class StorageHelper
         return $"{baseHost}/{bucketSeg}/{string.Join("/", keySegs)}";
     }
     
-    public static string? BuildUrlWithHttp(ImageAsset img)
+    public static string? BuildUrlWithHttp(AssetsDto.Image img)
     {
         var url = BuildUrl(img);
         if (url is null) return null;

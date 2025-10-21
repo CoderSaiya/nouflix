@@ -1,15 +1,15 @@
 ﻿using Microsoft.AspNetCore.Components;
+using MoviePortal.Api;
 using MoviePortal.Models.DTOs;
 using MoviePortal.Models.ValueObject;
-using MoviePortal.Services;
 
 namespace MoviePortal.Components.Pages;
 
 public class HealthPage : ComponentBase
 {
-    [Inject] private SystemHealthService Health { get; set; } = null!;
+    [Inject] private HealthApi Api { get; set; } = null!;
     protected bool Loading = true;
-    protected SystemHealthReport? Report;
+    protected SystemDto.SystemHealthReport? Report;
 
     protected override async Task OnInitializedAsync()
     {
@@ -20,7 +20,7 @@ public class HealthPage : ComponentBase
     {
         Loading = true;
         StateHasChanged();
-        Report = await Health.CheckAllAsync();
+        Report = await Api.CheckAllAsync();
         Loading = false;
     }
 

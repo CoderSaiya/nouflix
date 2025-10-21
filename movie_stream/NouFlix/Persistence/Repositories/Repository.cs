@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.Linq.Expressions;
+using Microsoft.EntityFrameworkCore;
 using NouFlix.Persistence.Data;
 using NouFlix.Persistence.Repositories.Interfaces;
 
@@ -42,4 +43,13 @@ public class Repository<T>(AppDbContext db) : IRepository<T>
 
     public virtual Task<int> CountAsync(System.Linq.Expressions.Expression<Func<T, bool>>? predicate = null, CancellationToken ct = default)
         => predicate == null ? Set.CountAsync(ct) : Set.CountAsync(predicate, ct);
+    
+    public virtual async Task<bool> ExistsAsync(Expression<Func<T, bool>> predicate) =>
+        await Db.Set<T>().AnyAsync(predicate);
+
+    public virtual async Task<bool> ExistsAsync(int id) =>
+        await Db.Set<T>().FindAsync(id) is not null;
+    
+    public virtual async Task<bool> ExistsAsync(Guid id) =>
+        await Db.Set<T>().FindAsync(id) is not null;
 }
