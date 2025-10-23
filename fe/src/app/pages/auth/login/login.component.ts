@@ -2,8 +2,8 @@ import {Component, inject, OnInit, signal} from "@angular/core"
 import { CommonModule } from "@angular/common"
 import { FormsModule } from "@angular/forms"
 import { Router, RouterModule } from "@angular/router"
-import type { LoginRequest } from "../../models/user.model"
-import {AuthService} from '../../core/services/auth.service';
+import type { LoginRequest } from "../../../models/user.model"
+import {AuthService} from '../../../core/services/auth.service';
 
 @Component({
   selector: "app-login",
@@ -52,23 +52,27 @@ export class LoginComponent implements OnInit{
   }
 
   onSocialLogin(provider: "google" | "facebook"): void {
-    this.isLoading.set(true)
-    this.error.set(null)
+    // this.isLoading.set(true)
+    // this.error.set(null)
+    //
+    // // In production, this would open OAuth popup/redirect
+    // this.authService.socialLogin({ provider, token: "mock-token" }).subscribe({
+    //   next: (response) => {
+    //     this.authService.setAuthData(response)
+    //     this.router.navigate(["/"])
+    //   },
+    //   error: (err) => {
+    //     this.error.set(err.message || "Đăng nhập thất bại")
+    //     this.isLoading.set(false)
+    //   },
+    //   complete: () => {
+    //     this.isLoading.set(false)
+    //   },
+    // })
 
-    // In production, this would open OAuth popup/redirect
-    this.authService.socialLogin({ provider, token: "mock-token" }).subscribe({
-      next: (response) => {
-        this.authService.setAuthData(response)
-        this.router.navigate(["/"])
-      },
-      error: (err) => {
-        this.error.set(err.message || "Đăng nhập thất bại")
-        this.isLoading.set(false)
-      },
-      complete: () => {
-        this.isLoading.set(false)
-      },
-    })
+    this.error.set(null);
+    this.isLoading.set(true);
+    this.authService.loginWithProvider(provider);
   }
 
   togglePasswordVisibility(): void {

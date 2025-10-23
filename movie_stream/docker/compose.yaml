@@ -91,9 +91,9 @@ services:
 
       - Auth__External__Google__ClientId=${GOOGLE_CLIENT_ID}
       - Auth__External__Google__ClientSecret=${GOOGLE_CLIENT_SECRET}
-      - Auth__External__Github__ClientId=${GITHUB_CLIENT_ID}
-      - Auth__External__Github__ClientSecret=${GITHUB_CLIENT_SECRET}
-        
+      - Auth__External__Facebook__ClientId=${FACEBOOK_CLIENT_ID}
+      - Auth__External__Facebook__ClientSecret=${FACEBOOK_CLIENT_SECRET}
+      - Auth__Auth__FrontendBaseUrl=https://nouflix.nhatcuong.io.vn
       - Ffmpeg__Path=/usr/bin/ffmpeg
     ports:
       - "5003:8083"

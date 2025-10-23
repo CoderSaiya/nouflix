@@ -2,8 +2,8 @@ import {Component, inject, signal} from "@angular/core"
 import { CommonModule } from "@angular/common"
 import { FormsModule } from "@angular/forms"
 import { Router, RouterModule } from "@angular/router"
-import type { RegisterRequest } from "../../models/user.model"
-import {AuthService} from '../../core/services/auth.service';
+import type { RegisterRequest } from "../../../models/user.model"
+import {AuthService} from '../../../core/services/auth.service';
 
 @Component({
   selector: "app-register",
@@ -67,19 +67,19 @@ export class RegisterComponent {
     this.isLoading.set(true)
     this.error.set(null)
 
-    this.authSvc.socialLogin({ provider, token: "mock-token" }).subscribe({
-      next: (response) => {
-        this.authSvc.setAuthData(response)
-        this.router.navigate(["/"])
-      },
-      error: (err) => {
-        this.error.set(err.message || "Đăng ký thất bại")
-        this.isLoading.set(false)
-      },
-      complete: () => {
-        this.isLoading.set(false)
-      },
-    })
+    // this.authSvc.socialLogin({ provider, token: "mock-token" }).subscribe({
+    //   next: (response) => {
+    //     this.authSvc.setAuthData(response)
+    //     this.router.navigate(["/"])
+    //   },
+    //   error: (err) => {
+    //     this.error.set(err.message || "Đăng ký thất bại")
+    //     this.isLoading.set(false)
+    //   },
+    //   complete: () => {
+    //     this.isLoading.set(false)
+    //   },
+    // })
   }
 
   togglePasswordVisibility(field: "password" | "confirm"): void {

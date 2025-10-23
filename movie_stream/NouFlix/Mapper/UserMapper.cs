@@ -16,7 +16,7 @@ public static class UserMapper
 
         string? avatarUrl = null;
         if (img is not null) 
-            avatarUrl = (await storage.GetReadSignedUrlAsync(
+            avatarUrl = u.Profile.AvatarUrl ?? (await storage.GetReadSignedUrlAsync(
                 img.Bucket,
                 img.ObjectKey,
                 TimeSpan.FromMinutes(10),

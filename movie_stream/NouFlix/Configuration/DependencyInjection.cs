@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Security.Claims;
 using System.Text;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
@@ -157,15 +158,38 @@ public static class DependencyInjection
                     RoleClaimType = ClaimTypes.Role
                 };
             })
-            .AddCookie("External");
-            // .AddGoogle("Google", options =>
-            // {
-            //     options.ClientId = configuration["Auth:External:Google:ClientId"]!;
-            //     options.ClientSecret = configuration["Auth:External:Google:ClientSecret"]!;
-            //     options.CallbackPath = "/signin-google"; // đăng trong Google Console
-            //     options.SignInScheme = "External";
-            //     options.SaveTokens = true;
-            // });
+            .AddCookie("External")
+            .AddGoogle("Google", options =>
+            {
+                options.ClientId = configuration["Auth:External:Google:ClientId"]!;
+                options.ClientSecret = configuration["Auth:External:Google:ClientSecret"]!;
+                options.CallbackPath = "/signin-google"; // đăng trong Google Console
+                options.SignInScheme = "External";
+                options.SaveTokens = true;
+                
+                options.Scope.Add("openid");
+                options.Scope.Add("profile");
+                options.Scope.Add("email");
+                
+                options.UserInformationEndpoint = "https://www.googleapis.com/oauth2/v3/userinfo";
+                
+                options.ClaimActions.MapJsonKey(ClaimTypes.NameIdentifier, "sub");
+                options.ClaimActions.MapJsonKey(ClaimTypes.Name, "name");
+                options.ClaimActions.MapJsonKey(ClaimTypes.GivenName, "given_name");
+                options.ClaimActions.MapJsonKey(ClaimTypes.Surname, "family_name");
+                options.ClaimActions.MapJsonKey(ClaimTypes.Email, "email");
+                options.ClaimActions.MapJsonKey("picture", "picture");
+            })
+            .AddFacebook("Facebook", options =>
+            {
+                options.ClientId = configuration["Auth:External:Facebook:ClientId"]!;
+                options.ClientSecret = configuration["Auth:External:Facebook:ClientSecret"]!;
+                options.CallbackPath = "/signin-facebook";
+                options.SignInScheme = "External";
+                options.SaveTokens = true;
+                options.Scope.Add("email");
+                options.Fields.Add("email");
+            });
         
         services.AddCors(options =>
         {
@@ -173,6 +197,7 @@ public static class DependencyInjection
             {
                 policy.WithOrigins(
                         "http://localhost:4200",
+                        "http://localhost:4201",
                         "https://nouflix.nhatcuong.io.vn",
                         "http://localhost:5004",
                         "https://portal-nouflix.nhatcuong.io.vn")

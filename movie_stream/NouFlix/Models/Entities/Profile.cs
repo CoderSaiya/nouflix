@@ -13,6 +13,8 @@ public class Profile
     public int? AvatarId { get; set; }
     [ForeignKey("AvatarId")]
     public ImageAsset? Avatar { get; set; }
+
+    public string? AvatarUrl { get; set; }
     
     public Name? Name { get; set; }
     [Column(TypeName = "date")]

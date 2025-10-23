@@ -19,7 +19,7 @@ public class UserService(
 {
     private const long MaxSize = 5 * 1024 * 1024;
     
-    public async Task<User> FindOrCreateExternal(string provider, string providerKey, string? email, ClaimsPrincipal principal)
+    public async Task<User> FindOrCreateExternal(string provider, string providerKey, string? email, string? avatar, ClaimsPrincipal principal)
     {
         User? user = null;
         if (!string.IsNullOrWhiteSpace(email))
@@ -51,6 +51,7 @@ public class UserService(
         }
         
         newUser.Profile.Name = Name.Create(givenName, surname);
+        if (avatar is not null) newUser.Profile.AvatarUrl = avatar;
 
         await uow.Users.AddAsync(newUser);
         await uow.SaveChangesAsync();

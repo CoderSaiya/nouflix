@@ -6,6 +6,8 @@ ingress:
     service: http://nouflix.portal:8084
   - hostname: api-nouflix.nhatcuong.io.vn
     service: http://nouflix.api:8083
+    originRequest:
+      httpHostHeader: api-nouflix.nhatcuong.io.vn
   - hostname: minio-nouflix.nhatcuong.io.vn
     service: http://nouflix.minio:9001
   - service: http_status:404

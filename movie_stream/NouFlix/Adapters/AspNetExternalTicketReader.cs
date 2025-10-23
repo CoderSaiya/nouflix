@@ -15,7 +15,8 @@ public class AspNetExternalTicketReader
         var principal = result.Principal!;
         var email = principal.FindFirst(ClaimTypes.Email)?.Value;
         var key = principal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var avatar = principal.FindFirst("picture")?.Value;
         
-        return new ExternalTicket(p, key!, email, principal.Claims);
+        return new ExternalTicket(p, key!, email, avatar, principal.Claims);
     }
 }

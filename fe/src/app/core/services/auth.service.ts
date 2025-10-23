@@ -11,7 +11,7 @@ import type {
   SocialLoginProvider,
 } from "../../models/user.model"
 import {GlobalResponse} from '../../models/api-response.model';
-import {map} from 'rxjs/operators';
+import {map, switchMap} from 'rxjs/operators';
 import {HttpClient} from '@angular/common/http';
 import {environment} from '../../../environments/environment';
 
@@ -99,21 +99,37 @@ export class AuthService {
     ).pipe(map(res => res.data));
   }
 
-  socialLogin(provider: SocialLoginProvider): Observable<AuthResponse> {
-    // Mock social login - replace with actual API call
-    return of({
-      user: {
-        userId: "1",
-        email: `user@${provider.provider}.com`,
-        firstName: "Social",
-        lastName: "User",
-        dateOfBirth: null,
-        avatar: "/social-user-avatar.jpg",
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      },
-      accessToken: "mock-jwt-token-" + Date.now(),
-    }).pipe(delay(1000))
+  loginWithProvider(provider: 'google' | 'facebook', returnPath = '/auth/sso/success') {
+    const returnUrl = `${window.location.origin}${returnPath}`;
+    window.location.href = `${this.apiUrl}/external/${provider}/start?returnUrl=${encodeURIComponent(returnUrl)}`;
+  }
+
+  storeAccessTokenFromFragment(hash: string): boolean {
+    if (!hash) return false;
+    if (!hash.startsWith('#')) hash = '#' + hash;
+    const params = new URLSearchParams(hash.substring(1));
+
+    const authPayload = params.get('auth');
+    if (authPayload) {
+      try {
+        const json = JSON.parse(
+          decodeURIComponent(escape(atob(authPayload.replace(/-/g, '+').replace(/_/g, '/'))))
+        );
+
+        const token = json.access_token as string | undefined;
+
+        if (!token) return false;
+
+        this.tokenSignal.set(token);
+        this.currentUserSignal.set(json.user);
+        localStorage.setItem("access_token", token)
+        localStorage.setItem("current_user", JSON.stringify(json.user))
+        return true;
+      } catch {
+        return false;
+      }
+    }
+    return false;
   }
 
   setAuthData(response: AuthResponse): void {

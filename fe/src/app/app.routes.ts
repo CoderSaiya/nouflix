@@ -28,13 +28,17 @@ export const routes: Routes = [
   },
   {
     path: "login",
-    loadComponent: () => import("./pages/login/login.component").then((m) => m.LoginComponent),
+    loadComponent: () => import("./pages/auth/login/login.component").then((m) => m.LoginComponent),
     title: "Đăng Nhập - NouFlix",
   },
   {
     path: "register",
-    loadComponent: () => import("./pages/register/register.component").then((m) => m.RegisterComponent),
+    loadComponent: () => import("./pages/auth/register/register.component").then((m) => m.RegisterComponent),
     title: "Đăng Ký - NouFlix",
+  },
+  {
+    path: "auth/sso/success",
+    loadComponent: () => import("./pages/auth/sso/sso-success.component").then(m => m.SsoSuccessComponent)
   },
   {
     path: "profile",

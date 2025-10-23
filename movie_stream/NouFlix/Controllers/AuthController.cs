@@ -62,19 +62,11 @@ public class AuthController(
     [AllowAnonymous]
     public IActionResult ExternalStart(string provider, [FromQuery] string? returnUrl)
     {
-        ExternalChallenge c;
-        try
-        {
-            c = external.BuildChallenge(provider, returnUrl);
-        }
-        catch (UnsupportedProviderException)
-        {
-            return BadRequest("Unsupported provider");
-        }
+        var (scheme, uri) = external.BuildUri(provider, returnUrl);
 
         // Controller tự tạo AuthenticationProperties (thuần HTTP concern)
-        var props = new AuthenticationProperties { RedirectUri = c.RedirectPath };
-        return Challenge(props, c.Scheme);
+        var props = new AuthenticationProperties { RedirectUri = uri };
+        return Challenge(props, scheme);
     }
 
     [HttpGet("external/callback")]
