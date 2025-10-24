@@ -1,47 +1,41 @@
-import { Component, type OnInit } from "@angular/core"
+import {Component, inject, type OnInit} from "@angular/core"
 import { CommonModule } from "@angular/common"
 import { RouterModule, ActivatedRoute, Router } from "@angular/router"
 import { FormsModule } from "@angular/forms"
 import { Title, Meta } from "@angular/platform-browser"
 import { MovieService } from "../../core/services/movie.service"
-import type { Movie } from "../../models/movie.model"
+import type {Genre, Movie} from "../../models/movie.model"
+import {MovieItems} from '../../components/movie-items/movie-items.component';
+import {TaxonomyService} from '../../core/services/taxonomy.service';
 
 @Component({
   selector: "app-search",
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule],
+  imports: [CommonModule, RouterModule, FormsModule, MovieItems],
   templateUrl: "./search.component.html",
   styleUrl: "./search.component.scss",
 })
 export class SearchComponent implements OnInit {
+  private movSvc = inject(MovieService)
+  private router = inject(Router)
+  private route = inject(ActivatedRoute)
+  private titSvc = inject(Title)
+  private metaSvc = inject(Meta)
+  private taxSvc = inject(TaxonomyService)
+
   searchQuery = ""
   movies: Movie[] = []
   filteredMovies: Movie[] = []
+  searchResults: Movie[] = []
+  genres: Genre[] = []
   isLoading = false
   hasSearched = false
 
   // Filter options
-  selectedGenre = ""
+  selectedGenre : number | null = null
   selectedYear = ""
   selectedRating = ""
   sortBy = "popularity"
-
-  genres: { id: number; name: string }[] = [
-    { id: 1, name: "Khoa Học Viễn Tưởng" },
-    { id: 2, name: "Phiêu Lưu" },
-    { id: 3, name: "Kịch Tính" },
-    { id: 4, name: "Hình Sự" },
-    { id: 5, name: "Bí Ẩn" },
-    { id: 6, name: "Kinh Dị" },
-    { id: 7, name: "Tình Cảm" },
-    { id: 8, name: "Chính Kịch" },
-    { id: 9, name: "Hành Động" },
-    { id: 10, name: "Giật Gân" },
-    { id: 11, name: "Nhạc Kịch" },
-    { id: 12, name: "Hài Hước" },
-    { id: 13, name: "Gia Đình" },
-    { id: 14, name: "Thể Thao" },
-  ]
 
   years: string[] = []
   ratings = [
@@ -59,15 +53,9 @@ export class SearchComponent implements OnInit {
     { value: "title", label: "Tên A-Z" },
   ]
 
-  constructor(
-    private movieService: MovieService,
-    private route: ActivatedRoute,
-    private router: Router,
-    private titleService: Title,
-    private metaService: Meta,
-  ) {
-    // Generate years from 2024 to 2000
-    const currentYear = 2024
+  constructor() {
+    let date = new Date();
+    const currentYear = date.getFullYear()
     for (let year = currentYear; year >= 2000; year--) {
       this.years.push(year.toString())
     }
@@ -78,13 +66,19 @@ export class SearchComponent implements OnInit {
 
     // Get query from URL params
     this.route.queryParams.subscribe((params) => {
-      if (params["q"]) {
-        this.searchQuery = params["q"]
-        this.performSearch()
+      const q = params['q'] ?? '';
+      if (q !== this.searchQuery) {
+        this.searchQuery = q;
+        if (this.searchQuery.trim()) {
+          this.performSearch();
+        } else {
+          this.searchResults = [];
+          this.filteredMovies = [];
+          this.hasSearched = false;
+        }
       }
     })
 
-    // Load all movies for filtering
     this.loadAllMovies()
   }
 
@@ -92,20 +86,25 @@ export class SearchComponent implements OnInit {
     const title = this.searchQuery ? `Tìm Kiếm: ${this.searchQuery} - NouFlix` : "Tìm Kiếm Phim - NouFlix"
     const description = "Tìm kiếm phim yêu thích của bạn với bộ lọc thông minh theo thể loại, năm phát hành và đánh giá"
 
-    this.titleService.setTitle(title)
-    this.metaService.updateTag({ name: "description", content: description })
-    this.metaService.updateTag({ property: "og:title", content: title })
-    this.metaService.updateTag({ property: "og:description", content: description })
+    this.titSvc.setTitle(title)
+    this.metaSvc.updateTag({ name: "description", content: description })
+    this.metaSvc.updateTag({ property: "og:title", content: title })
+    this.metaSvc.updateTag({ property: "og:description", content: description })
   }
 
   loadAllMovies(): void {
-    this.movieService.getAllMovies().subscribe((movies) => {
-      this.movies = movies
+    this.movSvc.getTrendingMovies().subscribe((movies) => {
+      this.movies = movies ?? [];
+    })
+
+    this.taxSvc.getGenres().subscribe((genres) => {
+      this.genres = genres
     })
   }
 
   performSearch(): void {
     if (!this.searchQuery.trim()) {
+      this.searchResults = [];
       this.filteredMovies = []
       this.hasSearched = false
       return
@@ -114,8 +113,8 @@ export class SearchComponent implements OnInit {
     this.isLoading = true
     this.hasSearched = true
 
-    this.movieService.searchMovies(this.searchQuery).subscribe((movies) => {
-      this.filteredMovies = movies
+    this.movSvc.searchMovies(this.searchQuery).subscribe((movies) => {
+      this.searchResults = movies ?? []
       this.applyFilters()
       this.isLoading = false
       this.updateMetaTags()
@@ -130,12 +129,13 @@ export class SearchComponent implements OnInit {
   }
 
   applyFilters(): void {
-    let results = [...this.filteredMovies]
+    let results = [...this.searchResults]
 
     // Filter by genre
-    if (this.selectedGenre) {
-      const genreId = Number.parseInt(this.selectedGenre)
-      results = results.filter((movie) => movie.genres.some((g) => g.id === genreId))
+    if (this.selectedGenre !== null) {
+      results = results.filter(m =>
+        m.genres?.some(g => g.id === this.selectedGenre)
+      );
     }
 
     // Filter by year
@@ -151,7 +151,6 @@ export class SearchComponent implements OnInit {
 
     // Sort results
     results = this.sortMovies(results)
-
     this.filteredMovies = results
   }
 
@@ -164,7 +163,9 @@ export class SearchComponent implements OnInit {
       case "release":
         return movies.sort((a, b) => new Date(b.releaseDate).getTime() - new Date(a.releaseDate).getTime())
       case "title":
-        return movies.sort((a, b) => a.title.localeCompare(b.title))
+        return movies.sort((a, b) =>
+          (a.title ?? "").localeCompare(b.title ?? "", "vi", { sensitivity: "accent" })
+        );
       default:
         return movies
     }
@@ -175,7 +176,7 @@ export class SearchComponent implements OnInit {
   }
 
   clearFilters(): void {
-    this.selectedGenre = ""
+    this.selectedGenre = null
     this.selectedYear = ""
     this.selectedRating = ""
     this.sortBy = "popularity"

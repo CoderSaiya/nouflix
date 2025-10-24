@@ -1,5 +1,5 @@
 import {Component, Input, OnInit} from "@angular/core"
-import { CommonModule } from "@angular/common"
+import {CommonModule} from "@angular/common"
 import { RouterLink } from "@angular/router"
 import type { Movie } from "../../models/movie.model"
 
@@ -23,6 +23,14 @@ export class WatchInfoComponent implements OnInit {
     const hours = Math.floor(minutes / 60)
     const mins = minutes % 60
     return `${hours}h ${mins}m`
+  }
+
+  formatDate(dateString: string): string {
+    return new Date(dateString).toLocaleDateString("vi-VN", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    })
   }
 
   formatCurrency(amount: number): string {

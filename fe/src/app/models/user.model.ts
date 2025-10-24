@@ -1,3 +1,15 @@
+export interface WatchHistoryItem {
+  movieId: number
+  watchedAt: string // ISO date string
+  progress: number // 0-100 percentage
+}
+
+export interface WatchlistItem {
+  movieId: number
+  addedAt: string // ISO date string
+}
+
+
 export interface User {
   userId: string
   email: string
@@ -7,6 +19,8 @@ export interface User {
   avatar: string | null
   createdAt: string
   updatedAt: string
+  watchHistory: WatchHistoryItem[]
+  watchlist: WatchlistItem[]
 }
 
 export interface LoginRequest {

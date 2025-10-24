@@ -1,11 +1,11 @@
 import {inject, Injectable} from "@angular/core"
 import {Observable, of} from "rxjs"
 import {map} from 'rxjs/operators';
-import {Cast, Crew, Episode, Movie, MovieItem, MovieType, Review, Video} from "../../models/movie.model"
+import {Cast, Crew, Episode, Genre, Movie, MovieItem, MovieType, Review, Video} from "../../models/movie.model"
 import {MOCK_CAST, MOCK_CREW, MOCK_MOVIES, MOCK_REVIEWS, MOCK_SEASONS, MOCK_VIDEOS} from "../../data/mock-data"
 import {HttpClient} from '@angular/common/http';
 import {environment} from '../../../environments/environment';
-import {GlobalResponse} from '../../models/api-response.model';
+import {GlobalResponse, SearchResponse} from '../../models/api-response.model';
 
 @Injectable({
   providedIn: "root",
@@ -115,13 +115,24 @@ export class MovieService {
     return of(MOCK_MOVIES.filter((m) => m.genres.some((g) => g.id === genreId)))
   }
 
-  searchMovies(query: string): Observable<Movie[]> {
-    const lowerQuery = query.toLowerCase()
-    return of(
-      MOCK_MOVIES.filter(
-        (m) => m.title.toLowerCase().includes(lowerQuery) || m.overview.toLowerCase().includes(lowerQuery),
-      ),
-    )
+  searchMovies(query?: string | null, skip?: number | null, take?: number | null ): Observable<Movie[]> {
+    const lowerQuery = query?.toLowerCase() ?? ""
+
+    return this.http
+      .get<GlobalResponse<SearchResponse<Movie[]>>>(`${this.apiUrl}/search`, {
+        params: {
+          q: lowerQuery,
+          skip: skip ?? 0,
+          take: take ?? 20
+        }
+      })
+      .pipe(
+        map(res =>
+          (res.data.data || [])
+            .slice()
+            .sort((a, b) => a.title.localeCompare(b.title, 'vi', { sensitivity: 'accent' }))
+        )
+      )
   }
 
   getSimilarMovies(movieId: number): Observable<Movie[]> {

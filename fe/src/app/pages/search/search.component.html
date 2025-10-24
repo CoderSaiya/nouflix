@@ -49,8 +49,8 @@
             [(ngModel)]="selectedGenre"
             (change)="onFilterChange()"
           >
-            <option value="">Tất Cả Thể Loại</option>
-            <option *ngFor="let genre of genres" [value]="genre.id">
+            <option [ngValue]="null">Tất Cả Thể Loại</option>
+            <option *ngFor="let genre of genres" [ngValue]="genre.id">
               {{ genre.name }}
             </option>
           </select>
@@ -123,36 +123,7 @@
         <p>Thử tìm kiếm với từ khóa khác hoặc điều chỉnh bộ lọc</p>
       </div>
 
-      <div class="movie-grid" *ngIf="!isLoading && filteredMovies.length > 0">
-        <div *ngFor="let movie of filteredMovies" class="movie-card">
-          <a [routerLink]="['/movie', movie.id]" class="movie-card-link">
-            <div class="movie-poster">
-              <img [src]="movie.posterUrl" [alt]="movie.title" />
-              <div class="movie-overlay">
-                <button class="play-btn">
-                  <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor">
-                    <polygon points="5 3 19 12 5 21 5 3"></polygon>
-                  </svg>
-                </button>
-              </div>
-              <div class="movie-rating">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                </svg>
-                {{ movie.avgRating.toFixed(1) }}
-              </div>
-            </div>
-            <div class="movie-info">
-              <h3 class="movie-title">{{ movie.title }}</h3>
-              <div class="movie-meta">
-                <span>{{ getReleaseYear(movie.releaseDate) }}</span>
-                <span>•</span>
-                <span>{{ movie.genres[0]?.name }}</span>
-              </div>
-            </div>
-          </a>
-        </div>
-      </div>
+      <movie-item [list]="filteredMovies"></movie-item>
     </div>
 
     <div class="initial-state" *ngIf="!hasSearched">

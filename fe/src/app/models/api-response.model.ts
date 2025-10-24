@@ -10,3 +10,8 @@ export interface ApiError {
     statusCode: number
 }
 
+export interface SearchResponse<T> {
+  count: number
+  data: T
+}
+
