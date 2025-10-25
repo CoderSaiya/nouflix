@@ -87,6 +87,15 @@ public class MovieController(MovieService svc) : Controller
 
         return Ok(GlobalResponse<MovieDetailRes>.Success(movie));
     }
+    
+    [HttpGet("genre/{genreId:int}")]
+    [AllowAnonymous]
+    public async Task<IActionResult> GetByGenre([FromRoute] int genreId, CancellationToken ct = default)
+    {
+        var movie = await svc.GetByGenreAsync(genreId, ct);
+
+        return Ok(GlobalResponse<IEnumerable<MovieRes>>.Success(movie));
+    }
 
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] UpsertMovieReq req, CancellationToken ct)

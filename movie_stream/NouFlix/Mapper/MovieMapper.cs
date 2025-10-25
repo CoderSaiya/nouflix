@@ -20,8 +20,8 @@ public static class MovieMapper
                 img.Bucket, img.ObjectKey, TimeSpan.FromMinutes(10), ct: ct)).ToString();
 
         var genres = m.MovieGenres?
-            .Select(mg => new GenreRes(mg.Genre.Id, mg.Genre.Name))
-            .ToList() ?? new List<GenreRes>();
+            .Select(mg => new GenreDto.GenreRes(mg.Genre.Id, mg.Genre.Name, mg.Genre.Icon, m.MovieGenres.Count))
+            .ToList() ?? new List<GenreDto.GenreRes>();
 
         return new MovieRes(
             m.Id,
@@ -61,7 +61,7 @@ public static class MovieMapper
                 backdrop.Bucket, backdrop.ObjectKey, TimeSpan.FromMinutes(10), ct: ct)).ToString();
 
         var genres = m.MovieGenres
-            .Select(mg => new GenreRes(mg.Genre.Id, mg.Genre.Name))
+            .Select(mg => new GenreDto.GenreRes(mg.Genre.Id, mg.Genre.Name, mg.Genre.Icon, m.MovieGenres.Count))
             .ToList();
         
         var studios = m.MovieStudios

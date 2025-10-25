@@ -8,18 +8,18 @@ namespace NouFlix.Services;
 
 public class TaxonomyService(IUnitOfWork uow)
 {
-    public async Task<IEnumerable<GenreRes>> SearchGenresAsync(string? q, CancellationToken ct = default)
+    public async Task<IEnumerable<GenreDto.GenreRes>> SearchGenresAsync(string? q, CancellationToken ct = default)
         => await (await uow.Genres.GetByNameAsync(q ?? "", false)).ToGenreResListAsync(ct);
     
-    public async Task<IEnumerable<GenreRes>> GenresAsync(CancellationToken ct = default)
+    public async Task<IEnumerable<GenreDto.GenreRes>> GenresAsync(CancellationToken ct = default)
         => await (await uow.Genres.ListAsync(null, null, null, ct)).ToGenreResListAsync(ct);
     
-    public async Task<GenreRes?> GetGenreAsync(int id, CancellationToken ct = default)
+    public async Task<GenreDto.GenreRes?> GetGenreAsync(int id, CancellationToken ct = default)
         => await (await uow.Genres
                 .FindAsync(id) ?? throw new NotFoundException("genre", id))
             .ToGenreResAsync(ct);
 
-    public async Task SaveGenreAsync(string name, int id = 0, CancellationToken ct = default)
+    public async Task SaveGenreAsync(string name, string? icon, int id = 0, CancellationToken ct = default)
     {
         Genre g;
         if (id == 0)
@@ -27,7 +27,7 @@ public class TaxonomyService(IUnitOfWork uow)
             if (await uow.Genres.NameExistsAsync(name, null, ct)) 
                 throw new InvalidOperationException("Tên thể loại đã tồn tại."); 
             
-            g = new Genre { Name = name, };
+            g = new Genre { Name = name, Icon = icon };
             await uow.Genres.AddAsync(g, ct);
         }
         else
@@ -37,7 +37,8 @@ public class TaxonomyService(IUnitOfWork uow)
 
             var existG = await uow.Genres.FindAsync(id);
             
-            existG!.Name = name;
+            if (string.IsNullOrWhiteSpace(existG!.Name)) existG.Name = name;
+            if (icon is not null) existG.Icon = icon;
             uow.Genres.Update(existG);
         }
         await uow.SaveChangesAsync(ct);

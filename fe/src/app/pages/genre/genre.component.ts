@@ -1,73 +1,82 @@
-import { Component, type OnInit } from "@angular/core"
+import {Component, inject, type OnInit} from "@angular/core"
 import { CommonModule } from "@angular/common"
 import { RouterModule, ActivatedRoute } from "@angular/router"
 import { FormsModule } from "@angular/forms"
 import { Title, Meta } from "@angular/platform-browser"
 import { MovieService } from "../../core/services/movie.service"
-import type { Movie } from "../../models/movie.model"
+import type {Genre, Movie, MovieItem} from "../../models/movie.model"
+import {TaxonomyService} from '../../core/services/taxonomy.service';
+import {MovieItems} from '../../components/movie-items/movie-items.component';
 
 @Component({
   selector: "app-genre",
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule],
+  imports: [CommonModule, RouterModule, FormsModule, MovieItems],
   templateUrl: "./genre.component.html",
   styleUrl: "./genre.component.scss",
 })
 export class GenreComponent implements OnInit {
-  movies: Movie[] = []
-  filteredMovies: Movie[] = []
+  private taxSvc = inject(TaxonomyService)
+  private movSvc = inject(MovieService)
+  private titSvc = inject(Title)
+  private metaSvc = inject(Meta)
+  private route = inject(ActivatedRoute)
+
+  movies: MovieItem[] = []
+  filteredMovies: MovieItem[] = []
+  allGenres: Genre[] = []
   currentGenre: { id: number; name: string } | null = null
   isLoading = true
 
-  sortBy = "popularity"
+  sortBy = "release"
   sortOptions = [
-    { value: "popularity", label: "Phổ Biến Nhất" },
-    { value: "rating", label: "Đánh Giá Cao" },
     { value: "release", label: "Mới Nhất" },
+    { value: "rating", label: "Đánh Giá Cao" },
     { value: "title", label: "Tên A-Z" },
   ]
 
-  allGenres = [
-    { id: 1, name: "Khoa Học Viễn Tưởng", icon: "🚀" },
-    { id: 2, name: "Phiêu Lưu", icon: "🗺️" },
-    { id: 3, name: "Kịch Tính", icon: "🎭" },
-    { id: 4, name: "Hình Sự", icon: "🔫" },
-    { id: 5, name: "Bí Ẩn", icon: "🔍" },
-    { id: 6, name: "Kinh Dị", icon: "👻" },
-    { id: 7, name: "Tình Cảm", icon: "❤️" },
-    { id: 8, name: "Chính Kịch", icon: "🎬" },
-    { id: 9, name: "Hành Động", icon: "💥" },
-    { id: 10, name: "Giật Gân", icon: "😱" },
-    { id: 11, name: "Nhạc Kịch", icon: "🎵" },
-    { id: 12, name: "Hài Hước", icon: "😂" },
-    { id: 13, name: "Gia Đình", icon: "👨‍👩‍👧‍👦" },
-    { id: 14, name: "Thể Thao", icon: "⚽" },
-  ]
-
-  constructor(
-    private movieService: MovieService,
-    private route: ActivatedRoute,
-    private titleService: Title,
-    private metaService: Meta,
-  ) {}
+  // allGenres = [
+  //   { id: 1, name: "Khoa Học Viễn Tưởng", icon: "🚀" },
+  //   { id: 2, name: "Phiêu Lưu", icon: "🗺️" },
+  //   { id: 3, name: "Kịch Tính", icon: "🎭" },
+  //   { id: 4, name: "Hình Sự", icon: "🔫" },
+  //   { id: 5, name: "Bí Ẩn", icon: "🔍" },
+  //   { id: 6, name: "Kinh Dị", icon: "👻" },
+  //   { id: 7, name: "Tình Cảm", icon: "❤️" },
+  //   { id: 8, name: "Chính Kịch", icon: "🎬" },
+  //   { id: 9, name: "Hành Động", icon: "💥" },
+  //   { id: 10, name: "Giật Gân", icon: "😱" },
+  //   { id: 11, name: "Nhạc Kịch", icon: "🎵" },
+  //   { id: 12, name: "Hài Hước", icon: "😂" },
+  //   { id: 13, name: "Gia Đình", icon: "👨‍👩‍👧‍👦" },
+  //   { id: 14, name: "Thể Thao", icon: "⚽" },
+  // ]
 
   ngOnInit(): void {
-    this.route.params.subscribe((params) => {
-      const genreParam = params["genre"]
+    this.isLoading = true;
 
-      // Check if it's a genre ID or name
-      const genreId = Number.parseInt(genreParam)
-      if (!isNaN(genreId)) {
-        this.currentGenre = this.allGenres.find((g) => g.id === genreId) || null
-      } else {
-        this.currentGenre = this.allGenres.find((g) => g.name.toLowerCase() === genreParam.toLowerCase()) || null
-      }
+    this.taxSvc.getGenres('').subscribe(genres => {
+      this.allGenres = genres;
 
-      if (this.currentGenre) {
-        this.loadMoviesByGenre(this.currentGenre.id)
-        this.updateMetaTags()
-      }
-    })
+      this.route.params.subscribe((params) => {
+        const genreParam = params["genre"]
+
+        // Check if it's a genre ID or name
+        const genreId = Number.parseInt(genreParam)
+        console.log(genreId)
+        if (!isNaN(genreId)) {
+          this.currentGenre = this.allGenres.find((g) => g.id === genreId) || null
+          console.log(this.currentGenre)
+        } else {
+          this.currentGenre = this.allGenres.find((g) => g.name.toLowerCase() === genreParam.toLowerCase()) || null
+        }
+
+        if (this.currentGenre) {
+          this.loadMoviesByGenre(this.currentGenre.id)
+          this.updateMetaTags()
+        }
+      })
+    });
   }
 
   updateMetaTags(): void {
@@ -76,16 +85,17 @@ export class GenreComponent implements OnInit {
     const title = `Phim ${this.currentGenre.name} - NouFlix`
     const description = `Khám phá bộ sưu tập phim ${this.currentGenre.name} chất lượng cao với đầy đủ thông tin và đánh giá chi tiết`
 
-    this.titleService.setTitle(title)
-    this.metaService.updateTag({ name: "description", content: description })
-    this.metaService.updateTag({ property: "og:title", content: title })
-    this.metaService.updateTag({ property: "og:description", content: description })
+    this.titSvc.setTitle(title)
+    this.metaSvc.updateTag({ name: "description", content: description })
+    this.metaSvc.updateTag({ property: "og:title", content: title })
+    this.metaSvc.updateTag({ property: "og:description", content: description })
   }
 
   loadMoviesByGenre(genreId: number): void {
     this.isLoading = true
-    this.movieService.getMoviesByGenre(genreId).subscribe((movies) => {
+    this.movSvc.getMoviesByGenre(genreId).subscribe((movies) => {
       this.movies = movies
+      console.log(movies)
       this.filteredMovies = this.sortMovies([...movies])
       this.isLoading = false
     })
@@ -95,10 +105,8 @@ export class GenreComponent implements OnInit {
     this.filteredMovies = this.sortMovies([...this.movies])
   }
 
-  sortMovies(movies: Movie[]): Movie[] {
+  sortMovies(movies: MovieItem[]): MovieItem[] {
     switch (this.sortBy) {
-      case "popularity":
-        return movies.sort((a, b) => b.popularity - a.popularity)
       case "rating":
         return movies.sort((a, b) => b.avgRating - a.avgRating)
       case "release":

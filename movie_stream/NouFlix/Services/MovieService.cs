@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using Microsoft.EntityFrameworkCore;
 using NouFlix.DTOs;
 using NouFlix.Mapper;
 using NouFlix.Models.Common;
@@ -122,6 +123,9 @@ public class MovieService(
             Data: (await items.ToMovieResListAsync(storage, ct)).ToList()
             );
     }
+
+    public async Task<IEnumerable<MovieRes>> GetByGenreAsync(int genreId, CancellationToken ct = default)
+        => await (await uow.Movies.GetByGenreAsync(genreId, ct)).ToMovieResListAsync(storage, ct);
 
     public async Task<int> CreateAsync(UpsertMovieReq req, CancellationToken ct = default)
     {

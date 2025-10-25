@@ -11,28 +11,26 @@ public class TaxonomyController(TaxonomyService svc) : Controller
 {
     [HttpGet("genre/search")]
     public async Task<IActionResult> SearchGenre([FromQuery] string? q, CancellationToken ct)
-        => Ok(GlobalResponse<IEnumerable<GenreRes>>.Success(await svc.SearchGenresAsync(q, ct)));
+        => Ok(GlobalResponse<IEnumerable<GenreDto.GenreRes>>.Success(await svc.SearchGenresAsync(q, ct)));
 
     [HttpGet("genre/{id:int}")]
     public async Task<IActionResult> GetGenre(int id, CancellationToken ct)
-        => Ok(GlobalResponse<GenreRes>.Success(await svc.GetGenreAsync(id, ct)));
+        => Ok(GlobalResponse<GenreDto.GenreRes>.Success(await svc.GetGenreAsync(id, ct)));
     
     [HttpPost("genre")]
-    public async Task<IActionResult> CreateGenre([FromBody] string name, CancellationToken ct)
+    public async Task<IActionResult> CreateGenre([FromBody] GenreDto.SaveReq req, CancellationToken ct)
     {
-        if (string.IsNullOrWhiteSpace(name)) 
+        if (string.IsNullOrWhiteSpace(req.Name)) 
             return BadRequest("Name is required.");
 
-        await svc.SaveGenreAsync(name, 0, ct);
+        await svc.SaveGenreAsync(req.Name, req.Icon ?? "\ud83c\udfac", 0, ct);
         return StatusCode(StatusCodes.Status201Created);
     }
     
     [HttpPut("genre/{id:int}")]
-    public async Task<IActionResult> UpdateGenre([FromRoute] int id, [FromBody] string name, CancellationToken ct)
+    public async Task<IActionResult> UpdateGenre([FromRoute] int id, [FromBody] GenreDto.SaveReq req, CancellationToken ct)
     {
-        if (string.IsNullOrWhiteSpace(name)) return BadRequest("Name is required.");
-
-        await svc.SaveGenreAsync(name, id, ct);
+        await svc.SaveGenreAsync(req.Name ?? "", req.Icon, id, ct);
         return NoContent();
     }
     

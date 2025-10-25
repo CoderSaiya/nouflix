@@ -10,5 +10,5 @@ public record MovieRes(
     float AvgRating,
     int ViewCount,
     DateTime? ReleaseDate,
-    List<GenreRes> Genres
+    List<GenreDto.GenreRes> Genres
     );

@@ -24,7 +24,7 @@ export class TaxonomyService {
         map(res =>
           (res.data || [])
             .slice()
-            .sort((a, b) => a.name.localeCompare(b.name, 'vi', { sensitivity: 'accent' }))
+            .sort((a, b) => a.id)
         )
       )
   }

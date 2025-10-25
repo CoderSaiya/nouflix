@@ -33,6 +33,8 @@ export interface MovieItem {
 export interface Genre {
   id: number
   name: string
+  icon: string
+  movieCount: number
 }
 
 export interface ProductionCountry {

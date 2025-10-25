@@ -111,8 +111,20 @@ export class MovieService {
         )
   }
 
-  getMoviesByGenre(genreId: number): Observable<Movie[]> {
-    return of(MOCK_MOVIES.filter((m) => m.genres.some((g) => g.id === genreId)))
+  getMoviesByGenre(genreId: number): Observable<MovieItem[]> {
+    // return of(MOCK_MOVIES.filter((m) => m.genres.some((g) => g.id === genreId)))
+    return this.http
+      .get<GlobalResponse<MovieItem[]>>(`${this.apiUrl}/genre/${genreId}`)
+      .pipe(
+        map(res =>
+          (res.data || [])
+            .slice()
+            .sort(
+              (a, b) =>
+                new Date(b.releaseDate).getTime() - new Date(a.releaseDate).getTime()
+            )
+        )
+      )
   }
 
   searchMovies(query?: string | null, skip?: number | null, take?: number | null ): Observable<Movie[]> {

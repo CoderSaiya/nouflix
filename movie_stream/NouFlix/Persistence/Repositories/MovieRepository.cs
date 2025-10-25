@@ -170,6 +170,17 @@ public class MovieRepository(AppDbContext db) : Repository<Movie>(db), IMovieRep
             .Include(m => m.MovieStudios)
             .ToListAsync(ct);
     }
+    
+    public Task<List<Movie>> GetByGenreAsync(int genreId, CancellationToken ct = default)
+    {
+        return Query()
+            .Include(m => m.Reviews)
+            .Include(m => m.Images)
+            .Include(m => m.MovieGenres)
+            .ThenInclude(mg => mg.Genre)
+            .Where(m => m.MovieGenres.Any(mg => mg.GenreId == genreId))
+            .ToListAsync(ct);
+    }
 
     public async Task<int> UpdateViewAsync(int movieId, int count = 1, CancellationToken ct = default)
     {

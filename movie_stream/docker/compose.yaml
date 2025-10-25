@@ -77,7 +77,7 @@ services:
       - ASPNETCORE_ENVIRONMENT=Development
 
       - ConnectionStrings__Default=Server=mssql,1433;Database=MoviePortalDB;User Id=sa;Password=${SA_PASSWORD};Encrypt=True;TrustServerCertificate=True
-      - ConnectionStrings__Redis=nouflix.redis:6379,password=${REDIS_PASSWORD},ssl=False,abortConnect=False
+      - ConnectionStrings__Redis=nouflix.redis:6379,password=${REDIS_PASSWORD},ssl=False,abortConnect=False4
 
       - Storage__S3__Endpoint=nouflix.minio:9000
       - Storage__S3__PublicEndpoint=minio-nouflix.nhatcuong.io.vn

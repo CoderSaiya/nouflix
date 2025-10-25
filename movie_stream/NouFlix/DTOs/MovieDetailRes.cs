@@ -17,7 +17,7 @@ public record MovieDetailRes(
     string AgeRating,
     int VoteCount,
     int Popularity,
-    List<GenreRes> Genres,
+    List<GenreDto.GenreRes> Genres,
     List<StudioRes> Studios,
     string Country,
     string Language,
