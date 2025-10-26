@@ -16,7 +16,7 @@ public class GenreEditPage : ComponentBase
     protected override async Task OnInitializedAsync()
     {
         Model = Id is null ?
-            new MovieDto.Genre { Id = 0, Name = "" } :
+            new MovieDto.Genre { Id = 0, Name = "", Icon = ""} :
             await TaxoApi.GetGenreAsync(Id.Value);
         
         Loading = false;

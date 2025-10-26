@@ -7,11 +7,12 @@ import {
   OnChanges,
   SimpleChanges,
   ViewChild,
-  ElementRef,
+  ElementRef, inject,
 } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import type { Movie } from "../../models/movie.model";
 import Hls from "hls.js";
+import {AuthService} from '../../core/services/auth.service';
 
 @Component({
   selector: "app-video-player",
@@ -33,6 +34,8 @@ export class VideoPlayerComponent implements OnChanges, OnDestroy {
 
   @ViewChild("videoElement", { static: true })
   videoElement!: ElementRef<HTMLVideoElement>;
+
+  private auth = inject(AuthService)
 
   private hls?: Hls;
   private controlsTimeout: any;
@@ -103,6 +106,8 @@ export class VideoPlayerComponent implements OnChanges, OnDestroy {
 
     this.attachVideoEvents(video);
 
+    const token = this.auth.token();
+
     // Safari HLS native
     if (video.canPlayType("application/vnd.apple.mpegurl")) {
       video.src = this.masterUrl;
@@ -118,8 +123,28 @@ export class VideoPlayerComponent implements OnChanges, OnDestroy {
       this.hls = new Hls({
         lowLatencyMode: true,
         backBufferLength: 30,
-        fetchSetup: (ctx, init) =>
-          new Request(ctx.url, { ...init, credentials: "include" }),
+        fetchSetup: (ctx, initParams) => {
+          const headers = new Headers(initParams?.headers || {});
+
+          if (token) {
+            console.log(token)
+            headers.set("Authorization", `Bearer ${token}`);
+          }
+
+          return new Request(ctx.url, {
+            ...initParams,
+            headers,
+            credentials: "include",
+          });
+        },
+        xhrSetup: (xhr, url) => {
+          // Cho phép gửi cookie
+          xhr.withCredentials = true;
+
+          if (token) {
+            xhr.setRequestHeader("Authorization", `Bearer ${token}`);
+          }
+        },
       });
       this.hls.attachMedia(video);
       this.hls.loadSource(this.masterUrl);

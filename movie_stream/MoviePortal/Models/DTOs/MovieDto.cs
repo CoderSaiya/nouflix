@@ -47,6 +47,8 @@ public class MovieDto
     {
         public int Id { get; set; }
         public string Name { get; set; } = "";
+        public string? Icon { get; set; }
+        public int MovieCount { get; set; }
     }
     
     public record Studio
@@ -103,6 +105,10 @@ public class MovieDto
         IEnumerable<int> GenreIds,
         IEnumerable<int> StudioIds
     );
+
+    public record UpsertGenreReq(
+        string Name,
+        string? Icon);
 
     public record UpsertEpisodeReq(int MovieId, int SeasonId, int EpisodeNumber, string Title, PublishStatus Status, DateTime ReleaseDate);
     

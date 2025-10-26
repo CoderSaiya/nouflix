@@ -35,9 +35,11 @@ public class TaxonomyApi(HttpClient http)
     {
         if (g is null) throw new ArgumentNullException(nameof(g));
         if (string.IsNullOrWhiteSpace(g.Name)) throw new ArgumentException("Name is required.", nameof(g.Name));
-        
-        if (g.Id == 0) http.PostAsJsonAsync("api/taxonomy/genre", g.Name, ct);
-        else http.PutAsJsonAsync($"api/taxonomy/genre/{g.Id}", g.Name, ct);
+
+        var req = new MovieDto.UpsertGenreReq(g.Name, g.Icon ?? null);
+            
+        if (g.Id == 0) http.PostAsJsonAsync("api/taxonomy/genre", req, ct);
+        else http.PutAsJsonAsync($"api/taxonomy/genre/{g.Id}", req, ct);
         
         return Task.CompletedTask;
     }
