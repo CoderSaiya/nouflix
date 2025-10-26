@@ -13,6 +13,7 @@ import { CommonModule } from "@angular/common";
 import type { Movie } from "../../models/movie.model";
 import Hls from "hls.js";
 import {AuthService} from '../../core/services/auth.service';
+import {UserService} from '../../core/services/user.service';
 
 @Component({
   selector: "app-video-player",
@@ -36,9 +37,13 @@ export class VideoPlayerComponent implements OnChanges, OnDestroy {
   videoElement!: ElementRef<HTMLVideoElement>;
 
   private auth = inject(AuthService)
+  private userSvc = inject(UserService)
 
   private hls?: Hls;
   private controlsTimeout: any;
+
+  private progressTimer: any;
+  private lastSentSecond = 0;
 
   // state UI
   isPlaying = false;
@@ -74,7 +79,79 @@ export class VideoPlayerComponent implements OnChanges, OnDestroy {
 
   ngOnDestroy(): void {
     if (this.controlsTimeout) clearTimeout(this.controlsTimeout);
+
+    this.sendProgress();
+
+    this.stopProgressTimer();
     this.destroyHls();
+  }
+
+  private extractIds() {
+    // formats:
+    // /movies/2/master.m3u8
+    // /movies/2/episodes/10/master.m3u8
+    if (!this.masterUrl) {
+      return { movieId: null as number | null, episodeId: null as number | null };
+    }
+
+    const epMatch = this.masterUrl.match(/\/movies\/(\d+)\/ss(\d+)\/ep(\d+)\//);
+    if (epMatch) {
+      return {
+        movieId: Number(epMatch[1]),
+        episodeId: Number(epMatch[3]),
+      };
+    }
+
+    const movieMatch = this.masterUrl.match(/\/movies\/(\d+)\//);
+    if (movieMatch) {
+      return {
+        movieId: Number(movieMatch[1]),
+        episodeId: null,
+      };
+    }
+
+    return { movieId: null, episodeId: null };
+  }
+
+  private sendProgress(): void {
+    const video = this.videoElement?.nativeElement;
+    if (!video) return;
+
+    const { movieId, episodeId } = this.extractIds();
+    if (!movieId) return;
+
+    const currentSec = Math.floor(video.currentTime || 0);
+
+    // throttle: chỉ gửi nếu nhảy >=5s so với lần trước
+    if (Math.abs(currentSec - this.lastSentSecond) < 5) return;
+
+    this.lastSentSecond = currentSec;
+
+    this.userSvc
+      .progress(movieId, episodeId, currentSec)
+      .subscribe({
+        error: (err) => {
+          console.warn("progress failed", err);
+        },
+      });
+  }
+
+  private startProgressTimer(): void {
+    this.stopProgressTimer();
+    this.progressTimer = setInterval(() => {
+      const v = this.videoElement?.nativeElement;
+      if (!v) return;
+      if (!v.paused && !v.ended) {
+        this.sendProgress();
+      }
+    }, 5000);
+  }
+
+  private stopProgressTimer(): void {
+    if (this.progressTimer) {
+      clearInterval(this.progressTimer);
+      this.progressTimer = undefined;
+    }
   }
 
   // HLS wiring
@@ -90,6 +167,7 @@ export class VideoPlayerComponent implements OnChanges, OnDestroy {
 
     // reset UI
     this.destroyHls();
+    this.stopProgressTimer();
     this.isPlaying = false;
     this.currentTime = 0;
     this.duration = 0;
@@ -115,6 +193,8 @@ export class VideoPlayerComponent implements OnChanges, OnDestroy {
       video.volume = this.volume;
       video.muted = this.isMuted;
       video.play().catch(() => {});
+
+      this.startProgressTimer();
       return;
     }
 
@@ -123,6 +203,7 @@ export class VideoPlayerComponent implements OnChanges, OnDestroy {
       this.hls = new Hls({
         lowLatencyMode: true,
         backBufferLength: 30,
+        maxBufferLength: 60,
         fetchSetup: (ctx, initParams) => {
           const headers = new Headers(initParams?.headers || {});
 
@@ -162,6 +243,8 @@ export class VideoPlayerComponent implements OnChanges, OnDestroy {
         video.volume = this.volume;
         video.muted = this.isMuted;
         video.play().catch(() => {});
+
+        this.startProgressTimer();
       });
 
       this.hls.on(Hls.Events.ERROR, (_, err) => {
@@ -199,8 +282,12 @@ export class VideoPlayerComponent implements OnChanges, OnDestroy {
     video.onpause = () => {
       this.isPlaying = false;
       this.showControls = true;
+      this.sendProgress();
     };
-    video.onended = () => this.movieEnd.emit();
+    video.onended = () => {
+      this.sendProgress();
+      this.movieEnd.emit()
+    };
     video.onvolumechange = () => {
       this.isMuted = video.muted || video.volume === 0;
       this.volume = video.volume;
@@ -306,6 +393,7 @@ export class VideoPlayerComponent implements OnChanges, OnDestroy {
     const rect = progressBar.getBoundingClientRect();
     const percent = (event.clientX - rect.left) / rect.width;
     v.currentTime = Math.max(0, Math.min(1, percent)) * (this.duration || v.duration || 0);
+    this.sendProgress();
   }
 
   onVolumeChange(event: Event): void {
@@ -321,11 +409,13 @@ export class VideoPlayerComponent implements OnChanges, OnDestroy {
   skipForward(): void {
     const v = this.videoElement.nativeElement;
     v.currentTime = Math.min(v.currentTime + 10, this.duration || v.duration || 0);
+    this.sendProgress();
   }
 
   skipBackward(): void {
     const v = this.videoElement.nativeElement;
     v.currentTime = Math.max(v.currentTime - 10, 0);
+    this.sendProgress();
   }
 
   formatTime(seconds: number): string {
