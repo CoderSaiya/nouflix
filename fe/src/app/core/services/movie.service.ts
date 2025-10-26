@@ -36,6 +36,16 @@ export class MovieService {
       )
   }
 
+  getById(id: number): Observable<Movie | undefined> {
+    return this.http
+      .get<GlobalResponse<Movie>>(`${this.apiUrl}/${id}`)
+      .pipe(
+        map(res =>
+          (res.data || undefined)
+        )
+      )
+  }
+
   getTrendingMovies(take: number = 12): Observable<Movie[]> {
     return this.http
       .get<GlobalResponse<Movie[]>>(`${this.apiUrl}/trending`, {

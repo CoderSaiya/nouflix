@@ -4,5 +4,5 @@ public record AuthRes(
     string AccessToken,
     string RefreshToken,
     DateTimeOffset AccessTokenExpiresAtUtc,
-    UserRes User
+    UserDto.UserRes User
     );

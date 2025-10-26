@@ -5,12 +5,17 @@ namespace NouFlix.Models.Entities;
 public class History
 {
     public Guid UserId { get; set; }
-    [ForeignKey("MovieId")]
+    [ForeignKey("UserId")]
     public User User { get; set; } = null!;
     public int MovieId { get; set; }
     [ForeignKey("MovieId")]
     public Movie Movie { get; set; } = null!;
     
-    public int Duration { get; set; }
-    public DateTime WatchedDate { get; set; }
+    public int? EpisodeId { get; set; }
+    [ForeignKey("EpisodeId")]
+    public Episode? Episode { get; set; }
+
+    public int PositionSecond { get; set; } = 0;
+    public bool IsCompleted { get; set; } = false;
+    public DateTime WatchedDate { get; set; } = DateTime.UtcNow;
 }

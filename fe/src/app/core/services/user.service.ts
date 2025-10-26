@@ -3,6 +3,9 @@ import {HttpClient} from '@angular/common/http';
 import {environment} from '../../../environments/environment';
 import {AuthService} from './auth.service';
 import {Observable} from 'rxjs';
+import {WatchHistoryItem, WatchlistItem} from '../../models/user.model';
+import {map} from 'rxjs/operators';
+import {GlobalResponse} from '../../models/api-response.model';
 
 @Injectable({
   providedIn: "root",
@@ -31,5 +34,19 @@ export class UserService {
     return this.http.post<void>(
       `${this.apiUrl}/history/progress`, body
     );
+  }
+
+  getWatchHistory(): Observable<WatchHistoryItem[]> {
+    return this.http
+      .get<GlobalResponse<WatchHistoryItem[]>>(`${this.apiUrl}/history`)
+      .pipe(
+        map(res =>
+          (res.data || undefined)
+        )
+      );
+  }
+
+  getWatchlist(): Observable<WatchlistItem[]> {
+    return this.http.get<WatchlistItem[]>(`${this.apiUrl}/watch-list`);
   }
 }

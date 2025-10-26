@@ -3,17 +3,20 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NouFlix.Persistence.Data;
 
 #nullable disable
 
-namespace MoviePortal.Data.Migrations
+namespace NouFlix.Persistence.Data.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251026030145_Update_History_Progress")]
+    partial class Update_History_Progress
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -103,21 +106,13 @@ namespace MoviePortal.Data.Migrations
                     b.Property<int>("MovieId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("EpisodeId")
-                        .HasColumnType("int");
-
-                    b.Property<bool>("IsCompleted")
-                        .HasColumnType("bit");
-
-                    b.Property<int>("PositionSecond")
+                    b.Property<int>("Progress")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("WatchedDate")
                         .HasColumnType("datetime2");
 
                     b.HasKey("UserId", "MovieId");
-
-                    b.HasIndex("EpisodeId");
 
                     b.HasIndex("MovieId");
 
@@ -780,10 +775,6 @@ namespace MoviePortal.Data.Migrations
 
             modelBuilder.Entity("NouFlix.Models.Entities.History", b =>
                 {
-                    b.HasOne("NouFlix.Models.Entities.Episode", "Episode")
-                        .WithMany()
-                        .HasForeignKey("EpisodeId");
-
                     b.HasOne("NouFlix.Models.Entities.Movie", "Movie")
                         .WithMany("Histories")
                         .HasForeignKey("MovieId")
@@ -795,8 +786,6 @@ namespace MoviePortal.Data.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Episode");
 
                     b.Navigation("Movie");
 

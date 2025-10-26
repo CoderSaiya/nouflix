@@ -1,25 +1,38 @@
 import {Component, inject, type OnInit, signal} from "@angular/core"
 import { CommonModule } from "@angular/common"
 import { FormsModule } from "@angular/forms"
-import { Router } from "@angular/router"
-import type { User, UpdateProfileRequest } from "../../models/user.model"
+import {Router, RouterLink} from "@angular/router"
+import type {User, UpdateProfileRequest, WatchHistoryItem, WatchlistItem} from "../../models/user.model"
 import {AuthService} from '../../core/services/auth.service';
 import {ChangePasswordModalComponent} from '../../components/change-password-modal/change-password-modal.component';
 import {Title} from '@angular/platform-browser';
+import {Movie} from '../../models/movie.model';
+import {MovieService} from '../../core/services/movie.service';
+import {UserService} from '../../core/services/user.service';
+import {map, switchMap, take} from 'rxjs/operators';
+import {forkJoin, of} from 'rxjs';
 
 @Component({
   selector: "app-profile",
   standalone: true,
-  imports: [CommonModule, FormsModule, ChangePasswordModalComponent],
+  imports: [CommonModule, FormsModule, ChangePasswordModalComponent, RouterLink],
   templateUrl: "./profile.component.html",
   styleUrls: ["./profile.component.scss"],
 })
 export class ProfileComponent implements OnInit {
   private authService = inject(AuthService)
+  private movSvc = inject(MovieService);
+  private userSvc = inject(UserService);
   private router = inject(Router)
   private titleSvc = inject(Title)
 
   user = signal<User | null>(null)
+  activeTab = signal<"profile" | "history" | "watchlist">("profile")
+
+  watchHistory = signal<{ item: WatchHistoryItem; movie: Movie | null }[]>([])
+  watchlist = signal<{ item: WatchlistItem; movie: Movie | null }[]>([])
+  isLoadingHistory = signal(false)
+  isLoadingWatchlist = signal(false)
 
   // Form fields
   firstName = ""
@@ -65,6 +78,86 @@ export class ProfileComponent implements OnInit {
     this.originalLastName = this.lastName
     this.originalDateOfBirth = this.dateOfBirth
     this.originalAvatarUrl = this.avatarPreview
+  }
+
+  loadWatchHistory(): void {
+    this.isLoadingHistory.set(true)
+
+    this.userSvc.getWatchHistory().pipe(
+      switchMap(items => {
+        console.log(items)
+        if (!items || items.length === 0) {
+          return of([] as { item: WatchHistoryItem; movie: Movie | null }[]);
+        }
+
+        const requests = items.map(item =>
+          this.movSvc.getById(item.movieId).pipe(
+            map(movie => ({
+              item,
+              movie: movie ?? null,
+            }))
+          )
+        );
+
+        return forkJoin(requests);
+      })
+    ).subscribe({
+      next: (historyWithMovies) => {
+        this.watchHistory.set(historyWithMovies);
+        this.isLoadingHistory.set(false);
+      },
+      error: () => {
+        this.isLoadingHistory.set(false);
+      }
+    });
+  }
+
+  loadWatchlist(): void {
+    this.isLoadingWatchlist.set(true);
+
+    this.userSvc.getWatchlist().pipe(
+      take(1),
+      switchMap(watchlistItems => {
+        if (!watchlistItems || watchlistItems.length === 0) {
+          return of([] as { item: WatchlistItem; movie: Movie | null }[]);
+        }
+
+        const requests = watchlistItems.map(item =>
+          this.movSvc.getById(item.movieId).pipe(
+            take(1),
+            map(movie => ({
+              item,
+              movie: movie ?? null,
+            }))
+          )
+        );
+
+        return forkJoin(requests);
+      })
+    ).subscribe({
+      next: (watchlistWithMovies) => {
+        this.watchlist.set(watchlistWithMovies);
+        this.isLoadingWatchlist.set(false);
+      },
+      error: () => {
+        this.isLoadingWatchlist.set(false);
+      }
+    });
+  }
+
+  switchTab(tab: "profile" | "history" | "watchlist"): void {
+    this.activeTab.set(tab)
+    if (tab === "history" && this.watchHistory().length === 0) {
+      this.loadWatchHistory()
+    }
+    if (tab === "watchlist" && this.watchlist().length === 0) {
+      this.loadWatchlist()
+    }
+  }
+
+  removeFromWatchlist(movieId: number): void {
+    // this.authService.removeFromWatchlist(movieId)
+    this.watchlist.set(this.watchlist().filter((item) => item.item.movieId !== movieId))
   }
 
   onAvatarChange(event: Event): void {

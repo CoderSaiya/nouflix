@@ -110,8 +110,7 @@ public class MovieRepository(AppDbContext db) : Repository<Movie>(db), IMovieRep
         if (keys[0] is not int id)
             throw new ArgumentException("FindAsync(Movie) cần 1 khóa kiểu int", nameof(keys));
 
-        return Set
-            .AsNoTracking()
+        return Query()
             .AsSplitQuery()
             .Include(m => m.Seasons)
             .ThenInclude(s => s.Episodes)

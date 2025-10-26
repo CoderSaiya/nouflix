@@ -1,9 +1,12 @@
 ﻿using System.Net;
+using System.Security.Claims;
 using System.Text;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Options;
 using NouFlix.Adapters;
+using NouFlix.DTOs;
 using NouFlix.Helpers;
+using NouFlix.Models.Entities;
 using NouFlix.Models.Specification;
 using NouFlix.Persistence.Repositories.Interfaces;
 
@@ -45,6 +48,33 @@ public class StreamService(
         await ProxyObjectAsync(ctx, key, "application/vnd.apple.mpegurl", TimeSpan.FromMinutes(10), ct);
         return Results.Empty;
     }
+    
+    public async Task<IResult> GetMovieProgressAsync(
+        int movieId,
+        HttpContext ctx,
+        CancellationToken ct)
+    {
+        // Who is this?
+        var userIdClaim = ctx.User?.Claims?.FirstOrDefault(
+            c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+
+        if (!Guid.TryParse(userIdClaim, out var userId))
+        {
+            return Results.Json(new StreamDto.Position(0, null));
+        }
+
+        // get their history
+        var history = await uow.Histories.GetAsync(userId, movieId, episodeId: null, ct);
+
+        var pos = history?.PositionSecond ?? 0;
+
+        return Results.Json(new StreamDto.Position
+        (
+            pos,
+            history?.WatchedDate
+        ));
+    }
+
 
     public async Task<IResult> GetMovieSegmentAsync(int movieId, string quality, string file, HttpContext ctx, CancellationToken ct)
     {
@@ -115,6 +145,34 @@ public class StreamService(
         await ProxyObjectAsync(ctx, key, "application/vnd.apple.mpegurl", TimeSpan.FromMinutes(10), ct);
         return Results.Empty;
     }
+    
+    public async Task<IResult> GetEpisodeProgressAsync(
+        int movieId,
+        int episodeId,
+        HttpContext ctx,
+        CancellationToken ct)
+    {
+        var userIdClaim = ctx.User?.Claims?.FirstOrDefault(
+            c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+
+        if (!Guid.TryParse(userIdClaim, out var userId))
+        {
+            return Results.Json(new StreamDto.Position(0, null));
+        }
+
+        var history = await uow.Histories.GetAsync(userId, movieId, episodeId, ct);
+
+        var ep = await uow.Episodes.FindAsync(episodeId, ct);
+
+        var positionSeconds = history?.PositionSecond ?? 0;
+
+        return Results.Json(new StreamDto.Position
+        (
+            positionSeconds,
+            history?.WatchedDate
+        ));
+    }
+
 
     public async Task<IResult> GetEpisodeSegmentAsync(int movieId, int episodeId, string quality, string file, HttpContext ctx, CancellationToken ct)
     {
@@ -123,7 +181,6 @@ public class StreamService(
             return Results.StatusCode((int)HttpStatusCode.Forbidden);
         
         var ep = await uow.Episodes.FindAsync(episodeId, ct);
-
         var key = $"{BasePrefix(movieId, ep!.Season!.Number, ep.Number)}/{quality}/{file}";
         await ProxyObjectAsync(ctx, key, "video/mp2t", TimeSpan.FromMinutes(10), ct);
         return Results.Empty;

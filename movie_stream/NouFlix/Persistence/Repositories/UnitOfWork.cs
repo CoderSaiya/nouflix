@@ -15,7 +15,8 @@ public class UnitOfWork(
     ISubtitleRepository subtitles,
     ISeasonRepository seasons,
     IUserRepository users,
-    IRefreshTokenRepository refreshTokens)
+    IRefreshTokenRepository refreshTokens,
+    IHistoryRepository histories)
     : IUnitOfWork
 {
     public IMovieRepository Movies { get; } = movies;
@@ -28,6 +29,7 @@ public class UnitOfWork(
     public ISeasonRepository Seasons { get; } = seasons;
     public IUserRepository Users { get; } = users;
     public IRefreshTokenRepository Refreshes { get; } = refreshTokens;
+    public IHistoryRepository Histories { get; } = histories;
 
     private IDbContextTransaction? _tx;
 

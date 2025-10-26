@@ -94,6 +94,6 @@ public class AuthController(
 
         var userId = Guid.Parse(userIdStr);
         var dto = await svc.GetCurrentUserAsync(userId);
-        return Ok(GlobalResponse<UserRes>.Success(dto));
+        return Ok(GlobalResponse<UserDto.UserRes>.Success(dto));
     }
 }

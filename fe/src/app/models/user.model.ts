@@ -1,7 +1,9 @@
 export interface WatchHistoryItem {
   movieId: number
+  episodeId?: number | null
   watchedAt: string // ISO date string
-  progress: number // 0-100 percentage
+  position: number
+  progress: number
 }
 
 export interface WatchlistItem {

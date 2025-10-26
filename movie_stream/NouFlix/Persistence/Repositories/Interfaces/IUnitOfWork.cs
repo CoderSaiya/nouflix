@@ -14,6 +14,7 @@ public interface IUnitOfWork
     ISeasonRepository Seasons { get; }
     IUserRepository Users { get; }
     IRefreshTokenRepository Refreshes { get; }
+    IHistoryRepository Histories { get; }
     
 
     Task<int> SaveChangesAsync(CancellationToken ct = default);

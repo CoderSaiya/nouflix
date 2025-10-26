@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using NouFlix.DTOs;
+﻿using NouFlix.DTOs;
 using NouFlix.Models.Entities;
 using NouFlix.Services;
 
@@ -7,7 +6,7 @@ namespace NouFlix.Mapper;
 
 public static class UserMapper
 {
-    public static async Task<UserRes> ToUserResAsync(
+    public static async Task<UserDto.UserRes> ToUserResAsync(
         this User u,
         MinioObjectStorage storage,
         CancellationToken ct)
@@ -23,7 +22,7 @@ public static class UserMapper
                 ct: ct)).ToString();
         
         
-        return new UserRes(
+        return new UserDto.UserRes(
             u.Id,
             u.Email.Address,
             u.Profile.Name?.FirstName ?? null,
@@ -31,8 +30,8 @@ public static class UserMapper
             avatarUrl,
             Dob: u.Profile.DateOfBirth ?? null,
             MapRole(u),
-            u.CreatedAt
-        );
+            u.CreatedAt,
+            (await u.Histories.ToItemListResAsync(ct)).ToList());
     }
     
     public static string MapRole(this User baseUser) => baseUser switch

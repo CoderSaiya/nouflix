@@ -18,6 +18,9 @@ public class UserService(
     IOptions<StorageOptions> opt)
 {
     private const long MaxSize = 5 * 1024 * 1024;
+
+    public async Task<IEnumerable<HistoryDto.Item>> GetHistory(Guid userId, CancellationToken ct)
+        => await (await uow.Histories.GetByUserAsync(userId, ct)).ToItemListResAsync(ct);
     
     public async Task<User> FindOrCreateExternal(string provider, string providerKey, string? email, string? avatar, ClaimsPrincipal principal)
     {
@@ -59,7 +62,7 @@ public class UserService(
         return newUser;
     }
 
-    public async Task<UserRes> UpdateProfile(Guid userId, UpdateProfileReq req, CancellationToken ct = default)
+    public async Task<UserDto.UserRes> UpdateProfile(Guid userId, UpdateProfileReq req, CancellationToken ct = default)
     {
         ValidationHelper.Validate(
             (userId == Guid.Empty, "Id của người dùng không được để trống."),
@@ -126,6 +129,34 @@ public class UserService(
         await uow.SaveChangesAsync(ct);
 
         return await user.ToUserResAsync(storage, ct);
+    }
+
+    public async Task UpsertHistory(Guid userId, int movieId, int? episodeId, int positionSeconds, CancellationToken ct = default)
+    {
+        var history = await uow.Histories.GetAsync(userId, movieId, episodeId, ct);
+        var now = DateTime.UtcNow;
+
+        if (history is null)
+        {
+            history = new History
+            {
+                UserId = userId,
+                MovieId = movieId,
+                EpisodeId = episodeId,
+            };
+            
+            await uow.Histories.AddAsync(history, ct);
+        }
+        else
+        {
+            if (positionSeconds > history.PositionSecond)
+                history.PositionSecond = positionSeconds;
+            history.WatchedDate = now;
+
+            uow.Histories.Update(history);
+        }
+
+        await uow.SaveChangesAsync(ct);
     }
 
     public async Task Delete(Guid id)

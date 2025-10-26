@@ -11,6 +11,34 @@ namespace NouFlix.Controllers;
 [Route("api/[controller]")]
 public class UserController(UserService svc) : Controller
 {
+    [HttpGet("history")]
+    [Authorize]
+    public async Task<IActionResult> GetHistory(CancellationToken ct)
+    {
+        var me = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrEmpty(me))
+            return Unauthorized(GlobalResponse<string>.Error("Missing sub/NameIdentifier.", StatusCodes.Status401Unauthorized));
+        
+        var userId = Guid.Parse(me);
+        var histories = await svc.GetHistory(userId, ct);
+        
+        return Ok(GlobalResponse<IEnumerable<HistoryDto.Item>>.Success(histories));
+    }
+
+    [HttpPost("history/progress")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [Authorize]
+    public async Task<IActionResult> UpsertHistoryProgress([FromBody] HistoryDto.UpsertReq req, CancellationToken ct)
+    {
+        var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrEmpty(userIdStr))
+            return Unauthorized(GlobalResponse<string>.Error("Missing sub/NameIdentifier.", StatusCodes.Status401Unauthorized));
+
+        var userId = Guid.Parse(userIdStr);
+        await svc.UpsertHistory(userId, req.MovieId, req.EpisodeId, req.Position, ct);
+        return NoContent();
+    }
+    
     [HttpPut("profile/{id:guid}")]
     [Authorize]
     [Consumes("multipart/form-data")]
@@ -26,7 +54,7 @@ public class UserController(UserService svc) : Controller
             return Forbid();
 
         var user = await svc.UpdateProfile(id, req);
-        return Ok(GlobalResponse<UserRes>.Success(user));
+        return Ok(GlobalResponse<UserDto.UserRes>.Success(user));
     }
 
     [HttpDelete("{id:guid}")]

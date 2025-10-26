@@ -17,7 +17,11 @@ public class StreamController(StreamService svc) : Controller
     [AllowAnonymous]
     public Task<IResult> MovieVariant([FromRoute] int movieId, [FromRoute] string quality, CancellationToken ct)
         => svc.GetMovieVariantAsync(movieId, quality, HttpContext, ct);
-
+    
+    [HttpGet("movies/{movieId:int}/progress")]
+    public Task<IResult> GetMovieProgress([FromRoute] int movieId, CancellationToken ct)
+        => svc.GetMovieProgressAsync(movieId, HttpContext, ct);
+    
     [HttpGet("movies/{movieId:int}/{quality}/{file}")]
     [AllowAnonymous]
     public Task<IResult> MovieSegment([FromRoute] int movieId, [FromRoute] string quality, [FromRoute] string file, CancellationToken ct)
@@ -42,6 +46,10 @@ public class StreamController(StreamService svc) : Controller
     [AllowAnonymous]
     public Task<IResult> EpisodeVariant([FromRoute] int movieId, [FromRoute] int episodeId, [FromRoute] string quality, CancellationToken ct)
         => svc.GetEpisodeVariantAsync(movieId, episodeId, quality, HttpContext, ct);
+    
+    [HttpGet("movies/{movieId:int}/episodes/{episodeId:int}/progress")]
+    public Task<IResult> GetEpisodeProgress([FromRoute] int movieId, [FromRoute] int episodeId, CancellationToken ct)
+        => svc.GetEpisodeProgressAsync(movieId, episodeId, HttpContext, ct);
     
     [HttpGet("movies/{movieId:int}/episodes/{episodeId:int}/{quality}/{file}")]
     [AllowAnonymous]

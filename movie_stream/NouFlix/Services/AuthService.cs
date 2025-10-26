@@ -19,7 +19,7 @@ public class AuthService(
     IUnitOfWork uow
     )
 {
-    public async Task<UserRes> GetCurrentUserAsync(Guid userId, CancellationToken ct = default)
+    public async Task<UserDto.UserRes> GetCurrentUserAsync(Guid userId, CancellationToken ct = default)
     {
         var user = await uow.Users.FindAsync(userId)
                    ?? throw new KeyNotFoundException("User không tồn tại.");

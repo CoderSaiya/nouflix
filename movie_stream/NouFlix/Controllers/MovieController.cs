@@ -80,7 +80,7 @@ public class MovieController(MovieService svc) : Controller
     }
 
     [HttpGet("{id:int}")]
-    [AllowAnonymous]
+    [Authorize]
     public async Task<IActionResult> GetById([FromRoute] int id, CancellationToken ct = default)
     {
         var movie = await svc.GetById(id, ct);
