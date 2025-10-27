@@ -19,6 +19,7 @@ public class StreamController(StreamService svc) : Controller
         => svc.GetMovieVariantAsync(movieId, quality, HttpContext, ct);
     
     [HttpGet("movies/{movieId:int}/progress")]
+    [AllowAnonymous]
     public Task<IResult> GetMovieProgress([FromRoute] int movieId, CancellationToken ct)
         => svc.GetMovieProgressAsync(movieId, HttpContext, ct);
     
@@ -48,6 +49,7 @@ public class StreamController(StreamService svc) : Controller
         => svc.GetEpisodeVariantAsync(movieId, episodeId, quality, HttpContext, ct);
     
     [HttpGet("movies/{movieId:int}/episodes/{episodeId:int}/progress")]
+    [AllowAnonymous]
     public Task<IResult> GetEpisodeProgress([FromRoute] int movieId, [FromRoute] int episodeId, CancellationToken ct)
         => svc.GetEpisodeProgressAsync(movieId, episodeId, HttpContext, ct);
     

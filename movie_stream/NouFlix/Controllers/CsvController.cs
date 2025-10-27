@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using NouFlix.DTOs;
 using NouFlix.Models.Common;
 using NouFlix.Services;
@@ -10,6 +11,7 @@ namespace NouFlix.Controllers;
 public class CsvController(CsvService svc) : Controller
 {
     [HttpPost("episode/preview")]
+    [Authorize("Admin")]
     [Consumes("application/json")]
     public async Task<IActionResult> PreviewEpisode([FromBody] SystemDto.EpisodeCsvPreviewReq req, CancellationToken ct)
     {
@@ -21,6 +23,7 @@ public class CsvController(CsvService svc) : Controller
     }
     
     [HttpPost("episode/preview-file")]
+    [Authorize("Admin")]
     [Consumes("multipart/form-data")]
     [RequestSizeLimit(10 * 1024 * 1024)] // 10MB (tuỳ chỉnh)
     public async Task<IActionResult> PreviewEpisodeFile(IFormFile? file, CancellationToken ct)
@@ -36,6 +39,7 @@ public class CsvController(CsvService svc) : Controller
     }
     
     [HttpPost("episode/import")]
+    [Authorize("Admin")]
     [Consumes("application/json")]
     public async Task<IActionResult> ImportEpisode([FromBody] SystemDto.EpisodeCsvImportReq req, CancellationToken ct)
     {

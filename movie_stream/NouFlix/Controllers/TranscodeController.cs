@@ -62,6 +62,7 @@ public class TranscodeController(
     }
 
     [HttpGet("{jobId}/status")]
+    [Authorize("Admin")]
     public IResult GetStatus([FromRoute] string jobId)
     {
         var st = status.Get(jobId);

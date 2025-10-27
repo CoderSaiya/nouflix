@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Components.Forms;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using NouFlix.DTOs;
@@ -19,6 +20,7 @@ public class ImageController(
     IOptions<StorageOptions> opts) : Controller
 {
     [HttpGet("movie/{movieId:int}/{kind}")]
+    [AllowAnonymous]
     public async Task<IActionResult> GetByKind([FromRoute] int movieId, [FromRoute] ImageKind kind)
     {
         var images = await svc.GetImageByKind(movieId, kind);
@@ -26,6 +28,7 @@ public class ImageController(
     }
 
     [HttpPost("movie/{movieId:int}/{kind}")]
+    [Authorize("Admin")]
     public async Task<IActionResult> Create([FromRoute] int movieId, [FromRoute] ImageKind kind, IFormFile f)
     {
         var ext = Path.GetExtension(f.FileName);
@@ -54,6 +57,7 @@ public class ImageController(
     }
 
     [HttpDelete("{id:int}")]
+    [Authorize("Admin")]
     public async Task<IActionResult> Delete([FromRoute] int id)
     {
         await svc.DeleteImageAsync(id);

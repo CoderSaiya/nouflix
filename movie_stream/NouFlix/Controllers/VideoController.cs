@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using NouFlix.DTOs;
 using NouFlix.Models.Common;
 using NouFlix.Services;
@@ -10,6 +11,7 @@ namespace NouFlix.Controllers;
 public class VideoController(AssetService svc) : Controller
 {
     [HttpGet("movie/{id:int}")]
+    [Authorize("Admin")]
     public async Task<IActionResult> GetVideoAssets([FromRoute] int id, CancellationToken ct = default)
     {
         var assets = await svc.GetVideoByMovieId(id, ct);
@@ -17,6 +19,7 @@ public class VideoController(AssetService svc) : Controller
     }
 
     [HttpGet("episode/{id:int}")]
+    [Authorize("Admin")]
     public async Task<IActionResult> GetVideoByEpisode([FromRoute] int id, CancellationToken ct = default)
     {
         var assets = await svc.GetVideoByEpisodeId(id, ct);
@@ -24,6 +27,7 @@ public class VideoController(AssetService svc) : Controller
     }
     
     [HttpPost("by-episodes")]
+    [Authorize("Admin")]
     public async Task<IActionResult> GetVideoByEpisodeIds([FromForm] int[] ids, CancellationToken ct = default)
     {
         var assets = await svc.GetVideoByEpisodeIds(ids, ct);
@@ -31,6 +35,7 @@ public class VideoController(AssetService svc) : Controller
     }
     
     [HttpDelete("{id:int}")]
+    [Authorize("Admin")]
     public async Task<IActionResult> Delete([FromRoute] int id, CancellationToken ct = default)
     {
         await svc.DeleteVideoAsync(id, ct);

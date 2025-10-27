@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using NouFlix.DTOs;
 using NouFlix.Mapper;
 using NouFlix.Models.Common;
@@ -11,6 +12,7 @@ namespace NouFlix.Controllers;
 public class DashboardController(MinioObjectStorage storage, DashboardService svc) : Controller
 {
     [HttpGet]
+    [Authorize("Admin")]
     [ResponseCache(Duration = 5, Location = ResponseCacheLocation.Client, NoStore = false)]
     public async Task<IActionResult> Get(CancellationToken ct = default)
     {

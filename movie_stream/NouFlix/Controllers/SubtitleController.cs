@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using NouFlix.DTOs;
 using NouFlix.Models.Common;
@@ -18,6 +19,7 @@ public class SubtitleController(
     AssetService svc) : Controller
 {
     [HttpPost("upload-raw")]
+    [Authorize("Admin")]
     public async Task<IActionResult> UploadRawVtt(
         [FromForm] int movieId,
         [FromForm] int? episodeId,
@@ -66,11 +68,13 @@ public class SubtitleController(
     }
 
     [HttpGet("{jobId}/status")]
+    [Authorize("Admin")]
     public IActionResult GetStatus(string jobId, [FromServices] IStatusStorage<SubtitleDto.SubtitleStatus> store)
         => store.Get(jobId) is { } s ? Ok(s) : NotFound();
     
     [HttpPost("raw")]
-    [DisableRequestSizeLimit] // tuỳ nhu cầu
+    [Authorize("Admin")]
+    [DisableRequestSizeLimit]
     public async Task<IActionResult> UploadRaw(
         [FromRoute] int movieId,
         [FromQuery] int? episodeId,
