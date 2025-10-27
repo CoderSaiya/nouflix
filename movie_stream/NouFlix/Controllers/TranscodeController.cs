@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using NouFlix.DTOs;
 using NouFlix.Services;
 using NouFlix.Services.Interface;
@@ -13,6 +14,7 @@ public class TranscodeController(
     IStatusStorage<TranscodeDto.TranscodeStatus> status) : Controller
 {
     [HttpPost("upload")]
+    [Authorize("Admin")]
     [RequestSizeLimit(20L * 1024 * 1024 * 1024)] // 20GB body size
     [RequestFormLimits(MultipartBodyLengthLimit = 20L * 1024 * 1024 * 1024)] // 20GB cho multipart
     public async Task<IResult> UploadAndEnqueue(

@@ -16,4 +16,10 @@ public class VideoAssetRepository(AppDbContext db) : Repository<VideoAsset>(db),
         => await Db.VideoAssets
             .Where(a => a.EpisodeId == epId)
             .ToListAsync();
+
+    public Task AddRange(IEnumerable<VideoAsset> videoAssets, CancellationToken ct = default)
+    {
+        Db.VideoAssets.AddRange(videoAssets);
+        return Task.CompletedTask;
+    }
 }
