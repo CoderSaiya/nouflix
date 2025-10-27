@@ -8,7 +8,7 @@ import type {
   UpdateProfileRequest,
   ChangePasswordRequest,
   AuthResponse,
-  SocialLoginProvider,
+  SocialLoginProvider, RefreshResponse,
 } from "../../models/user.model"
 import {GlobalResponse} from '../../models/api-response.model';
 import {map, switchMap} from 'rxjs/operators';
@@ -205,15 +205,18 @@ export class AuthService {
   }
 
   refreshToken(): Observable<string> {
-    return this.http.post<GlobalResponse<AuthResponse>>(
+    return this.http.post<GlobalResponse<RefreshResponse>>(
       `${this.apiUrl}/refresh-token`,
       {}, // server đọc refresh token từ cookie HttpOnly "rt"
       { withCredentials: true }
     ).pipe(
       tap(res => {
-        if (!res.data?.accessToken) throw new Error('No access token in refresh response');
-        this.tokenSignal.set(res.data.accessToken);
-        if (res.data.user) this.currentUserSignal.set(res.data.user);
+        const newToken = res.data?.accessToken;
+        if (!newToken) {
+          throw new Error('No access token in refresh response');
+        }
+        this.tokenSignal.set(newToken);
+        localStorage.setItem("access_token", newToken);
       }),
       map(res => res.data!.accessToken)
     );

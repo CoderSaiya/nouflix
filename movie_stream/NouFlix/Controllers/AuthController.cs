@@ -50,12 +50,27 @@ public class AuthController(
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<IActionResult> RefreshToken([FromBody] string refreshToken)
+    public async Task<IActionResult> RefreshToken(CancellationToken ct)
     {
-        var res = await svc.RefreshTokenAsync(refreshToken);
-        if (res is null) return BadRequest(GlobalResponse<string>.Error("Refresh token expired or invalid."));
-
-        return Ok(GlobalResponse<object>.Success(new { AccessToken = res }));
+        var refreshToken = Request.Cookies["refresh_token"];
+        if (string.IsNullOrWhiteSpace(refreshToken))
+        {
+            return Unauthorized(
+                GlobalResponse<string>.Error("Missing refresh token.", StatusCodes.Status401Unauthorized)
+            );
+        }
+        
+        var newAccessToken = await svc.RefreshTokenAsync(refreshToken, ct);
+        if (newAccessToken is null)
+        {
+            return Unauthorized(
+                GlobalResponse<string>.Error("Refresh token expired or invalid.", StatusCodes.Status401Unauthorized)
+            );
+        }
+        
+        return Ok(
+            GlobalResponse<object>.Success(new { AccessToken = newAccessToken })
+        );
     }
     
     [HttpGet("external/{provider}/start")]

@@ -54,6 +54,10 @@ export interface AuthResponse {
   accessTokenExpiresAtUtc?: string | null
 }
 
+export interface RefreshResponse {
+  accessToken: string
+}
+
 export interface SocialLoginProvider {
   provider: "google" | "facebook"
   token: string
