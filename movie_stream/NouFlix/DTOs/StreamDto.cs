@@ -2,5 +2,5 @@
 
 public class StreamDto
 {
-    public record Position(int PositionSeconds, DateTime? LastWatched);
+    public record Position(int PositionSeconds, DateTime? LastWatched, bool IsFinished);
 }

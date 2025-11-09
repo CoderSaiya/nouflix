@@ -98,7 +98,7 @@ public class MovieController(MovieService svc) : Controller
     }
 
     [HttpPost]
-    [Authorize("Admin")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Create([FromBody] UpsertMovieReq req, CancellationToken ct)
     {
         if (!ModelState.IsValid) return ValidationProblem(ModelState);
@@ -108,7 +108,7 @@ public class MovieController(MovieService svc) : Controller
     }
     
     [HttpPut("{id:int}")]
-    [Authorize("Admin")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Update(int id, [FromBody] UpsertMovieReq req, CancellationToken ct)
     {
         if (!ModelState.IsValid) return ValidationProblem(ModelState);
@@ -118,7 +118,7 @@ public class MovieController(MovieService svc) : Controller
     }
 
     [HttpDelete("{id:int}")]
-    [Authorize("Admin")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Delete([FromRoute] int id, CancellationToken ct = default)
     {
         await svc.DeleteAsync(id, ct);

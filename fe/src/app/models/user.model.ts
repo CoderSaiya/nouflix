@@ -19,10 +19,12 @@ export interface User {
   lastName: string | null
   dateOfBirth: string | null
   avatar: string | null
+  isBanned: boolean
   createdAt: string
   updatedAt: string
   watchHistory: WatchHistoryItem[]
   watchlist: WatchlistItem[]
+  role: string
 }
 
 export interface LoginRequest {

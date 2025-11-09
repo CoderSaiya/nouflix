@@ -1,0 +1,64 @@
+<div class="table-wrapper">
+  @if (!isLoading && studios.length > 0) {
+    <table class="table">
+      <thead>
+      <tr>
+        <th class="checkbox-column">
+          <input
+            type="checkbox"
+            class="checkbox-input"
+            [checked]="isAllSelectedValue()"
+            (change)="onToggleSelectAll()"
+            aria-label="Chọn tất cả"
+          />
+        </th>
+        <th>Tên Thể Loại</th>
+        <th>Mô Tả</th>
+        <th>Hành Động</th>
+      </tr>
+      </thead>
+      <tbody>
+        @for (studio of studios; track studio.id) {
+          <tr [class.selected]="selectedStudios.has(studio.id)">
+            <td class="checkbox-column">
+              <input
+                type="checkbox"
+                class="checkbox-input"
+                [checked]="selectedStudios.has(studio.id)"
+                (change)="onToggleSelect(studio.id)"
+                [attr.aria-label]="'Chọn ' + studio.name"
+              />
+            </td>
+            <td class="name-column">{{ studio.name }}</td>
+            <td class="description-column">{{ studio.description }}</td>
+            <td class="actions-column">
+              <button class="action-btn edit" (click)="onEdit(studio.id)" title="Sửa">
+                ✎
+              </button>
+              <button
+                class="action-btn delete"
+                (click)="onDelete(studio.id)"
+                title="Xóa"
+              >
+                🗑
+              </button>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+
+  @if (!isLoading && studios.length === 0) {
+    <div class="empty-state">
+      <p class="empty-message">Không có thể loại nào</p>
+    </div>
+  }
+
+  @if (isLoading) {
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <p>Đang tải...</p>
+    </div>
+  }
+</div>

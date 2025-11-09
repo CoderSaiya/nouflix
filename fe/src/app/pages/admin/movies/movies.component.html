@@ -1,0 +1,40 @@
+<div class="movies-container">
+  <div class="movies-header">
+    <h1 class="movies-title">Quản Lý Phim</h1>
+    <button class="btn btn-primary" (click)="createMovie()">
+      + Thêm Phim Mới
+    </button>
+  </div>
+
+  @if (selectedMovies.size > 0) {
+    <div class="movies-actions">
+      <span class="selection-info">{{ selectedMovies.size }} phim được chọn</span>
+      <button class="btn btn-danger" (click)="deleteSelected()">
+        Xóa Đã Chọn
+      </button>
+    </div>
+  }
+
+  <app-movie-table
+    [movies]="movies"
+    [selectedMovies]="selectedMovies"
+    [isLoading]="isLoading"
+    (toggleSelect)="toggleSelectMovie(Number($event))"
+    (toggleSelectAll)="toggleSelectAll()"
+    (edit)="editMovie($event)"
+    (delete)="openDeleteConfirm(Number($event))"
+  ></app-movie-table>
+
+  @if (isDeleteConfirmOpen) {
+    <div class="modal-overlay" (click)="cancelDelete()">
+      <div class="modal" (click)="$event.stopPropagation()">
+        <h2 class="modal-title">Xác Nhận Xóa</h2>
+        <p class="modal-message">Bạn có chắc chắn muốn xóa phim này?</p>
+        <div class="modal-actions">
+          <button class="btn btn-secondary" (click)="cancelDelete()">Hủy</button>
+          <button class="btn btn-danger" (click)="confirmDelete()">Xóa</button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

@@ -21,7 +21,7 @@ public class TaxonomyController(TaxonomyService svc) : Controller
         => Ok(GlobalResponse<GenreDto.GenreRes>.Success(await svc.GetGenreAsync(id, ct)));
     
     [HttpPost("genre")]
-    [Authorize("Admin")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> CreateGenre([FromBody] GenreDto.SaveReq req, CancellationToken ct)
     {
         if (string.IsNullOrWhiteSpace(req.Name)) 
@@ -32,7 +32,7 @@ public class TaxonomyController(TaxonomyService svc) : Controller
     }
     
     [HttpPut("genre/{id:int}")]
-    [Authorize("Admin")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> UpdateGenre([FromRoute] int id, [FromBody] GenreDto.SaveReq req, CancellationToken ct)
     {
         await svc.SaveGenreAsync(req.Name ?? "", req.Icon, id, ct);
@@ -40,7 +40,7 @@ public class TaxonomyController(TaxonomyService svc) : Controller
     }
     
     [HttpDelete("genre/{id:int}")]
-    [Authorize("Admin")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> DeleteGenre([FromRoute] int id, CancellationToken ct)
     {
         await svc.DeleteGenreAsync(id, ct);
@@ -58,7 +58,7 @@ public class TaxonomyController(TaxonomyService svc) : Controller
         => Ok(GlobalResponse<StudioRes>.Success(await svc.GetStudioAsync(id, ct)));
     
     [HttpPost("studio")]
-    [Authorize("Admin")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> CreateStudio([FromBody] string name, CancellationToken ct)
     {
         if (string.IsNullOrWhiteSpace(name)) 
@@ -69,7 +69,7 @@ public class TaxonomyController(TaxonomyService svc) : Controller
     }
     
     [HttpPut("studio/{id:int}")]
-    [Authorize("Admin")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Update([FromRoute] int id, [FromBody] string name, CancellationToken ct)
     {
         if (string.IsNullOrWhiteSpace(name)) return BadRequest("Name is required.");
@@ -79,7 +79,7 @@ public class TaxonomyController(TaxonomyService svc) : Controller
     }
     
     [HttpDelete("studio/{id:int}")]
-    [Authorize("Admin")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> DeleteStudio([FromRoute] int id, CancellationToken ct)
     {
         await svc.DeleteStudioAsync(id, ct);

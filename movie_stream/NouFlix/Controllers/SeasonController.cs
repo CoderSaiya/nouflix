@@ -16,7 +16,7 @@ public class SeasonController(SeasonService svc) : Controller
         => Ok(GlobalResponse<IEnumerable<SeasonRes>>.Success(await svc.GetAllSeasonsAsync(movieId, ct)));
     
     [HttpPost("movie/{movieId:int}")]
-    [Authorize("Admin")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Create([FromRoute] int movieId, [FromBody] SeasonDto.CreateSeasonReq req, CancellationToken ct)
     {
         if (!ModelState.IsValid) return ValidationProblem(ModelState);
@@ -26,7 +26,7 @@ public class SeasonController(SeasonService svc) : Controller
     }
     
     [HttpPut("{id:int}")]
-    [Authorize("Admin")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Update([FromRoute] int id, [FromBody] SeasonDto.UpdateSeasonReq req, CancellationToken ct)
     {
         if (!ModelState.IsValid) return ValidationProblem(ModelState);
@@ -36,7 +36,7 @@ public class SeasonController(SeasonService svc) : Controller
     }
 
     [HttpDelete("{id:int}")]
-    [Authorize("Admin")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Delete([FromRoute] int id, CancellationToken ct = default)
     {
         await svc.DeleteAsync(id, ct);

@@ -1,0 +1,22 @@
+.admin-layout {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background-color: var(--color-background);
+}
+
+.admin-container {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.admin-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--spacing-6);
+
+  @media (max-width: 768px) {
+    padding: var(--spacing-4);
+  }
+}

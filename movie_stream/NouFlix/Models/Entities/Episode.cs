@@ -21,6 +21,7 @@ public class Episode
     public QualityLevel Quality { get; set; } = QualityLevel.Low;
     public bool IsVipOnly { get; set; } = false;
     [NotMapped] public int TotalDurationMinutes => (int)Math.Round((Duration ?? TimeSpan.Zero).TotalMinutes);
+    [NotMapped] public int TotalDurationSeconds => (int)Math.Round((Duration ?? TimeSpan.Zero).TotalSeconds);
 
     public ICollection<VideoAsset> Videos { get; set; } = new List<VideoAsset>();
     public ICollection<ImageAsset> Images { get; set; } = new List<ImageAsset>();

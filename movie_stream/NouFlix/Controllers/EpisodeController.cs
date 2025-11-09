@@ -26,7 +26,7 @@ public class EpisodeController(EpisodeService svc) : Controller
         => Ok(GlobalResponse<IEnumerable<EpisodeRes>>.Success(await svc.GetBySeasonIds(movieId, seasonIds, ct)));
     
     [HttpPost]
-    [Authorize("Admin")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Create([FromBody] EpisodeDto.UpsertEpisodeReq req, CancellationToken ct)
     {
         if (!ModelState.IsValid) return ValidationProblem(ModelState);
@@ -36,7 +36,7 @@ public class EpisodeController(EpisodeService svc) : Controller
     }
     
     [HttpPut("{id:int}")]
-    [Authorize("Admin")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Update([FromRoute] int id, [FromBody] EpisodeDto.UpsertEpisodeReq req, CancellationToken ct)
     {
         if (!ModelState.IsValid) return ValidationProblem(ModelState);
@@ -46,7 +46,7 @@ public class EpisodeController(EpisodeService svc) : Controller
     }
 
     [HttpDelete("{id:int}")]
-    [Authorize("Admin")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Delete([FromRoute] int id, CancellationToken ct = default)
     {
         await svc.DeleteAsync(id, ct);

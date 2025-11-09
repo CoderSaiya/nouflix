@@ -1,0 +1,91 @@
+<div class="table-wrapper">
+  @if (!isLoading && movies.length > 0) {
+    <table class="movies-table">
+      <thead>
+      <tr>
+        <th class="checkbox-column">
+          <input
+            type="checkbox"
+            class="checkbox-input"
+            [checked]="isAllSelectedValue()"
+            (change)="onToggleSelectAll()"
+            aria-label="Chọn tất cả"
+          />
+        </th>
+        <th>Poster</th>
+        <th>Tiêu Đề</th>
+        <th>Năm</th>
+        <th>Thể Loại</th>
+        <th>Trạng Thái</th>
+        <th>Đánh Giá</th>
+        <th>Hành Động</th>
+      </tr>
+      </thead>
+      <tbody>
+      @for (movie of movies; track movie.id) {
+        <tr [class.selected]="selectedMovies.has(movie.id)">
+          <td class="checkbox-column">
+            <input
+              type="checkbox"
+              class="checkbox-input"
+              [checked]="selectedMovies.has(movie.id)"
+              (change)="onToggleSelect(movie.id)"
+              [attr.aria-label]="'Chọn ' + movie.title"
+            />
+          </td>
+          <td class="poster-column">
+            <img
+              [src]="movie.posterUrl"
+              [alt]="movie.title"
+              class="movie-poster"
+            />
+          </td>
+          <td class="title-column">{{ movie.title }}</td>
+          <td>{{ toYearFormat(movie.releaseDate) }}</td>
+          <td>
+            <div class="genres-list">
+              @for (genre of movie.genres; track genre) {
+                <span class="genre-tag">
+                  {{ genre.name }}
+                </span>
+              }
+            </div>
+          </td>
+          <td>
+          <span class="status-badge" [class]="getStatusClass(movie.status.toString())">
+            {{ movie.status }}
+          </span>
+          </td>
+          <td>
+            <div class="rating">
+              <span class="stars">★</span>
+              <span class="rating-value">{{ movie.avgRating }}</span>
+            </div>
+          </td>
+          <td class="actions-column">
+            <button class="action-btn edit" (click)="onEdit(movie.id)" title="Sửa">
+              ✎
+            </button>
+            <button class="action-btn delete" (click)="onDelete(movie.id)" title="Xóa">
+              🗑
+            </button>
+          </td>
+        </tr>
+      }
+      </tbody>
+    </table>
+  }
+
+  @if (!isLoading && movies.length === 0) {
+    <div class="empty-state">
+      <p class="empty-message">Không có phim nào</p>
+    </div>
+  }
+
+  @if (isLoading) {
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <p>Đang tải...</p>
+    </div>
+  }
+</div>

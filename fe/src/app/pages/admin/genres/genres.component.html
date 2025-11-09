@@ -1,0 +1,40 @@
+<div class="container">
+  <div class="header">
+    <h1 class="title">Quản Lý Thể Loại</h1>
+    <button class="btn btn-primary" (click)="create()">
+      + Thêm Thể Loại Mới
+    </button>
+  </div>
+
+  @if (selectedGenre.size > 0) {
+    <div class="actions">
+      <span class="selection-info">{{ selectedGenre.size }} thể loại được chọn</span>
+      <button class="btn btn-danger" (click)="deleteSelected()">
+        Xóa Đã Chọn
+      </button>
+    </div>
+  }
+
+  <app-genre-table
+    [genres]="genres"
+    [selectedGenres]="selectedGenre"
+    [isLoading]="isLoading"
+    (toggleSelect)="toggleSelectGenre(Number($event))"
+    (toggleSelectAll)="toggleSelectAll()"
+    (edit)="edit($event)"
+    (delete)="openDeleteConfirm(Number($event))"
+  ></app-genre-table>
+
+  @if (isDeleteConfirmOpen) {
+    <div class="modal-overlay" (click)="cancelDelete()">
+      <div class="modal" (click)="$event.stopPropagation()">
+        <h2 class="modal-title">Xác Nhận Xóa</h2>
+        <p class="modal-message">Bạn có chắc chắn muốn xóa thể loại này?</p>
+        <div class="modal-actions">
+          <button class="btn btn-secondary" (click)="cancelDelete()">Hủy</button>
+          <button class="btn btn-danger" (click)="confirmDelete()">Xóa</button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

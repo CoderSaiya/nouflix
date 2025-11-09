@@ -1,0 +1,22 @@
+<div class="form-section">
+  <h3 class="section-title">Quản Lý Phụ Đề</h3>
+
+  <div class="subtitle-section">
+    <h4 class="subsection-title">Thêm Phụ Đề</h4>
+    <div class="file-upload-area">
+      <input
+        type="file"
+        id="subtitle-input"
+        class="file-input"
+        accept=".srt,.vtt"
+        (change)="onSubtitleChange($event)"
+        multiple
+      />
+      <label for="subtitle-input" class="file-upload-label">
+        <span class="upload-icon">📄</span>
+        <span class="upload-text">Chọn hoặc kéo thả file Phụ Đề (SRT, VTT)</span>
+      </label>
+    </div>
+    <p class="helper-text">Hỗ trợ định dạng: SRT, VTT</p>
+  </div>
+</div>

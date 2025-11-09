@@ -39,10 +39,13 @@ export class LoginComponent implements OnInit{
     this.authService.login(request).subscribe({
       next: (response) => {
         this.authService.setAuthData(response)
-        this.router.navigate(["/"])
+        console.log(response)
+        response.user.role.toLowerCase() === 'user' ?
+          this.router.navigate(["/"]) :
+          this.router.navigate(["/admin"])
       },
       error: (err) => {
-        this.error.set(err.message || "Đăng nhập thất bại")
+        this.error.set(err.detail || err.message  || "Đăng nhập thất bại")
         this.isLoading.set(false)
       },
       complete: () => {

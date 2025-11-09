@@ -10,7 +10,6 @@ export interface Movie extends MovieItem {
   // spokenLanguages: SpokenLanguage[]
   // budget: number
   // revenue: number
-  status: PublishStatus
   tagline: string
   adult: boolean
   video: boolean
@@ -18,6 +17,7 @@ export interface Movie extends MovieItem {
   episodes?: Episode[]
   numberOfSeasons?: number
   numberOfEpisodes?: number
+  language: string
 }
 
 export interface MovieItem {
@@ -28,13 +28,22 @@ export interface MovieItem {
   avgRating: number
   releaseDate: string
   genres: Genre[]
+  studios: Studio[]
+  status: PublishStatus
 }
 
 export interface Genre {
   id: number
   name: string
   icon: string
+  description: string
   movieCount: number
+}
+
+export interface Studio {
+  id: number;
+  name: string;
+  description: string;
 }
 
 export interface ProductionCountry {
@@ -99,11 +108,22 @@ export interface Season {
 export interface Episode {
   id: number
   number: number
+  seasonId?: number
   seasonNumber: number
   title: string
   overview: string
   releaseDate: string
   runtime: number
+  status: PublishStatus
+}
+
+export interface VideoAsset {
+  id: number;
+  kind: string;
+  quality: string;
+  bucket: string;
+  objectKey: string;
+  episodeId?: number | null;
 }
 
 export enum MovieType {

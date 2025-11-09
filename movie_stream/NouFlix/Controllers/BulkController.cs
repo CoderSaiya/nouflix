@@ -11,7 +11,7 @@ namespace NouFlix.Controllers;
 public class BulkController(BulkEpisodesService svc) : Controller
 {
     [HttpGet("movies")]
-    [Authorize("Admin")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> SearchMovies([FromQuery] string? q, CancellationToken ct)
     {
         var items = await svc.SearchMoviesAsync(q, ct);
@@ -20,7 +20,7 @@ public class BulkController(BulkEpisodesService svc) : Controller
     }
     
     [HttpGet("movie/{movieId:int}/info")]
-    [Authorize("Admin")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> LoadMovieInfo([FromRoute] int movieId, CancellationToken ct)
     {
         var res = await svc.LoadMovieInfoAsync(movieId, ct);
@@ -44,7 +44,7 @@ public class BulkController(BulkEpisodesService svc) : Controller
     }
     
     [HttpPost("plan")]
-    [Authorize("Admin")]
+    [Authorize(Roles = "Admin")]
     [Consumes("application/json")]
     public async Task<IActionResult> BuildPlan([FromBody] SystemDto.BuildPlanReq? req, CancellationToken ct)
     {
@@ -64,7 +64,7 @@ public class BulkController(BulkEpisodesService svc) : Controller
     }
     
     [HttpPost("create")]
-    [Authorize("Admin")]
+    [Authorize(Roles = "Admin")]
     [Consumes("application/json")]
     public async Task<IActionResult> Create([FromBody] SystemDto.CreateReq req, CancellationToken ct)
     {

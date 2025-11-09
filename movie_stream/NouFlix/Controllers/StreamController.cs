@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using NouFlix.DTOs;
+using NouFlix.Models.Common;
 using NouFlix.Services;
 
 namespace NouFlix.Controllers;
@@ -19,9 +21,9 @@ public class StreamController(StreamService svc) : Controller
         => svc.GetMovieVariantAsync(movieId, quality, HttpContext, ct);
     
     [HttpGet("movies/{movieId:int}/progress")]
-    [AllowAnonymous]
-    public Task<IResult> GetMovieProgress([FromRoute] int movieId, CancellationToken ct)
-        => svc.GetMovieProgressAsync(movieId, HttpContext, ct);
+    [Authorize]
+    public async Task<IActionResult> GetMovieProgress([FromRoute] int movieId, CancellationToken ct)
+        => Ok(GlobalResponse<StreamDto.Position>.Success(await svc.GetMovieProgressAsync(movieId, HttpContext, ct)));
     
     [HttpGet("movies/{movieId:int}/{quality}/{file}")]
     [AllowAnonymous]
@@ -49,9 +51,10 @@ public class StreamController(StreamService svc) : Controller
         => svc.GetEpisodeVariantAsync(movieId, episodeId, quality, HttpContext, ct);
     
     [HttpGet("movies/{movieId:int}/episodes/{episodeId:int}/progress")]
-    [AllowAnonymous]
-    public Task<IResult> GetEpisodeProgress([FromRoute] int movieId, [FromRoute] int episodeId, CancellationToken ct)
-        => svc.GetEpisodeProgressAsync(movieId, episodeId, HttpContext, ct);
+    [Authorize]
+    public async Task<IActionResult> GetEpisodeProgress([FromRoute] int movieId, [FromRoute] int episodeId,
+        CancellationToken ct)
+        => Ok(GlobalResponse<StreamDto.Position>.Success(await svc.GetEpisodeProgressAsync(movieId, episodeId, HttpContext, ct)));
     
     [HttpGet("movies/{movieId:int}/episodes/{episodeId:int}/{quality}/{file}")]
     [AllowAnonymous]

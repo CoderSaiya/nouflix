@@ -1,0 +1,239 @@
+<div class="settings-container">
+  <div class="settings-header">
+    <h1 class="page-title">Cấu Hình Hệ Thống</h1>
+    <p class="page-subtitle">Quản lý các thiết lập chung của trang web</p>
+  </div>
+
+  @if (saveSuccess) {
+    <div class="success-message">
+      ✓ Cấu hình đã được lưu thành công
+    </div>
+  }
+
+  <div [formGroup]="settingsForm" class="settings-form">
+    <!-- General Settings Section -->
+    <div class="settings-section">
+      <h2 class="section-title">Cấu Hình Chung</h2>
+
+      <div class="form-group">
+        <label for="siteName" class="form-label">Tên Trang Web *</label>
+        <input
+          type="text"
+          id="siteName"
+          formControlName="siteName"
+          class="form-input"
+          placeholder="Nhập tên trang web"
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="siteDescription" class="form-label">Mô Tả Trang Web *</label>
+        <textarea
+          id="siteDescription"
+          formControlName="siteDescription"
+          class="form-textarea"
+          placeholder="Nhập mô tả trang web"
+          rows="3"
+        ></textarea>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="logo" class="form-label">Logo</label>
+          <div class="file-upload">
+            <input
+              type="file"
+              id="logo"
+              class="file-input"
+              accept="image/*"
+              (change)="onFileSelected($event, 'logo')"
+            />
+            <label for="logo" class="file-label">Chọn Logo</label>
+          </div>
+          <p class="helper-text" *ngIf="settingsForm.get('logo')?.value">
+            {{ settingsForm.get('logo')?.value }}
+          </p>
+        </div>
+
+        <div class="form-group">
+          <label for="favicon" class="form-label">Favicon</label>
+          <div class="file-upload">
+            <input
+              type="file"
+              id="favicon"
+              class="file-input"
+              accept="image/*"
+              (change)="onFileSelected($event, 'favicon')"
+            />
+            <label for="favicon" class="file-label">Chọn Favicon</label>
+          </div>
+          <p class="helper-text" *ngIf="settingsForm.get('favicon')?.value">
+            {{ settingsForm.get('favicon')?.value }}
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Display Settings Section -->
+    <div class="settings-section">
+      <h2 class="section-title">Cài Đặt Hiển Thị</h2>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="defaultLanguage" class="form-label">Ngôn Ngữ Mặc Định *</label>
+          <select id="defaultLanguage" formControlName="defaultLanguage" class="form-input">
+            <option *ngFor="let lang of languageOptions" [value]="lang.value">
+              {{ lang.label }}
+            </option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="theme" class="form-label">Chủ Đề *</label>
+          <select id="theme" formControlName="theme" class="form-input">
+            <option *ngFor="let theme of themeOptions" [value]="theme.value">
+              {{ theme.label }}
+            </option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="itemsPerPage" class="form-label">Mục Trên Mỗi Trang *</label>
+          <input
+            type="number"
+            id="itemsPerPage"
+            formControlName="itemsPerPage"
+            class="form-input"
+            min="5"
+            max="100"
+          />
+        </div>
+      </div>
+    </div>
+
+    <!-- Email Settings Section -->
+    <div class="settings-section">
+      <h2 class="section-title">Cài Đặt Email</h2>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="supportEmail" class="form-label">Email Hỗ Trợ *</label>
+          <input
+            type="email"
+            id="supportEmail"
+            formControlName="supportEmail"
+            class="form-input"
+            placeholder="support@example.com"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="contactEmail" class="form-label">Email Liên Hệ *</label>
+          <input
+            type="email"
+            id="contactEmail"
+            formControlName="contactEmail"
+            class="form-input"
+            placeholder="contact@example.com"
+          />
+        </div>
+      </div>
+    </div>
+
+    <!-- Upload Settings Section -->
+    <div class="settings-section">
+      <h2 class="section-title">Cài Đặt Tải Lên</h2>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="maxUploadSize" class="form-label">Kích Thước Tối Đa (MB) *</label>
+          <input
+            type="number"
+            id="maxUploadSize"
+            formControlName="maxUploadSize"
+            class="form-input"
+            min="1"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="allowedVideoFormats" class="form-label">Định Dạng Video Cho Phép</label>
+          <input
+            type="text"
+            id="allowedVideoFormats"
+            formControlName="allowedVideoFormats"
+            class="form-input"
+            placeholder="mp4,mkv,avi"
+          />
+          <p class="helper-text">Cách nhau bằng dấu phẩy</p>
+        </div>
+
+        <div class="form-group">
+          <label for="allowedImageFormats" class="form-label">Định Dạng Ảnh Cho Phép</label>
+          <input
+            type="text"
+            id="allowedImageFormats"
+            formControlName="allowedImageFormats"
+            class="form-input"
+            placeholder="jpg,png,webp"
+          />
+          <p class="helper-text">Cách nhau bằng dấu phẩy</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Features Section -->
+    <div class="settings-section">
+      <h2 class="section-title">Tính Năng</h2>
+
+      <div class="feature-toggles">
+        <label class="toggle-label">
+          <input
+            type="checkbox"
+            formControlName="enableNotifications"
+            class="toggle-input"
+          />
+          <span class="toggle-text">Bật Thông Báo</span>
+        </label>
+
+        <label class="toggle-label">
+          <input
+            type="checkbox"
+            formControlName="enableAnalytics"
+            class="toggle-input"
+          />
+          <span class="toggle-text">Bật Phân Tích</span>
+        </label>
+
+        <label class="toggle-label">
+          <input
+            type="checkbox"
+            formControlName="maintenanceMode"
+            class="toggle-input"
+          />
+          <span class="toggle-text">Chế Độ Bảo Trì</span>
+        </label>
+      </div>
+    </div>
+
+    <!-- Form Actions -->
+    <div class="form-actions">
+      <button
+        type="button"
+        class="btn btn-secondary"
+        (click)="resetSettings()"
+        [disabled]="isSaving"
+      >
+        Đặt Lại
+      </button>
+      <button
+        type="button"
+        class="btn btn-primary"
+        (click)="saveSettings()"
+        [disabled]="settingsForm.invalid || isSaving"
+      >
+        {{ isSaving ? "Đang Lưu..." : "Lưu Cấu Hình" }}
+      </button>
+    </div>
+  </div>
+</div>

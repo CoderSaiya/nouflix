@@ -1,0 +1,57 @@
+<div class="users-container">
+  <div class="users-header">
+    <h1 class="users-title">Quản Lý Người Dùng</h1>
+    <button class="btn btn-primary" (click)="createUser()">
+      + Thêm Người Dùng Mới
+    </button>
+  </div>
+
+  <div class="users-actions" *ngIf="selectedUsers.size > 0">
+    <span class="selection-info">{{ selectedUsers.size }} người dùng được chọn</span>
+    <button class="btn btn-danger" (click)="deleteSelected()">
+      Xóa Đã Chọn
+    </button>
+  </div>
+
+  <app-user-table
+    [users]="paginatedUsers"
+    [selectedUsers]="selectedUsers"
+    [isLoading]="isLoading"
+    (toggleSelect)="toggleSelectUser($event)"
+    (toggleSelectAll)="toggleSelectAll()"
+    (edit)="editUser($event)"
+    (delete)="openDeleteConfirm($event)"
+    (toggleStatus)="toggleUserStatus($event)"
+  ></app-user-table>
+
+  <div class="pagination" *ngIf="!isLoading && users.length > 0">
+    <button
+      class="pagination-btn"
+      (click)="previousPage()"
+      [disabled]="currentPage === 1"
+    >
+      ← Trước
+    </button>
+    <span class="pagination-info"
+    >Trang {{ currentPage }} / {{ totalPages }}</span
+    >
+    <button
+      class="pagination-btn"
+      (click)="nextPage()"
+      [disabled]="currentPage === totalPages"
+    >
+      Tiếp →
+    </button>
+  </div>
+
+  <div class="modal-overlay" *ngIf="isDeleteConfirmOpen" (click)="cancelDelete()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <h2 class="modal-title">Xác Nhận Xóa</h2>
+      <p class="modal-message">Bạn có chắc chắn muốn xóa người dùng này?</p>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" (click)="cancelDelete()">Hủy</button>
+        <button class="btn btn-danger" (click)="confirmDelete()">Xóa</button>
+      </div>
+    </div>
+  </div>
+</div>

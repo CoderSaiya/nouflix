@@ -45,6 +45,12 @@ public class Movie
             : (int)Math.Round(Episodes?.Sum(e => e.Duration?.TotalMinutes ?? 0) ?? 0);
     
     [NotMapped]
+    public int TotalDurationSeconds =>
+        Type == MovieType.Single
+            ? (int)Math.Round((Runtime ?? TimeSpan.Zero).TotalSeconds)
+            : (int)Math.Round(Episodes?.Sum(e => e.Duration?.TotalSeconds ?? 0) ?? 0);
+    
+    [NotMapped]
     public float AvgRating => Reviews.Count == 0 ? 0 : (float)Reviews.Sum(r => r.Number) / Reviews.Count;
     [NotMapped]
     public int VoteCount => Reviews.Count;

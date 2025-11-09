@@ -9,7 +9,7 @@
   display: flex;
   align-items: center;
   overflow: hidden;
-  
+
   @media (max-width: 768px) {
     height: 70vh;
     min-height: 500px;
@@ -22,7 +22,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  
+
   img {
     width: 100%;
     height: 100%;
@@ -47,7 +47,7 @@
     rgba(10, 10, 10, 0.95) 0%,
     transparent 50%
   );
-  
+
   @media (max-width: 768px) {
     background: linear-gradient(
       to top,
@@ -63,7 +63,7 @@
   z-index: 1;
   max-width: 600px;
   animation: fadeIn 0.8s ease-out;
-  
+
   @media (max-width: 768px) {
     max-width: 100%;
   }
@@ -72,14 +72,14 @@
 .hero-badge {
   display: inline-flex;
   align-items: center;
-  gap: var(--spacing-sm);
-  padding: var(--spacing-sm) var(--spacing-md);
+  gap: var(--spacing-2);
+  padding: var(--spacing-2) var(--spacing-3);
   background: var(--color-primary);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-3);
   font-size: 0.875rem;
   font-weight: 600;
-  margin-bottom: var(--spacing-lg);
-  
+  margin-bottom: var(--spacing-4);
+
   svg {
     color: var(--color-accent);
   }
@@ -90,23 +90,23 @@
   font-family: var(--font-display);
   font-weight: 900;
   line-height: 1.1;
-  margin-bottom: var(--spacing-lg);
+  margin-bottom: var(--spacing-4);
   text-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
 }
 
 .hero-meta {
   display: flex;
   align-items: center;
-  gap: var(--spacing-lg);
+  gap: var(--spacing-4);
   flex-wrap: wrap;
-  margin-bottom: var(--spacing-xl);
+  margin-bottom: var(--spacing-5);
   font-size: 1rem;
   font-weight: 500;
-  
+
   .rating {
     display: flex;
     align-items: center;
-    gap: var(--spacing-xs);
+    gap: var(--spacing-1);
     color: var(--color-accent);
     font-weight: 700;
   }
@@ -116,10 +116,10 @@
   font-size: 1.125rem;
   line-height: 1.7;
   color: var(--color-text-secondary);
-  margin-bottom: var(--spacing-2xl);
+  margin-bottom: var(--spacing-6);
   max-width: 550px;
   text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
-  
+
   @media (max-width: 768px) {
     font-size: 1rem;
   }
@@ -127,19 +127,19 @@
 
 .hero-actions {
   display: flex;
-  gap: var(--spacing-md);
+  gap: var(--spacing-3);
   flex-wrap: wrap;
 }
 
 .movie-section {
-  padding: var(--spacing-3xl) 0;
+  padding: var(--spacing-7) 0;
 }
 
 .section-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: var(--spacing-xl);
+  margin-bottom: var(--spacing-5);
 }
 
 .section-title {
@@ -151,27 +151,27 @@
 .section-link {
   display: flex;
   align-items: center;
-  gap: var(--spacing-xs);
+  gap: var(--spacing-1);
   font-size: 1rem;
   font-weight: 600;
   color: var(--color-text-secondary);
   text-decoration: none;
   transition: all var(--transition-fast);
-  
+
   &:hover {
     color: var(--color-primary);
-    gap: var(--spacing-sm);
+    gap: var(--spacing-2);
   }
 }
 
 .movie-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: var(--spacing-xl);
-  
+  gap: var(--spacing-5);
+
   @media (max-width: 640px) {
     grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-    gap: var(--spacing-md);
+    gap: var(--spacing-3);
   }
 }
 
@@ -188,22 +188,22 @@
 .movie-poster {
   position: relative;
   aspect-ratio: 2/3;
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-3);
   overflow: hidden;
   background: var(--color-surface);
-  margin-bottom: var(--spacing-md);
-  
+  margin-bottom: var(--spacing-3);
+
   img {
     width: 100%;
     height: 100%;
     object-fit: cover;
     transition: transform var(--transition-slow);
   }
-  
+
   &:hover img {
     transform: scale(1.05);
   }
-  
+
   &:hover .movie-overlay {
     opacity: 1;
   }
@@ -235,7 +235,7 @@
   align-items: center;
   justify-content: center;
   transition: all var(--transition-base);
-  
+
   &:hover {
     transform: scale(1.1);
     background: var(--color-primary-hover);
@@ -244,29 +244,29 @@
 
 .movie-rating {
   position: absolute;
-  top: var(--spacing-sm);
-  right: var(--spacing-sm);
+  top: var(--spacing-2);
+  right: var(--spacing-2);
   display: flex;
   align-items: center;
-  gap: var(--spacing-xs);
-  padding: var(--spacing-xs) var(--spacing-sm);
+  gap: var(--spacing-1);
+  padding: var(--spacing-1) var(--spacing-2);
   background: rgba(0, 0, 0, 0.8);
   backdrop-filter: blur(8px);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-2);
   font-size: 0.875rem;
   font-weight: 700;
   color: var(--color-accent);
 }
 
 .movie-info {
-  padding: 0 var(--spacing-xs);
+  padding: 0 var(--spacing-1);
 }
 
 .movie-title {
   font-size: 1rem;
   font-weight: 600;
   color: var(--color-text-primary);
-  margin-bottom: var(--spacing-xs);
+  margin-bottom: var(--spacing-1);
   overflow: hidden;
   text-overflow: ellipsis;
   display: -webkit-box;
@@ -279,7 +279,7 @@
 .movie-meta {
   display: flex;
   align-items: center;
-  gap: var(--spacing-sm);
+  gap: var(--spacing-2);
   font-size: 0.875rem;
   color: var(--color-text-muted);
 }

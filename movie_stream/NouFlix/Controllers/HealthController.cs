@@ -15,7 +15,7 @@ public class HealthController(SystemHealthService health, IMemoryCache cache) : 
     private const string CacheKey = "system-health:report";
     
     [HttpGet]
-    [Authorize("Admin")]
+    [Authorize(Roles = "Admin")]
     [ResponseCache(Duration = 5, Location = ResponseCacheLocation.Client, NoStore = false)]
     public async Task<IActionResult> Get([FromQuery] bool fresh = false, CancellationToken ct = default)
     {
@@ -35,11 +35,11 @@ public class HealthController(SystemHealthService health, IMemoryCache cache) : 
     }
     
     [HttpGet("live")]
-    [Authorize("Admin")]
+    [Authorize(Roles = "Admin")]
     public IActionResult Live() => Ok("OK");
     
     [HttpGet("ready")]
-    [Authorize("Admin")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Ready(CancellationToken ct = default)
     {
         var report = await health.CheckAllAsync(ct);
@@ -49,7 +49,7 @@ public class HealthController(SystemHealthService health, IMemoryCache cache) : 
     }
     
     [HttpGet("checks/{name}")]
-    [Authorize("Admin")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> RunOne([FromRoute] string name, CancellationToken ct = default)
     {
         var result = await health.CheckOneAsync(name, ct);

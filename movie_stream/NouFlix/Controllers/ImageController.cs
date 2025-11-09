@@ -28,7 +28,7 @@ public class ImageController(
     }
 
     [HttpPost("movie/{movieId:int}/{kind}")]
-    [Authorize("Admin")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Create([FromRoute] int movieId, [FromRoute] ImageKind kind, IFormFile f)
     {
         var ext = Path.GetExtension(f.FileName);
@@ -57,7 +57,7 @@ public class ImageController(
     }
 
     [HttpDelete("{id:int}")]
-    [Authorize("Admin")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Delete([FromRoute] int id)
     {
         await svc.DeleteImageAsync(id);

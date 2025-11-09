@@ -1,0 +1,50 @@
+<header class="admin-header">
+  <div class="header-content">
+    <div class="header-left">
+      <button
+        class="sidebar-toggle"
+        (click)="onToggleSidebar()"
+        [attr.aria-label]="
+          isSidebarCollapsed ? 'Mở sidebar' : 'Đóng sidebar'
+        "
+      >
+        <span class="toggle-icon">☰</span>
+      </button>
+
+      <h1 class="admin-title">NouFlix Admin</h1>
+    </div>
+
+    <div class="header-right">
+      <div class="search-box">
+        <input
+          type="text"
+          placeholder="Tìm kiếm..."
+          class="search-input"
+          aria-label="Tìm kiếm"
+        />
+      </div>
+
+      <div class="user-menu">
+        <button
+          class="user-button"
+          (click)="toggleUserMenu()"
+          aria-label="Menu người dùng"
+        >
+          <span class="avatar">A</span>
+          <span class="user-info">Admin User</span>
+        </button>
+
+        @if (isUserMenuOpen) {
+          <div class="user-dropdown">
+            <a href="#" class="dropdown-item">Hồ sơ</a>
+            <a href="#" class="dropdown-item">Cài đặt</a>
+            <hr class="dropdown-divider" />
+            <button class="dropdown-item logout" (click)="onLogout()">
+              Đăng xuất
+            </button>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+</header>

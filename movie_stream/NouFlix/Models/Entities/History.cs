@@ -17,5 +17,8 @@ public class History
 
     public int PositionSecond { get; set; } = 0;
     public bool IsCompleted { get; set; } = false;
+    [NotMapped] public bool IsFinished => Episode is null ?
+        PositionSecond >= Movie.TotalDurationSeconds :
+        PositionSecond >= Episode.TotalDurationSeconds;
     public DateTime WatchedDate { get; set; } = DateTime.UtcNow;
 }

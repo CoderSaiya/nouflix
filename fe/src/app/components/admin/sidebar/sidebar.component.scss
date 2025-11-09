@@ -1,0 +1,161 @@
+.admin-sidebar {
+  --sidebar-expanded-width: 280px;
+  --sidebar-collapsed-width: 80px;
+  --header-height: 64px;
+  width: var(--sidebar-expanded-width);
+  background-color: var(--color-surface);
+  border-right: 1px solid var(--color-border);
+  overflow: hidden;
+  transition: width 320ms cubic-bezier(0.2, 0.9, 0.2, 1), box-shadow 200ms;
+  will-change: width;
+  position: sticky;
+  top: var(--header-height);
+  height: calc(100vh - var(--header-height));
+  overflow-y: auto;
+  align-self: stretch;
+
+  .sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    padding: var(--spacing-3);
+    gap: var(--spacing-2);
+    align-items: stretch;
+  }
+
+  .sidebar-item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-4);
+    padding: 12px 18px;
+    border-radius: 6px;
+    color: var(--color-text-secondary);
+    text-decoration: none;
+    transition: background-color 180ms, color 180ms, transform 200ms;
+    cursor: pointer;
+    font-size: 0.95rem;
+    width: 100%;
+    box-sizing: border-box;
+    overflow: hidden;
+  }
+
+  .sidebar-icon {
+    font-size: 1.25rem;
+    min-width: 24px; /* used when expanded */
+    display: inline-block;
+    flex: 0 0 24px;
+    text-align: center;
+    transition: transform 280ms cubic-bezier(.2,.9,.2,1);
+    will-change: transform;
+  }
+
+  .sidebar-label {
+    display: inline-block;
+    white-space: nowrap;
+    overflow: hidden;
+    max-width: 1000px; /* large when expanded */
+    opacity: 1;
+    transform: translateX(0);
+    transition:
+      max-width 320ms cubic-bezier(.2,.9,.2,1),
+      opacity 200ms ease,
+      transform 320ms cubic-bezier(.2,.9,.2,1);
+    will-change: max-width, opacity, transform;
+  }
+
+  &.collapsed {
+    width: var(--sidebar-collapsed-width);
+    box-shadow: none;
+
+    .sidebar-nav {
+      align-items: center;
+      padding-left: 8px;
+      padding-right: 8px;
+    }
+
+    .sidebar-item {
+      justify-content: center; /* center icon */
+      padding: 10px; /* small padding */
+      gap: 0; /* remove gap that pushes icon */
+    }
+
+    /* shrink icon slightly and lift to center */
+    .sidebar-icon {
+      transform: translateY(0); /* keep it centered */
+      flex: 0 0 auto;
+      min-width: 0; /* IMPORTANT: avoid min-width pushing icon */
+      margin: 0;
+    }
+
+    /* hide label smoothly: reduce max-width and fade out + slight translate */
+    .sidebar-label {
+      max-width: 0;            /* collapse the width smoothly */
+      opacity: 0;              /* fade out */
+      transform: translateX(-6px); /* small slide for nicer effect */
+      pointer-events: none;    /* prevent interaction when hidden */
+    }
+
+    /* ensure active background still covers full narrow width and icon centered */
+    .sidebar-item.active {
+      padding-left: 0;
+      padding-right: 0;
+      justify-content: center;
+    }
+  }
+
+  &.collapsing {
+    transition: width 320ms cubic-bezier(0.2, 0.9, 0.2, 1) 120ms;
+  }
+
+  @media (max-width: 768px) {
+    position: fixed;
+    left: 0;
+    top: var(--header-height);
+    height: calc(100vh - var(--header-height));
+    z-index: 90;
+
+    &.collapsed {
+      margin-left: -280px;
+    }
+  }
+}
+
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  padding: var(--spacing-3);
+  gap: var(--spacing-2);
+  align-items: stretch;
+}
+
+.sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-4);
+  padding: var(--spacing-4) var(--spacing-5);
+  border-radius: 4px;
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  transition: all 0.2s;
+  cursor: pointer;
+  font-size: 0.95rem;
+
+  &:hover {
+    background-color: var(--color-primary-hover);
+    color: var(--color-text-primary);
+  }
+
+  &.active {
+    background-color: var(--color-primary);
+    color: white;
+  }
+}
+
+.sidebar-icon {
+  font-size: 1.25rem;
+  min-width: 24px;
+  text-align: center;
+}
+
+.sidebar-label {
+  font-weight: 500;
+}

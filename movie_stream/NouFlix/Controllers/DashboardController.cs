@@ -12,7 +12,7 @@ namespace NouFlix.Controllers;
 public class DashboardController(MinioObjectStorage storage, DashboardService svc) : Controller
 {
     [HttpGet]
-    [Authorize("Admin")]
+    [Authorize(Roles = "Admin")]
     [ResponseCache(Duration = 5, Location = ResponseCacheLocation.Client, NoStore = false)]
     public async Task<IActionResult> Get(CancellationToken ct = default)
     {

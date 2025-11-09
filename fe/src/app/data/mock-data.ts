@@ -16,9 +16,9 @@ export const MOCK_MOVIES: Movie[] = [
     voteCount: 12543,
     popularity: 9845.32,
     genres: [
-      { id: 1, name: "Khoa Học Viễn Tưởng", icon: "", movieCount: 0 },
-      { id: 2, name: "Phiêu Lưu", icon: "", movieCount: 0 },
-      { id: 3, name: "Kịch Tính", icon: "", movieCount: 0 },
+      { id: 1, name: "Khoa Học Viễn Tưởng", icon: "", movieCount: 0, description: "" },
+      { id: 2, name: "Phiêu Lưu", icon: "", movieCount: 0, description: "" },
+      { id: 3, name: "Kịch Tính", icon: "", movieCount: 0, description: "" },
     ],
     // productionCountries: [
     //   { iso_3166_1: "US", name: "United States" },
@@ -35,6 +35,8 @@ export const MOCK_MOVIES: Movie[] = [
     adult: false,
     video: false,
     type: MovieType.Single,
+    language: 'vi',
+    studios: [{id: 1, name: "test", description: ""}],
   },
   {
     id: 2,
@@ -51,9 +53,9 @@ export const MOCK_MOVIES: Movie[] = [
     voteCount: 9876,
     popularity: 8234.56,
     genres: [
-      { id: 4, name: "Hình Sự", icon: "", movieCount: 0 },
-      { id: 5, name: "Bí Ẩn", icon: "", movieCount: 0 },
-      { id: 6, name: "Kinh Dị", icon: "", movieCount: 0 },
+      { id: 4, name: "Hình Sự", icon: "", movieCount: 0, description: "" },
+      { id: 5, name: "Bí Ẩn", icon: "", movieCount: 0, description: "" },
+      { id: 6, name: "Kinh Dị", icon: "", movieCount: 0, description: "" },
     ],
     // productionCountries: [{ iso_3166_1: "US", name: "United States" }],
     // spokenLanguages: [{ iso_639_1: "en", name: "English" }],
@@ -64,6 +66,8 @@ export const MOCK_MOVIES: Movie[] = [
     adult: false,
     video: false,
     type: MovieType.Single,
+    language: 'vi',
+    studios: [{id: 1, name: "test", description: ""}],
   },
   {
     id: 3,
@@ -80,8 +84,8 @@ export const MOCK_MOVIES: Movie[] = [
     voteCount: 15234,
     popularity: 7654.21,
     genres: [
-      { id: 7, name: "Tình Cảm", icon: "", movieCount: 0 },
-      { id: 8, name: "Chính Kịch", icon: "", movieCount: 0 },
+      { id: 7, name: "Tình Cảm", icon: "", movieCount: 0, description: "" },
+      { id: 8, name: "Chính Kịch", icon: "", movieCount: 0, description: "" },
     ],
     // productionCountries: [
     //   { iso_3166_1: "KR", name: "South Korea" },
@@ -98,6 +102,8 @@ export const MOCK_MOVIES: Movie[] = [
     adult: false,
     video: false,
     type: MovieType.Single,
+    language: 'vi',
+    studios: [{id: 1, name: "test", description: ""}],
   },
   {
     id: 4,
@@ -114,9 +120,9 @@ export const MOCK_MOVIES: Movie[] = [
     voteCount: 18765,
     popularity: 9234.78,
     genres: [
-      { id: 9, name: "Hành Động", icon: "", movieCount: 0 },
-      { id: 1, name: "Khoa Học Viễn Tưởng", icon: "", movieCount: 0 },
-      { id: 2, name: "Phiêu Lưu", icon: "", movieCount: 0 },
+      { id: 9, name: "Hành Động", icon: "", movieCount: 0, description: "" },
+      { id: 1, name: "Khoa Học Viễn Tưởng", icon: "", movieCount: 0, description: "" },
+      { id: 2, name: "Phiêu Lưu", icon: "", movieCount: 0, description: "" },
     ],
     // productionCountries: [
     //   { iso_3166_1: "US", name: "United States" },
@@ -130,6 +136,8 @@ export const MOCK_MOVIES: Movie[] = [
     adult: false,
     video: false,
     type: MovieType.Single,
+    language: 'vi',
+    studios: [{id: 1, name: "test", description: ""}],
   },
   {
     id: 5,
@@ -146,9 +154,9 @@ export const MOCK_MOVIES: Movie[] = [
     voteCount: 8543,
     popularity: 6789.45,
     genres: [
-      { id: 6, name: "Kinh Dị", icon: "", movieCount: 0 },
-      { id: 5, name: "Bí Ẩn", icon: "", movieCount: 0 },
-      { id: 10, name: "Giật Gân", icon: "", movieCount: 0 },
+      { id: 6, name: "Kinh Dị", icon: "", movieCount: 0, description: "" },
+      { id: 5, name: "Bí Ẩn", icon: "", movieCount: 0, description: "" },
+      { id: 10, name: "Giật Gân", icon: "", movieCount: 0, description: "" },
     ],
     // productionCountries: [{ iso_3166_1: "US", name: "United States" }],
     // spokenLanguages: [{ iso_639_1: "en", name: "English" }],
@@ -159,6 +167,8 @@ export const MOCK_MOVIES: Movie[] = [
     adult: false,
     video: false,
     type: MovieType.Single,
+    language: 'vi',
+    studios: [{id: 1, name: "test", description: ""}],
   },
   {
     id: 6,
@@ -175,9 +185,9 @@ export const MOCK_MOVIES: Movie[] = [
     voteCount: 11234,
     popularity: 7123.67,
     genres: [
-      { id: 11, name: "Nhạc Kịch", icon: "", movieCount: 0 },
-      { id: 8, name: "Chính Kịch", icon: "", movieCount: 0 },
-      { id: 7, name: "Tình Cảm", icon: "", movieCount: 0 },
+      { id: 11, name: "Nhạc Kịch", icon: "", movieCount: 0, description: "" },
+      { id: 8, name: "Chính Kịch", icon: "", movieCount: 0, description: "" },
+      { id: 7, name: "Tình Cảm", icon: "", movieCount: 0, description: "" },
     ],
     // productionCountries: [
     //   { iso_3166_1: "FR", name: "France" },
@@ -194,6 +204,8 @@ export const MOCK_MOVIES: Movie[] = [
     adult: false,
     video: false,
     type: MovieType.Single,
+    language: 'vi',
+    studios: [{id: 1, name: "test", description: ""}],
   },
   {
     id: 7,
@@ -210,9 +222,9 @@ export const MOCK_MOVIES: Movie[] = [
     voteCount: 13456,
     popularity: 8456.89,
     genres: [
-      { id: 10, name: "Giật Gân", icon: "", movieCount: 0 },
-      { id: 9, name: "Hành Động", icon: "", movieCount: 0 },
-      { id: 6, name: "Kinh Dị", icon: "", movieCount: 0 },
+      { id: 10, name: "Giật Gân", icon: "", movieCount: 0, description: "" },
+      { id: 9, name: "Hành Động", icon: "", movieCount: 0, description: "" },
+      { id: 6, name: "Kinh Dị", icon: "", movieCount: 0, description: "" },
     ],
     // productionCountries: [{ iso_3166_1: "KR", name: "South Korea" }],
     // spokenLanguages: [{ iso_639_1: "ko", name: "Korean" }],
@@ -223,6 +235,8 @@ export const MOCK_MOVIES: Movie[] = [
     adult: false,
     video: false,
     type: MovieType.Single,
+    language: 'vi',
+    studios: [{id: 1, name: "test", description: ""}],
   },
   {
     id: 8,
@@ -239,9 +253,9 @@ export const MOCK_MOVIES: Movie[] = [
     voteCount: 9876,
     popularity: 6234.12,
     genres: [
-      { id: 12, name: "Hài Hước", icon: "", movieCount: 0 },
-      { id: 8, name: "Chính Kịch", icon: "", movieCount: 0 },
-      { id: 13, name: "Gia Đình", icon: "", movieCount: 0 },
+      { id: 12, name: "Hài Hước", icon: "", movieCount: 0, description: "" },
+      { id: 8, name: "Chính Kịch", icon: "", movieCount: 0, description: "" },
+      { id: 13, name: "Gia Đình", icon: "", movieCount: 0, description: "" },
     ],
     // productionCountries: [{ iso_3166_1: "VN", name: "Vietnam" }],
     // spokenLanguages: [{ iso_639_1: "vi", name: "Vietnamese" }],
@@ -252,6 +266,8 @@ export const MOCK_MOVIES: Movie[] = [
     adult: false,
     video: false,
     type: MovieType.Single,
+    language: 'vi',
+    studios: [{id: 1, name: "test", description: ""}],
   },
   {
     id: 9,
@@ -268,9 +284,9 @@ export const MOCK_MOVIES: Movie[] = [
     voteCount: 16789,
     popularity: 9567.34,
     genres: [
-      { id: 4, name: "Hình Sự", icon: "", movieCount: 0 },
-      { id: 8, name: "Chính Kịch", icon: "", movieCount: 0 },
-      { id: 10, name: "Giật Gân", icon: "", movieCount: 0 },
+      { id: 4, name: "Hình Sự", icon: "", movieCount: 0, description: "" },
+      { id: 8, name: "Chính Kịch", icon: "", movieCount: 0, description: "" },
+      { id: 10, name: "Giật Gân", icon: "", movieCount: 0, description: "" },
     ],
     // productionCountries: [
     //   { iso_3166_1: "US", name: "United States" },
@@ -287,6 +303,8 @@ export const MOCK_MOVIES: Movie[] = [
     adult: false,
     video: false,
     type: MovieType.Single,
+    language: 'vi',
+    studios: [{id: 1, name: "test", description: ""}],
   },
   {
     id: 10,
@@ -303,9 +321,9 @@ export const MOCK_MOVIES: Movie[] = [
     voteCount: 14567,
     popularity: 8890.56,
     genres: [
-      { id: 1, name: "Khoa Học Viễn Tưởng", icon: "", movieCount: 0 },
-      { id: 2, name: "Phiêu Lưu", icon: "", movieCount: 0 },
-      { id: 9, name: "Hành Động", icon: "", movieCount: 0 },
+      { id: 1, name: "Khoa Học Viễn Tưởng", icon: "", movieCount: 0, description: "" },
+      { id: 2, name: "Phiêu Lưu", icon: "", movieCount: 0, description: "" },
+      { id: 9, name: "Hành Động", icon: "", movieCount: 0, description: "" },
     ],
     // productionCountries: [
     //   { iso_3166_1: "US", name: "United States" },
@@ -322,6 +340,8 @@ export const MOCK_MOVIES: Movie[] = [
     adult: false,
     video: false,
     type: MovieType.Single,
+    language: 'vi',
+    studios: [{id: 1, name: "test", description: ""}],
   },
   {
     id: 11,
@@ -338,9 +358,9 @@ export const MOCK_MOVIES: Movie[] = [
     voteCount: 10987,
     popularity: 7789.23,
     genres: [
-      { id: 10, name: "Giật Gân", icon: "", movieCount: 0 },
-      { id: 5, name: "Bí Ẩn", icon: "", movieCount: 0 },
-      { id: 8, name: "Chính Kịch", icon: "", movieCount: 0 },
+      { id: 10, name: "Giật Gân", icon: "", movieCount: 0, description: "" },
+      { id: 5, name: "Bí Ẩn", icon: "", movieCount: 0, description: "" },
+      { id: 8, name: "Chính Kịch", icon: "", movieCount: 0, description: "" },
     ],
     // productionCountries: [
     //   { iso_3166_1: "GB", name: "United Kingdom" },
@@ -354,6 +374,8 @@ export const MOCK_MOVIES: Movie[] = [
     adult: false,
     video: false,
     type: MovieType.Single,
+    language: 'vi',
+    studios: [{id: 1, name: "test", description: ""}],
   },
   {
     id: 12,
@@ -370,9 +392,9 @@ export const MOCK_MOVIES: Movie[] = [
     voteCount: 12345,
     popularity: 7456.78,
     genres: [
-      { id: 9, name: "Hành Động", icon: "", movieCount: 0 },
-      { id: 8, name: "Chính Kịch", icon: "", movieCount: 0 },
-      { id: 14, name: "Thể Thao", icon: "", movieCount: 0 },
+      { id: 9, name: "Hành Động", icon: "", movieCount: 0, description: "" },
+      { id: 8, name: "Chính Kịch", icon: "", movieCount: 0, description: "" },
+      { id: 14, name: "Thể Thao", icon: "", movieCount: 0, description: "" },
     ],
     // productionCountries: [
     //   { iso_3166_1: "US", name: "United States" },
@@ -389,6 +411,8 @@ export const MOCK_MOVIES: Movie[] = [
     adult: false,
     video: false,
     type: MovieType.Single,
+    language: 'vi',
+    studios: [{id: 1, name: "test", description: ""}],
   },
   {
     id: 13,
@@ -405,9 +429,9 @@ export const MOCK_MOVIES: Movie[] = [
     voteCount: 25678,
     popularity: 12456.89,
     genres: [
-      { id: 4, name: "Hình Sự", icon: "", movieCount: 0 },
-      { id: 8, name: "Chính Kịch", icon: "", movieCount: 0 },
-      { id: 10, name: "Giật Gân", icon: "", movieCount: 0 },
+      { id: 4, name: "Hình Sự", icon: "", movieCount: 0, description: "" },
+      { id: 8, name: "Chính Kịch", icon: "", movieCount: 0, description: "" },
+      { id: 10, name: "Giật Gân", icon: "", movieCount: 0, description: "" },
     ],
     // productionCountries: [{ iso_3166_1: "US", name: "United States" }],
     // spokenLanguages: [{ iso_639_1: "en", name: "English" }],
@@ -420,6 +444,8 @@ export const MOCK_MOVIES: Movie[] = [
     type: MovieType.Series,
     numberOfSeasons: 3,
     numberOfEpisodes: 30,
+    language: 'vi',
+    studios: [{id: 1, name: "test", description: ""}],
   },
   {
     id: 14,
@@ -436,9 +462,9 @@ export const MOCK_MOVIES: Movie[] = [
     voteCount: 34567,
     popularity: 15678.45,
     genres: [
-      { id: 15, name: "Giả Tưởng", icon: "", movieCount: 0 },
-      { id: 2, name: "Phiêu Lưu", icon: "", movieCount: 0 },
-      { id: 8, name: "Chính Kịch", icon: "", movieCount: 0 },
+      { id: 15, name: "Giả Tưởng", icon: "", movieCount: 0, description: "" },
+      { id: 2, name: "Phiêu Lưu", icon: "", movieCount: 0, description: "" },
+      { id: 8, name: "Chính Kịch", icon: "", movieCount: 0, description: "" },
     ],
     // productionCountries: [
     //   { iso_3166_1: "US", name: "United States" },
@@ -454,6 +480,8 @@ export const MOCK_MOVIES: Movie[] = [
     type: MovieType.Series,
     numberOfSeasons: 2,
     numberOfEpisodes: 20,
+    language: 'vi',
+    studios: [{id: 1, name: "test", description: ""}],
   },
   {
     id: 15,
@@ -470,8 +498,8 @@ export const MOCK_MOVIES: Movie[] = [
     voteCount: 18934,
     popularity: 9876.23,
     genres: [
-      { id: 8, name: "Chính Kịch", icon: "", movieCount: 0 },
-      { id: 16, name: "Y Khoa", icon: "", movieCount: 0 },
+      { id: 8, name: "Chính Kịch", icon: "", movieCount: 0, description: "" },
+      { id: 16, name: "Y Khoa", icon: "", movieCount: 0, description: "" },
     ],
 
 
@@ -482,6 +510,8 @@ export const MOCK_MOVIES: Movie[] = [
     type: MovieType.Series,
     numberOfSeasons: 2,
     numberOfEpisodes: 32,
+    language: 'vi',
+    studios: [{id: 1, name: "test", description: ""}],
   },
   {
     id: 16,
@@ -498,9 +528,9 @@ export const MOCK_MOVIES: Movie[] = [
     voteCount: 42156,
     popularity: 13245.67,
     genres: [
-      { id: 17, name: "Anime", icon: "", movieCount: 0 },
-      { id: 9, name: "Hành Động", icon: "", movieCount: 0 },
-      { id: 2, name: "Phiêu Lưu", icon: "", movieCount: 0 },
+      { id: 17, name: "Anime", icon: "", movieCount: 0, description: "" },
+      { id: 9, name: "Hành Động", icon: "", movieCount: 0, description: "" },
+      { id: 2, name: "Phiêu Lưu", icon: "", movieCount: 0, description: "" },
     ],
     // productionCountries: [{ iso_3166_1: "JP", name: "Japan" }],
     // spokenLanguages: [{ iso_639_1: "ja", name: "Japanese" }],
@@ -513,6 +543,8 @@ export const MOCK_MOVIES: Movie[] = [
     type: MovieType.Series,
     numberOfSeasons: 4,
     numberOfEpisodes: 96,
+    language: 'vi',
+    studios: [{id: 1, name: "test", description: ""}],
   },
 ]
 
@@ -736,6 +768,7 @@ export const MOCK_SEASONS: { [seriesId: number]: Season[] } = {
             "Jake Morrison nhận nhiệm vụ thâm nhập vào tổ chức tội phạm của Victor Kane. Anh phải vượt qua bài kiểm tra đầu tiên để được tin tưởng.",
           releaseDate: "2024-01-15",
           runtime: 52,
+          status: PublishStatus.Published,
         },
         {
           id: 102,
@@ -746,6 +779,7 @@ export const MOCK_SEASONS: { [seriesId: number]: Season[] } = {
             "Jake hoàn thành nhiệm vụ đầu tiên và bắt đầu được Victor Kane chú ý. Nhưng một thành viên trong băng đảng nghi ngờ về anh.",
           releaseDate: "2024-01-22",
           runtime: 50,
+          status: PublishStatus.Published,
         },
         {
           id: 103,
@@ -756,6 +790,7 @@ export const MOCK_SEASONS: { [seriesId: number]: Season[] } = {
             "Jake phải đưa ra quyết định khó khăn khi một thành viên băng đảng bị bắt. Anh có nên cứu họ hay giữ bí mật?",
           releaseDate: "2024-01-29",
           runtime: 51,
+          status: PublishStatus.Published,
         },
       ],
     },
@@ -785,6 +820,7 @@ export const MOCK_SEASONS: { [seriesId: number]: Season[] } = {
             "Vua Robert Dragonheart qua đời trong hoàn cảnh bí ẩn. Con trai cả của ông, Hoàng tử Aiden, phải đối mặt với âm mưu giành ngôi.",
           releaseDate: "2024-04-01",
           runtime: 62,
+          status: PublishStatus.Published,
         },
         {
           id: 202,
@@ -795,6 +831,7 @@ export const MOCK_SEASONS: { [seriesId: number]: Season[] } = {
             "Hoàng tử Aiden bị phản bội và buộc phải chạy trốn. Anh tìm đến vương quốc phương Bắc để tìm kiếm đồng minh.",
           releaseDate: "2024-04-08",
           runtime: 58,
+          status: PublishStatus.Published,
         },
       ],
     },

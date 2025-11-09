@@ -1,0 +1,133 @@
+<div class="dashboard-container">
+
+  @if (isLoading) {
+    <div class="chart-card">
+      <div>Đang tải dữ liệu…</div>
+    </div>
+  }
+
+  @if (!isLoading && stats) {
+    <div class="stats-grid">
+      <app-stat-card
+        title="Tổng Phim"
+        [value]="formatNumber(stats.kpis.totalMovies || 0)"
+        icon="🎬"
+        trend=""
+      ></app-stat-card>
+
+      <app-stat-card
+        title="Đã xuất bản"
+        [value]="formatNumber(stats.kpis.publishedMovies || 0)"
+        icon="✅"
+        trend=""
+      ></app-stat-card>
+
+      <app-stat-card
+        title="Tổng Tập"
+        [value]="formatNumber(stats.kpis.totalEpisodes || 0)"
+        icon="📺"
+        trend=""
+      ></app-stat-card>
+
+      <app-stat-card
+        title="Tổng Tài Sản"
+        [value]="formatNumber(stats.kpis.totalAssets || 0)"
+        icon="🗂️"
+        trend=""
+      ></app-stat-card>
+    </div>
+
+    <div class="charts-section" style="align-items: start;">
+      <div class="chart-card">
+        <h2 class="chart-title">Tổng kích thước bộ nhớ</h2>
+        <!-- line: hiển thị imageBytes vs videoBytes vs totalBytes -->
+        <app-chart
+          type="bar"
+          [labels]="['Images','Videos','Total']"
+          [values]="[stats.kpis.imageBytes || 0, stats.kpis.videoBytes || 0, stats.kpis.totalBytes || 0]"
+        ></app-chart>
+        <div style="margin-top:0.75rem; font-size:0.9rem; color:var(--color-text-secondary)">
+          Image: {{ formatBytes(stats.kpis.imageBytes || 0) }} • Video: {{ formatBytes(stats.kpis.videoBytes || 0) }} • Tổng: {{ formatBytes(stats.kpis.totalBytes || 0) }}
+        </div>
+      </div>
+
+      <div class="chart-card">
+        <h2 class="chart-title">Tổng quan Assets</h2>
+        <app-chart
+          type="pie"
+          [labels]="['Images','Videos','Other']"
+          [values]="[stats.kpis.totalImages || 0, stats.kpis.totalVideos || 0, (stats.kpis.totalAssets || 0) - ((stats.kpis.totalImages || 0) + (stats.kpis.totalVideos || 0))]"
+        ></app-chart>
+      </div>
+    </div>
+
+    <div class="charts-section" style="gap:var(--spacing-4);">
+      <div class="chart-card" style="flex:1;">
+        <h2 class="chart-title">Phim xem nhiều</h2>
+        @if (stats.topViewedMovies && stats.topViewedMovies.length) {
+          <ul class="list-group">
+            @for (mv of stats.topViewedMovies; track mv.id) {
+              <li class="list-group-item d-flex justify-content-between align-items-center">
+                <div>
+                  <div class="fw-bold">{{ mv.title }}</div>
+                  <div class="small text-muted">Loại: {{ mv.type }} • Ngày phát: {{ mv.releaseDate ?? '—' }}</div>
+                </div>
+                <div class="text-end">
+                  <div class="fw-semibold">{{ formatNumber(mv.viewCount || 0) }}</div>
+                  <div class="small text-muted">views</div>
+                </div>
+              </li>
+            }
+          </ul>
+        }
+        @else {
+        <div class="text-muted">Không có phim nào</div>
+        }
+      </div>
+
+      <div class="chart-card" style="flex:1;">
+        <h2 class="chart-title">Phim mới</h2>
+        @if (stats.recentMovies && stats.recentMovies.length) {
+          <ul class="list-group">
+            @for (mv of stats.recentMovies; track mv.id) {
+              <li class="list-group-item d-flex justify-content-between align-items-center">
+                <div>
+                  <div class="fw-bold">{{ mv.title }}</div>
+                  <div class="small text-muted">Loại: {{ mv.type }} • Ngày: {{ mv.releaseDate ?? '—' }}</div>
+                </div>
+                <div class="text-end">
+                  <div class="small text-muted">{{ mv.genres?.length ? mv.genres.join(', ') : 'Không có thể loại' }}</div>
+                </div>
+              </li>
+            }
+          </ul>
+        }
+        @else {
+        <div class="text-muted">Không có phim mới</div>
+        }
+      </div>
+    </div>
+
+    <div class="recent-activity">
+      <h2 class="activity-title">Vấn đề & thông báo</h2>
+
+      @if (stats.issues && stats.issues.length) {
+        <div class="activity-list">
+          @for (it of stats.issues; track it.title) {
+            <div class="activity-item">
+              <span class="activity-icon">⚠️</span>
+              <div class="activity-content">
+                <p class="activity-action">{{ it.title }}</p>
+                <p class="activity-time small text-muted">{{ it.description }}</p>
+                @if (it.link) { <a href="{{ it.link }}" class="small">Xem chi tiết</a> }
+              </div>
+            </div>
+          }
+        </div>
+      }
+      @else {
+      <div class="text-muted">Không có vấn đề nào.</div>
+      }
+    </div>
+  }
+</div>

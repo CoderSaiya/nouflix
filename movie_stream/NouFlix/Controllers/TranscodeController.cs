@@ -14,7 +14,7 @@ public class TranscodeController(
     IStatusStorage<TranscodeDto.TranscodeStatus> status) : Controller
 {
     [HttpPost("upload")]
-    [Authorize("Admin")]
+    [Authorize(Roles = "Admin")]
     [RequestSizeLimit(20L * 1024 * 1024 * 1024)] // 20GB body size
     [RequestFormLimits(MultipartBodyLengthLimit = 20L * 1024 * 1024 * 1024)] // 20GB cho multipart
     public async Task<IResult> UploadAndEnqueue(
@@ -62,7 +62,7 @@ public class TranscodeController(
     }
 
     [HttpGet("{jobId}/status")]
-    [Authorize("Admin")]
+    [Authorize(Roles = "Admin")]
     public IResult GetStatus([FromRoute] string jobId)
     {
         var st = status.Get(jobId);

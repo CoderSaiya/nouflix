@@ -8,10 +8,10 @@ import type {
   UpdateProfileRequest,
   ChangePasswordRequest,
   AuthResponse,
-  SocialLoginProvider, RefreshResponse,
+  RefreshResponse,
 } from "../../models/user.model"
 import {GlobalResponse} from '../../models/api-response.model';
-import {map, switchMap} from 'rxjs/operators';
+import {map} from 'rxjs/operators';
 import {HttpClient} from '@angular/common/http';
 import {environment} from '../../../environments/environment';
 

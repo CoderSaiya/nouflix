@@ -1,0 +1,51 @@
+<div class="modal-container">
+  <div class="modal-header">
+    <div class="header-content">
+      <h2 class="modal-title">
+        {{ isEditMode ? 'Sửa Thể loại' : 'Thêm Thể loại Mới' }}
+      </h2>
+      <p class="modal-subtitle">
+        {{ isEditMode ? 'Cập nhật thông tin Thể loại của bạn' : 'Tạo Thể loại mới cho thư viện' }}
+      </p>
+    </div>
+    <button type="button" class="close-btn" (click)="cancel()" aria-label="Đóng">✕</button>
+  </div>
+
+  @if (isEditMode) {
+    <div class="tabs-navigation" role="tablist" aria-label="Media tabs">
+      <button
+        type="button"
+        class="tab-btn"
+        [class.active]="activeTab === 'info'"
+        (click)="switchTab('info')"
+        role="tab"
+        [attr.aria-selected]="activeTab === 'info'"
+      >
+        <span class="tab-icon">ℹ️</span>
+        Thông Tin
+      </button>
+    </div>
+  }
+
+  <!-- Content Area -->
+  <div class="modal-content">
+    @if (activeTab === 'info' || !isEditMode) {
+      <app-genre-info
+        [infoForm]="infoForm"
+      ></app-genre-info>
+    }
+  </div>
+
+  <!-- Footer Actions -->
+  <div class="modal-footer">
+    <button type="button" class="btn btn-secondary" (click)="cancel()">Hủy</button>
+    <button
+      type="button"
+      class="btn btn-primary"
+      [disabled]="!infoForm.valid"
+      (click)="submit()"
+    >
+      {{ isEditMode ? 'Cập Nhật' : 'Tạo Mới' }}
+    </button>
+  </div>
+</div>

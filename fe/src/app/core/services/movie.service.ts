@@ -1,7 +1,19 @@
 import {inject, Injectable} from "@angular/core"
 import {Observable, of} from "rxjs"
 import {map} from 'rxjs/operators';
-import {Cast, Crew, Episode, Genre, Movie, MovieItem, MovieType, Review, Video} from "../../models/movie.model"
+import {
+  Cast,
+  Crew,
+  Episode,
+  Genre,
+  Movie,
+  MovieItem,
+  MovieType,
+  PublishStatus,
+  Review,
+  Season,
+  Video
+} from "../../models/movie.model"
 import {MOCK_CAST, MOCK_CREW, MOCK_MOVIES, MOCK_REVIEWS, MOCK_SEASONS, MOCK_VIDEOS} from "../../data/mock-data"
 import {HttpClient} from '@angular/common/http';
 import {environment} from '../../../environments/environment';
@@ -195,5 +207,54 @@ export class MovieService {
     const season = seasons.find((s) => s.number === seasonNumber)
     const episode = season?.episodes.find((e) => e.number === episodeNumber)
     return of(episode)
+  }
+
+  getSeasons(movieId: number): Observable<Season[]> {
+    return this.http.get<GlobalResponse<Season[]>>(`${environment.apiUrl}/api/season/${movieId}`)
+      .pipe(map(res => res.data ?? []));
+  }
+
+  createSeason(movieId: number, req: { number: number; title: string; year: number }) : Observable<Season> {
+    return this.http.post<GlobalResponse<Season>>(`${environment.apiUrl}/api/season/movie/${movieId}`, req)
+      .pipe(map(res => res.data ?? []));
+  }
+
+  updateSeason(seasonId: number, req: { title: string }) : Observable<Season> {
+    return this.http.put<GlobalResponse<Season>>(`${environment.apiUrl}/api/season/${seasonId}`, req)
+      .pipe(map(res => res.data ?? []));
+  }
+
+  deleteSeason(seasonId: number): Observable<void> {
+    return this.http.delete<void>(`${environment.apiUrl}/api/season/${seasonId}`);
+  }
+
+
+  // episodes
+  upsertEpisode(req: { movieId: number; seasonId: number; episodeNumber: number; title: string; status: PublishStatus; releaseDate: string | Date }) {
+    return this.http.post<GlobalResponse<number>>(`${environment.apiUrl}/api/episode`, req)
+      .pipe(map(r => r.data));
+  }
+
+  updateEpisode(id: number, req: any) {
+    return this.http.put(`${environment.apiUrl}/api/episode/${id}`, req);
+  }
+
+  deleteEpisode(id: number) {
+    return this.http.delete(`${environment.apiUrl}/api/episode/${id}`);
+  }
+
+  getEpisodesByMovie(movieId: number) {
+    return this.http.get<GlobalResponse<Episode[]>>(`${environment.apiUrl}/api/episode/movie/${movieId}`)
+      .pipe(map(r => r.data ?? []));
+  }
+
+  getVideosByMovie(movieId: number) {
+    return this.http.get<GlobalResponse<Video[]>>(`${environment.apiUrl}/api/video-assets/movie/${movieId}`)
+      .pipe(map(r => r.data ?? []));
+  }
+
+  getVideosByEpisode(episodeId: number) {
+    return this.http.get<GlobalResponse<Video[]>>(`${environment.apiUrl}/api/video-assets/episode/${episodeId}`)
+      .pipe(map(r => r.data ?? []));
   }
 }

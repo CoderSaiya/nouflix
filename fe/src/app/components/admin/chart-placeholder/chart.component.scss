@@ -1,0 +1,42 @@
+.chart-wrapper {
+  width: 100%;
+  background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+}
+
+.chart-header {
+  margin-bottom: 20px;
+}
+
+.chart-title {
+  color: #f3f4f6;
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.chart-container {
+  width: 100%;
+  min-height: 280px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  svg {
+    width: 100%;
+    height: auto;
+    max-width: 100%;
+  }
+}
+
+// Hover effects
+::ng-deep .pie-slice {
+  transition: opacity 0.3s ease;
+  cursor: pointer;
+
+  &:hover {
+    opacity: 1 !important;
+  }
+}

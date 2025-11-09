@@ -1,0 +1,10 @@
+<div class="stat-card">
+  <div class="stat-header">
+    <span class="stat-icon">{{ icon }}</span>
+    <span class="stat-trend" [class.positive]="trend.startsWith('+')">{{
+        trend
+      }}</span>
+  </div>
+  <h3 class="stat-title">{{ title }}</h3>
+  <p class="stat-value">{{ value }}</p>
+</div>

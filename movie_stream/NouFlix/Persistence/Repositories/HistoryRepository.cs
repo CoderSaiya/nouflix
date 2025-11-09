@@ -14,6 +14,8 @@ public class HistoryRepository(AppDbContext ctx) : Repository<History>(ctx), IHi
 
     public async Task<History?> GetAsync(Guid userId, int movieId, int? episodeId, CancellationToken ct = default)
         => await Query()
+            .Include(h => h.Movie)
+            .Include(h => h.Episode)
             .FirstOrDefaultAsync(h =>
                 h.UserId == userId &&
                 h.MovieId == movieId &&

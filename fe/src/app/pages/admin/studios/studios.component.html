@@ -1,0 +1,40 @@
+<div class="container">
+  <div class="header">
+    <h1 class="title">Quản Lý Studio</h1>
+    <button class="btn btn-primary" (click)="create()">
+      + Thêm Studio Mới
+    </button>
+  </div>
+
+  @if (selectedStudio.size > 0) {
+    <div class="actions">
+      <span class="selection-info">{{ selectedStudio.size }} studio được chọn</span>
+      <button class="btn btn-danger" (click)="deleteSelected()">
+        Xóa Đã Chọn
+      </button>
+    </div>
+  }
+
+  <app-studio-table
+    [studios]="studios"
+    [selectedStudios]="selectedStudio"
+    [isLoading]="isLoading"
+    (toggleSelect)="toggleSelectStudio(Number($event))"
+    (toggleSelectAll)="toggleSelectAll()"
+    (edit)="edit($event)"
+    (delete)="openDeleteConfirm(Number($event))"
+  ></app-studio-table>
+
+  @if (isDeleteConfirmOpen) {
+    <div class="modal-overlay" (click)="cancelDelete()">
+      <div class="modal" (click)="$event.stopPropagation()">
+        <h2 class="modal-title">Xác Nhận Xóa</h2>
+        <p class="modal-message">Bạn có chắc chắn muốn xóa studio này?</p>
+        <div class="modal-actions">
+          <button class="btn btn-secondary" (click)="cancelDelete()">Hủy</button>
+          <button class="btn btn-danger" (click)="confirmDelete()">Xóa</button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

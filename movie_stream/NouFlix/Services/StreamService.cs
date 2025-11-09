@@ -49,30 +49,32 @@ public class StreamService(
         return Results.Empty;
     }
     
-    public async Task<IResult> GetMovieProgressAsync(
+    public async Task<StreamDto.Position> GetMovieProgressAsync(
         int movieId,
         HttpContext ctx,
         CancellationToken ct)
     {
-        // Who is this?
         var userIdClaim = ctx.User?.Claims?.FirstOrDefault(
             c => c.Type == ClaimTypes.NameIdentifier)?.Value;
 
         if (!Guid.TryParse(userIdClaim, out var userId))
         {
-            return Results.Json(new StreamDto.Position(0, null));
+            return new StreamDto.Position(0, null, false);
+        }
+        
+        var history = await uow.Histories.GetAsync(userId, movieId, episodeId: null, ct);
+        
+        if (history is null)
+        {
+            return new StreamDto.Position(0, null, false);
         }
 
-        // get their history
-        var history = await uow.Histories.GetAsync(userId, movieId, episodeId: null, ct);
-
-        var pos = history?.PositionSecond ?? 0;
-
-        return Results.Json(new StreamDto.Position
+        return new StreamDto.Position
         (
-            pos,
-            history?.WatchedDate
-        ));
+            history.PositionSecond,
+            history.WatchedDate,
+            history.IsFinished
+        );
     }
 
 
@@ -146,7 +148,7 @@ public class StreamService(
         return Results.Empty;
     }
     
-    public async Task<IResult> GetEpisodeProgressAsync(
+    public async Task<StreamDto.Position> GetEpisodeProgressAsync(
         int movieId,
         int episodeId,
         HttpContext ctx,
@@ -157,20 +159,20 @@ public class StreamService(
 
         if (!Guid.TryParse(userIdClaim, out var userId))
         {
-            return Results.Json(new StreamDto.Position(0, null));
+            return new StreamDto.Position(0, null, false);
         }
 
         var history = await uow.Histories.GetAsync(userId, movieId, episodeId, ct);
+        
+        if (history is null)
+            return  new StreamDto.Position(0, null, false);
 
-        var ep = await uow.Episodes.FindAsync(episodeId, ct);
-
-        var positionSeconds = history?.PositionSecond ?? 0;
-
-        return Results.Json(new StreamDto.Position
+        return new StreamDto.Position
         (
-            positionSeconds,
-            history?.WatchedDate
-        ));
+            history.PositionSecond,
+            history.WatchedDate,
+            history.IsFinished
+        );
     }
 
 

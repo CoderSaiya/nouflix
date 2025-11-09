@@ -19,7 +19,7 @@ public class SubtitleController(
     AssetService svc) : Controller
 {
     [HttpPost("upload-raw")]
-    [Authorize("Admin")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> UploadRawVtt(
         [FromForm] int movieId,
         [FromForm] int? episodeId,
@@ -68,12 +68,12 @@ public class SubtitleController(
     }
 
     [HttpGet("{jobId}/status")]
-    [Authorize("Admin")]
+    [Authorize(Roles = "Admin")]
     public IActionResult GetStatus(string jobId, [FromServices] IStatusStorage<SubtitleDto.SubtitleStatus> store)
         => store.Get(jobId) is { } s ? Ok(s) : NotFound();
     
     [HttpPost("raw")]
-    [Authorize("Admin")]
+    [Authorize(Roles = "Admin")]
     [DisableRequestSizeLimit]
     public async Task<IActionResult> UploadRaw(
         [FromRoute] int movieId,

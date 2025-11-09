@@ -1,0 +1,66 @@
+<div class="table-wrapper">
+  @if (!isLoading && genres.length > 0) {
+    <table class="table">
+      <thead>
+      <tr>
+        <th class="checkbox-column">
+          <input
+            type="checkbox"
+            class="checkbox-input"
+            [checked]="isAllSelectedValue()"
+            (change)="onToggleSelectAll()"
+            aria-label="Chọn tất cả"
+          />
+        </th>
+        <th>Biểu Tượng</th>
+        <th>Tên Thể Loại</th>
+        <th>Mô Tả</th>
+        <th>Hành Động</th>
+      </tr>
+      </thead>
+      <tbody>
+        @for (genre of genres; track genre.id) {
+          <tr [class.selected]="selectedGenres.has(genre.id)">
+            <td class="checkbox-column">
+              <input
+                type="checkbox"
+                class="checkbox-input"
+                [checked]="selectedGenres.has(genre.id)"
+                (change)="onToggleSelect(genre.id)"
+                [attr.aria-label]="'Chọn ' + genre.name"
+              />
+            </td>
+            <td class="name-column">{{ genre.icon }}</td>
+            <td class="name-column">{{ genre.name }}</td>
+            <td class="description-column">{{ genre.description }}</td>
+            <td class="actions-column">
+              <button class="action-btn edit" (click)="onEdit(genre.id)" title="Sửa">
+                ✎
+              </button>
+              <button
+                class="action-btn delete"
+                (click)="onDelete(genre.id)"
+                title="Xóa"
+              >
+                🗑
+              </button>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+
+  @if (!isLoading && genres.length === 0) {
+    <div class="empty-state">
+      <p class="empty-message">Không có thể loại nào</p>
+    </div>
+  }
+
+  @if (isLoading) {
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <p>Đang tải...</p>
+    </div>
+  }
+</div>

@@ -1,0 +1,61 @@
+<div class="form-section">
+  <h3 class="section-title">Quản Lý Ảnh</h3>
+
+  <!-- Posters -->
+  <div class="image-section">
+    <h4 class="subsection-title">Poster</h4>
+    <div class="file-upload-area">
+      <input
+        type="file"
+        id="poster-input"
+        class="file-input"
+        accept="image/*"
+        (change)="onPosterChange($event)"
+      />
+      <label for="poster-input" class="file-upload-label">
+        <span class="upload-icon">📤</span>
+        <span class="upload-text">Chọn hoặc kéo thả ảnh Poster</span>
+      </label>
+    </div>
+
+    @if (selectedPosters.length > 0) {
+      <div class="uploaded-images">
+        @for (img of selectedPosters; let i = $index; track i) {
+          <div class="image-item">
+            <span>{{ img.name }}</span>
+            <button type="button" class="btn-remove" (click)="removePoster.emit(i)" aria-label="Xóa ảnh">✕</button>
+          </div>
+        }
+      </div>
+    }
+  </div>
+
+  <!-- Backdrops -->
+  <div class="image-section">
+    <h4 class="subsection-title">Backdrop</h4>
+    <div class="file-upload-area">
+      <input
+        type="file"
+        id="backdrop-input"
+        class="file-input"
+        accept="image/*"
+        (change)="onBackdropChange($event)"
+      />
+      <label for="backdrop-input" class="file-upload-label">
+        <span class="upload-icon">📤</span>
+        <span class="upload-text">Chọn hoặc kéo thả ảnh Backdrop</span>
+      </label>
+    </div>
+
+    @if (selectedBackdrops.length > 0) {
+      <div class="uploaded-images">
+        @for (img of selectedBackdrops; let i = $index; track i) {
+          <div class="image-item">
+            <span>{{ img.name }}</span>
+            <button type="button" class="btn-remove" (click)="removeBackdrop.emit(i)" aria-label="Xóa ảnh">✕</button>
+          </div>
+        }
+      </div>
+    }
+  </div>
+</div>

@@ -1,0 +1,46 @@
+<div [formGroup]="infoForm" class="form-section">
+  <h3 class="section-title">Thông Tin Cơ Bản</h3>
+
+  <div class="form-group">
+    <label for="title" class="form-label">Tiêu Đề *</label>
+    <input
+      type="text"
+      id="title"
+      formControlName="title"
+      class="form-input"
+      placeholder="Nhập tiêu đề phim"
+    />
+    @if (infoForm.get('title')?.invalid && infoForm.get('title')?.touched) {
+      <div class="form-error">
+        Tiêu đề là bắt buộc (tối thiểu 3 ký tự)
+      </div>
+    }
+  </div>
+
+  <div class="form-group">
+    <label for="title" class="form-label">Biểu tượng *</label>
+    <input
+      type="text"
+      id="icon"
+      formControlName="title"
+      class="form-input"
+      placeholder="Nhập biểu tượng"
+    />
+    @if (infoForm.get('icon')?.invalid && infoForm.get('icon')?.touched) {
+      <div class="form-error">
+        Biểu tượng là bắt buộc
+      </div>
+    }
+  </div>
+
+  <div class="form-group">
+    <label for="description" class="form-label">Mô Tả *</label>
+    <textarea
+      id="description"
+      formControlName="description"
+      class="form-textarea"
+      placeholder="Nhập mô tả thể loại"
+      rows="4"
+    ></textarea>
+  </div>
+</div>

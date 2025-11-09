@@ -3,7 +3,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: var(--spacing-xl);
+  padding: var(--spacing-5);
   background: linear-gradient(135deg, var(--color-background) 0%, #1a0a0f 100%);
   position: relative;
 
@@ -31,25 +31,25 @@
 .auth-card {
   background: var(--color-surface);
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-xl);
-  padding: var(--spacing-3xl);
-  box-shadow: var(--shadow-xl);
+  border-radius: var(--radius-4);
+  padding: var(--spacing-7);
+  box-shadow: var(--shadow-4);
   animation: fadeIn 0.6s ease-out;
 
   @media (max-width: 640px) {
-    padding: var(--spacing-xl);
+    padding: var(--spacing-5);
   }
 }
 
 .auth-header {
   text-align: center;
-  margin-bottom: var(--spacing-2xl);
+  margin-bottom: var(--spacing-6);
 }
 
 .auth-title {
   font-size: 2rem;
   font-weight: 800;
-  margin-bottom: var(--spacing-sm);
+  margin-bottom: var(--spacing-2);
   color: var(--color-text-primary);
 }
 
@@ -62,10 +62,10 @@
 .alert {
   display: flex;
   align-items: center;
-  gap: var(--spacing-md);
-  padding: var(--spacing-md) var(--spacing-lg);
-  border-radius: var(--radius-lg);
-  margin-bottom: var(--spacing-xl);
+  gap: var(--spacing-3);
+  padding: var(--spacing-3) var(--spacing-4);
+  border-radius: var(--radius-3);
+  margin-bottom: var(--spacing-5);
   font-size: 0.875rem;
 
   &-error {
@@ -80,11 +80,11 @@
 }
 
 .auth-form {
-  margin-bottom: var(--spacing-xl);
+  margin-bottom: var(--spacing-5);
 }
 
 .form-group {
-  margin-bottom: var(--spacing-lg);
+  margin-bottom: var(--spacing-4);
 }
 
 .form-label {
@@ -92,17 +92,17 @@
   font-size: 0.875rem;
   font-weight: 600;
   color: var(--color-text-primary);
-  margin-bottom: var(--spacing-sm);
+  margin-bottom: var(--spacing-2);
 }
 
 .form-input {
   width: 100%;
-  padding: var(--spacing-md) var(--spacing-lg);
+  padding: var(--spacing-3) var(--spacing-4);
   font-size: 1rem;
   color: var(--color-text-primary);
   background: var(--color-surface-elevated);
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-3);
   transition: all var(--transition-base);
 
   &:focus {
@@ -131,14 +131,14 @@
 
 .password-toggle {
   position: absolute;
-  right: var(--spacing-md);
+  right: var(--spacing-3);
   top: 50%;
   transform: translateY(-50%);
   background: none;
   border: none;
   color: var(--color-text-muted);
   cursor: pointer;
-  padding: var(--spacing-xs);
+  padding: var(--spacing-1);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -175,7 +175,7 @@
 .divider {
   position: relative;
   text-align: center;
-  margin: var(--spacing-xl) 0;
+  margin: var(--spacing-5) 0;
 
   &::before {
     content: '';
@@ -190,7 +190,7 @@
   span {
     position: relative;
     display: inline-block;
-    padding: 0 var(--spacing-lg);
+    padding: 0 var(--spacing-4);
     background: var(--color-surface);
     color: var(--color-text-muted);
     font-size: 0.875rem;
@@ -200,19 +200,19 @@
 .social-buttons {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: var(--spacing-md);
-  margin-bottom: var(--spacing-xl);
+  gap: var(--spacing-3);
+  margin-bottom: var(--spacing-5);
 }
 
 .btn-social {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: var(--spacing-sm);
-  padding: var(--spacing-md);
+  gap: var(--spacing-2);
+  padding: var(--spacing-3);
   background: var(--color-surface-elevated);
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-3);
   color: var(--color-text-primary);
   font-weight: 600;
   transition: all var(--transition-base);

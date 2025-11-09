@@ -13,7 +13,7 @@ public class StorageController(
     ) : Controller
 {
     [HttpGet("movie/{movieId:int}/poster")]
-    [Authorize("Admin")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> GetImageUrl([FromRoute] int movieId, CancellationToken ct = default)
     {
         var poster = await assetSvc.GetPosterAsync(movieId, ct);
@@ -22,7 +22,7 @@ public class StorageController(
     }
     
     [HttpGet]
-    [Authorize("Admin")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> GetPreviewUrl([FromForm] AssetsDto.PreviewReq req, CancellationToken ct = default)
     {
         var uri = await assetSvc.GetPreviewAsync(req.Bucket, req.ObjectKey, ct);
