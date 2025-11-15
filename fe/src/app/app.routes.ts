@@ -1,6 +1,6 @@
 import { Routes } from '@angular/router';
-import {MainLayoutComponent} from './layout/main-layout/main-layout.component';
-import {AdminLayoutComponent} from './layout/admin-layout/admin-layout.component';
+import { MainLayoutComponent } from './layout/main-layout/main-layout.component';
+import { AdminLayoutComponent } from './layout/admin-layout/admin-layout.component';
 
 export const routes: Routes = [
   {
@@ -51,6 +51,15 @@ export const routes: Routes = [
         loadComponent: () => import("./pages/profile/profile.component").then((m) => m.ProfileComponent),
         title: "Thông Tin Cá Nhân - NouFlix",
       },
+      {
+        path: "not-found",
+        loadComponent: () => import("./pages/not-found/not-found.component").then((m) => m.NotFoundComponent),
+        title: "404 - Trang Không Tồn Tại",
+      },
+      {
+        path: "**",
+        redirectTo: "/not-found",
+      },
     ]
   },
   {
@@ -97,9 +106,5 @@ export const routes: Routes = [
       // },
       { path: "", redirectTo: "dashboard", pathMatch: "full" },
     ]
-  },
-  {
-    path: "**",
-    redirectTo: "",
   },
 ];
