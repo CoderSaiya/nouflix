@@ -14,6 +14,7 @@ public class User
     public string Password { get; set; } = null!;
     [Required]
     public DateTime CreatedAt { get; set; } = DateTime.Now;
+    public bool IsBanned { get; set; } = false;
     
     public Profile Profile { get; set; } = new();
     // Navigation

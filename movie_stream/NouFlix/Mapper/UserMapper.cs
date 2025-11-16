@@ -30,6 +30,7 @@ public static class UserMapper
             avatarUrl,
             Dob: u.Profile.DateOfBirth ?? null,
             MapRole(u),
+            u.IsBanned,
             u.CreatedAt,
             (await u.Histories.ToItemListResAsync(ct)).ToList());
     }

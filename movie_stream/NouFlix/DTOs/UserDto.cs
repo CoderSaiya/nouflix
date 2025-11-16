@@ -10,6 +10,7 @@ public class UserDto
         string? Avatar,
         DateOnly? Dob,
         string Role,
+        bool IsBanned,
         DateTime CreatedAt,
         List<HistoryDto.Item> WatchHistory
     );
