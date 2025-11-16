@@ -5,8 +5,6 @@ using System.Text.RegularExpressions;
 using Microsoft.Extensions.Options;
 using NouFlix.Adapters;
 using NouFlix.DTOs;
-using NouFlix.Helpers;
-using NouFlix.Models.Entities;
 using NouFlix.Models.Specification;
 using NouFlix.Persistence.Repositories.Interfaces;
 

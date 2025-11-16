@@ -2,9 +2,17 @@ using System.Net;
 using Microsoft.AspNetCore.HttpOverrides;
 using NouFlix.Configuration;
 using NouFlix.Models.Specification;
+using Serilog;
 using IPNetwork = Microsoft.AspNetCore.HttpOverrides.IPNetwork;
 
 var builder = WebApplication.CreateBuilder(args);
+
+Log.Logger = new LoggerConfiguration()
+    .ReadFrom.Configuration(builder.Configuration)
+    .Enrich.FromLogContext()
+    .CreateLogger();
+
+builder.Host.UseSerilog();
 
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
@@ -45,6 +53,7 @@ app.UseRouting();
 app.UseCors();
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseMiddlewares();
 app.MapControllers();
 
 if (app.Environment.IsDevelopment())

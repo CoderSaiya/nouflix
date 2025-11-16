@@ -131,4 +131,22 @@ public class SystemDto
         List<SystemDto.IssueItem> Issues,
         List<AssetsDto.ImageAssetRes> OrphanImages
     );
+
+    public record AuditLog
+    {
+        public string? Id { get; set; }
+        public DateTime TimestampUtc { get; set; } = DateTime.UtcNow;
+        public string? CorrelationId { get; set; }
+        public string? UserId { get; set; }
+        public string? Username { get; set; }
+        public string? Action { get; set; }
+        public string? ResourceType { get; set; } 
+        public string? ResourceId { get; set; }
+        public object? Details { get; set; }
+        public string? ClientIp { get; set; }
+        public string? UserAgent { get; set; }
+        public string? Route { get; set; }
+        public string? HttpMethod { get; set; }
+        public int? StatusCode { get; set; }
+    }
 }

@@ -10,15 +10,19 @@ using NouFlix.Models.Common;
 using NouFlix.Models.Entities;
 using NouFlix.Models.ValueObject;
 using NouFlix.Persistence.Repositories.Interfaces;
+using Serilog;
 
 namespace NouFlix.Services;
 
 public class AuthService(
     IConfiguration configuration,
+    IHttpContextAccessor accessor,
     MinioObjectStorage storage,
     IUnitOfWork uow
     )
 {
+    private Serilog.ILogger _logger = Log.ForContext<AuthService>();
+
     public async Task<UserDto.UserRes> GetCurrentUserAsync(Guid userId, CancellationToken ct = default)
     {
         var user = await uow.Users.FindAsync(userId)
@@ -43,10 +47,58 @@ public class AuthService(
     
     public async Task<AuthRes> LoginAsync(LoginReq req, CancellationToken ct = default)
     {
-        var user = await uow.Users.GetByEmailAsync(req.Email)
-                   ?? throw new UnauthorizedAccessException("Email hoặc mật khẩu không đúng.");
+        var httpContext = accessor.HttpContext;
+        var clientIp = httpContext?.Connection.RemoteIpAddress?.ToString();
+        var userAgent = httpContext?.Request.Headers["User-Agent"].ToString();
+
+        var user = await uow.Users.GetByEmailAsync(req.Email);
+        if (user is null)
+        {
+            var auditFailed = new SystemDto.AuditLog
+            {
+                Id = Guid.NewGuid().ToString(),
+                CorrelationId = (string?)httpContext?.Request.Headers["X-Correlation-Id"] ?? httpContext?.TraceIdentifier,
+                UserId = null,
+                Username = null,
+                Action = "LoginFailed",
+                ResourceType = "User",
+                ResourceId = null,
+                Details = "UserNotFound",
+                ClientIp = clientIp,
+                UserAgent = userAgent,
+                Route = httpContext?.Request.Path.ToString(),
+                HttpMethod = httpContext?.Request.Method,
+                StatusCode = 401,
+            };
+
+            _logger.Warning("Auth audit {@Audit}", auditFailed);
+
+            throw new UnauthorizedAccessException("Tài khoản không tồn tại.");
+        }
+
         if (!AuthHelper.VerifyPassword(req.Password, user.Password))
+        {
+            var auditFailed = new SystemDto.AuditLog
+            {
+                Id = Guid.NewGuid().ToString(),
+                CorrelationId = (string?)httpContext?.Request.Headers["X-Correlation-Id"] ?? httpContext?.TraceIdentifier,
+                UserId = user.Id.ToString(),
+                Username = user.Email.ToString(),
+                Action = "LoginFailed",
+                ResourceType = "User",
+                ResourceId = user.Id.ToString(),
+                Details = "InvalidPassword",
+                ClientIp = clientIp,
+                UserAgent = userAgent,
+                Route = httpContext?.Request.Path.ToString(),
+                HttpMethod = httpContext?.Request.Method,
+                StatusCode = 401,
+            };
+
+            _logger.Warning("Auth audit {@Audit}", auditFailed);
+
             throw new UnauthorizedAccessException("Email hoặc mật khẩu không đúng.");
+        }
         
         var claims = new List<Claim>
         {
@@ -70,6 +122,25 @@ public class AuthService(
         await uow.SaveChangesAsync(ct);
         
         var userDto = await user.ToUserResAsync(storage, ct);
+
+        var auditSuccess = new SystemDto.AuditLog
+        {
+            Id = Guid.NewGuid().ToString(),
+            CorrelationId = (string?)httpContext?.Request.Headers["X-Correlation-Id"] ?? httpContext?.TraceIdentifier,
+            UserId = user.Id.ToString(),
+            Username = user.Email.ToString(),
+            Action = "LoginSuccess",
+            ResourceType = "User",
+            ResourceId = user.Id.ToString(),
+            Details = "LoginSuccess",
+            ClientIp = clientIp,
+            UserAgent = userAgent,
+            Route = httpContext?.Request.Path.ToString(),
+            HttpMethod = httpContext?.Request.Method,
+            StatusCode = 200,
+        };
+
+        _logger.Information("Auth audit {@Audit}", auditSuccess);
 
         return new AuthRes(
             accessToken,

@@ -16,6 +16,7 @@ using NouFlix.Persistence.Repositories.Interfaces;
 using NouFlix.Services;
 using NouFlix.Services.Backgroud;
 using NouFlix.Services.Interface;
+using NouFlix.Middlewares;
 
 namespace NouFlix.Configuration;
 
@@ -58,6 +59,8 @@ public static class DependencyInjection
         });
         
         services.AddExceptionHandler<AppExceptionHandler>();
+        
+        services.AddHttpContextAccessor();
         
         services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
         
@@ -243,5 +246,10 @@ public static class DependencyInjection
             }));
 
         return services;
+    }
+
+    public static IApplicationBuilder UseMiddlewares(this IApplicationBuilder builder)
+    {
+        return builder.UseMiddleware<AuditEnrichmentMiddleware>();
     }
 }

@@ -1,17 +1,33 @@
 ﻿name: nouflix
 
 services:
-  n8n:
-    image: docker.n8n.io/n8nio/n8n:latest
-    ports:
-      - "5678:5678"
+  elasticsearch:
+    container_name: nouflix.es-container
+    image: docker.elastic.co/elasticsearch/elasticsearch:9.2.1
     environment:
-      - BACKEND_BASE_URL=${BACKEND_BASE_URL}
-      - GEMINI_API_KEY=${GEMINI_API_KEY}
-      - SLACK_WEBHOOK_URL=${SLACK_WEBHOOK_URL}
-      - GENERIC_TIMEZONE=Asia/Ho_Chi_Minh
-    volumes:
-      - n8n_data:/home/node/.n8n
+      - xpack.security.enabled=false
+      - "discovery.type=single-node"
+    networks:
+      - es-net
+    ports:
+      - 9200:9200
+    ulimits:
+      nproc: 65535
+      nofile:
+        soft: 65536
+        hard: 65536
+
+  kibana:
+    container_name: nouflix.kb-container
+    image: docker.elastic.co/kibana/kibana:9.2.1
+    environment:
+      - ELASTICSEARCH_HOSTS=http://nouflix.es-container:9200
+    networks:
+      - es-net
+    depends_on:
+      - elasticsearch
+    ports:
+      - 5601:5601
   
   nouflix.minio:
     image: minio/minio
@@ -25,6 +41,8 @@ services:
       MINIO_ROOT_USER: admin
       MINIO_ROOT_PASSWORD: nhatcuong04
     command: server /data --console-address ":9001"
+    networks:
+      - nouflix-net
     
   nouflix.redis:
     image: redis:latest
@@ -36,6 +54,8 @@ services:
       - redis_volume_data:/data
     ports:
       - 6379:6379
+    networks:
+      - nouflix-net
 
   nouflix.redis_insight:
     image: redislabs/redisinsight:latest
@@ -45,6 +65,8 @@ services:
       - 8001:5540
     volumes:
       - redis_insight_volume_data:/db
+    networks:
+      - nouflix-net
 
   mssql:
     image: mcr.microsoft.com/mssql/server:2022-latest
@@ -66,6 +88,8 @@ services:
     mem_reservation: 1g
     cpus: 1.5
     restart: unless-stopped
+    networks:
+      - nouflix-net
     
   nouflix.api:
     build:
@@ -95,6 +119,8 @@ services:
       - Auth__External__Facebook__ClientSecret=${FACEBOOK_CLIENT_SECRET}
       - Auth__Auth__FrontendBaseUrl=https://nouflix.nhatcuong.io.vn
       - Ffmpeg__Path=/usr/bin/ffmpeg
+
+      - Serilog__WriteTo__Args__nodeUris=http://nouflix.es-container:9200
     ports:
       - "5003:8083"
     depends_on:
@@ -104,28 +130,10 @@ services:
     mem_limit: 3g
     mem_reservation: 1g
     cpus: 2.0
-    restart: unless-stopped 
-    
-  nouflix.portal:
-    build:
-      context: .. # trỏ tới folder chứa .csproj và Dockerfile
-      dockerfile: MoviePortal/Dockerfile
-    container_name: nouflix.portal
-    environment:
-      - ASPNETCORE_URLS=http://+:8084
-      - ASPNETCORE_ENVIRONMENT=Development
-        
-      - BaseUrl__Backend=http://nouflix.api:8083
-    ports:
-      - "5004:8084"
-    depends_on:
-      mssql:
-        condition: service_healthy
-    # Không cần expose port khi dùng Tunnel
-    mem_limit: 512m
-    mem_reservation: 256m
-    cpus: 0.75
     restart: unless-stopped
+    networks:
+      - nouflix-net
+      - es-net
 
   nouflix.cloudflared:
     image: cloudflare/cloudflared:latest
@@ -138,15 +146,22 @@ services:
     depends_on:
       - nouflix.api
       - nouflix.minio
-      - nouflix.portal
     mem_limit: 128m
     mem_reservation: 64m
     cpus: 0.25
     restart: unless-stopped
+    networks:
+      - nouflix-net
 
 volumes:
   minio_data:
   redis_volume_data:
   redis_insight_volume_data:
   mssql_data:
-  n8n_data:
+  es_data:
+
+networks:
+  es-net:
+    driver: bridge
+  nouflix-net:
+    driver: bridge
