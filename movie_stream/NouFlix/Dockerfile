@@ -5,6 +5,9 @@ RUN apt-get update && apt-get install -y ffmpeg && rm -rf /var/lib/apt/lists/*
 
 USER $APP_UID
 WORKDIR /app
+
+RUN mkdir -p /app/Logs
+
 EXPOSE 8083
 EXPOSE 8084
 

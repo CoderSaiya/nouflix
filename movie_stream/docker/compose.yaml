@@ -101,7 +101,7 @@ services:
       - ASPNETCORE_ENVIRONMENT=Development
 
       - ConnectionStrings__Default=Server=mssql,1433;Database=MoviePortalDB;User Id=sa;Password=${SA_PASSWORD};Encrypt=True;TrustServerCertificate=True
-      - ConnectionStrings__Redis=nouflix.redis:6379,password=${REDIS_PASSWORD},ssl=False,abortConnect=False4
+      - ConnectionStrings__Redis=nouflix.redis:6379,password=${REDIS_PASSWORD},ssl=False,abortConnect=False
 
       - Storage__S3__Endpoint=nouflix.minio:9000
       - Storage__S3__PublicEndpoint=minio-nouflix.nhatcuong.io.vn
@@ -120,11 +120,30 @@ services:
       - Auth__Auth__FrontendBaseUrl=https://nouflix.nhatcuong.io.vn
       - Ffmpeg__Path=/usr/bin/ffmpeg
 
-      - Serilog__WriteTo__Args__nodeUris=http://nouflix.es-container:9200
+      - Serilog__Using__0=Serilog.Sinks.Console
+      - Serilog__Using__1=Serilog.Sinks.Elasticsearch
+      - Serilog__MinimumLevel__Default=Information
+      - Serilog__MinimumLevel__Override__Microsoft=Warning
+      - Serilog__MinimumLevel__Override__System=Warning
+      - Serilog__Enrich__0=FromLogContext
+      - Serilog__Enrich__1=WithMachineName
+      - Serilog__Enrich__2=WithProcessId
+      - Serilog__Enrich__3=WithThreadId
+      - Serilog__WriteTo__0__Name=Console
+      - Serilog__WriteTo__1__Name=Elasticsearch
+      - Serilog__WriteTo__1__Args__nodeUris=http://nouflix.es-container:9200
+      - Serilog__WriteTo__1__Args__indexFormat=audit-logs-{0:yyyy.MM.dd}
+      - Serilog__WriteTo__1__Args__autoRegisterTemplate=true
+      - Serilog__WriteTo__1__Args__autoRegisterTemplateVersion=ESv8
+      - Serilog__WriteTo__1__Args__failureCallback=SerilogToElk.SerilogFailureHandler.Handle
+      - Serilog__WriteTo__1__Args__emitEventFailure=WriteToSelfLog
+      - Serilog__WriteTo__1__Args__bufferBaseFilename=app/LogsLogs/serilog-buffer
     ports:
       - "5003:8083"
     depends_on:
       mssql:
+        condition: service_healthy
+      elasticsearch:
         condition: service_healthy
     # Không cần expose port khi dùng Tunnel
     mem_limit: 3g
@@ -132,8 +151,8 @@ services:
     cpus: 2.0
     restart: unless-stopped
     networks:
-      - nouflix-net
       - es-net
+      - nouflix-net
 
   nouflix.cloudflared:
     image: cloudflare/cloudflared:latest
