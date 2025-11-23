@@ -1,6 +1,6 @@
-import {inject, Injectable, signal} from "@angular/core"
+import { inject, Injectable, signal } from "@angular/core"
 import { Router } from "@angular/router"
-import {type Observable, of, delay, throwError, tap} from "rxjs"
+import { type Observable, of, delay, throwError, tap } from "rxjs"
 import type {
   User,
   LoginRequest,
@@ -10,10 +10,10 @@ import type {
   AuthResponse,
   RefreshResponse,
 } from "../../models/user.model"
-import {GlobalResponse} from '../../models/api-response.model';
-import {map} from 'rxjs/operators';
-import {HttpClient} from '@angular/common/http';
-import {environment} from '../../../environments/environment';
+import { GlobalResponse } from '../../models/api-response.model';
+import { map } from 'rxjs/operators';
+import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: "root",
@@ -139,12 +139,19 @@ export class AuthService {
     localStorage.setItem("current_user", JSON.stringify(response.user))
   }
 
-  logout(): void {
+  logout(): Observable<void> {
     this.tokenSignal.set(null)
     this.currentUserSignal.set(null)
     localStorage.removeItem("access_token")
     localStorage.removeItem("current_user")
-    this.router.navigate(["/"])
+
+    return this.http.post<void>(
+      `${this.apiUrl}/logout`, {}
+    ).pipe(
+      tap(() => {
+        this.router.navigate(["/"])
+      })
+    );
   }
 
   updateProfile(request: UpdateProfileRequest): Observable<User> {

@@ -1,0 +1,90 @@
+<div class="audit-logs-container">
+  <div class="audit-header">
+    <h1 class="page-title">Nhật Ký Hoạt Động</h1>
+    <p class="page-subtitle">Lịch sử tất cả các hoạt động trong hệ thống</p>
+  </div>
+
+  <div class="filters-section">
+    <div class="filter-group">
+      <label for="search" class="filter-label">Tìm Kiếm</label>
+      <input type="text" id="search" class="filter-input" placeholder="Tìm theo tên người dùng, chi tiết hoạt động..."
+        [(ngModel)]="searchTerm" (input)="onSearchChange()" />
+    </div>
+
+    <div class="filter-group">
+      <label for="actionFilter" class="filter-label">Hành Động</label>
+      <select id="actionFilter" class="filter-input" [(ngModel)]="selectedAction" (change)="onActionFilterChange()">
+        @for (opt of actionOptions; track opt.value) {
+        <option [value]="opt.value">
+          {{ opt.label }}
+        </option>
+        }
+      </select>
+    </div>
+  </div>
+
+  <div class="logs-table-wrapper" [class.loading]="isLoading">
+    @if (!isLoading) {
+    <table class="logs-table">
+      <thead>
+        <tr>
+          <th>Thời Gian</th>
+          <th>Hành Động</th>
+          <th>Người Dùng</th>
+          <th>Chi Tiết</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let log of paginatedLogs" class="log-row">
+          <td class="timestamp-cell">
+            <div class="timestamp">{{ formatDate(log.timestampUtc) }}</div>
+            <div class="time-ago">{{ getTimeAgo(log.timestampUtc) }}</div>
+          </td>
+          <td class="action-cell">
+            <span [class]="'badge ' + getActionBadgeClass(log.action)">
+              {{ getActionLabel(log.action) }}
+            </span>
+          </td>
+          <td class="user-cell">
+            <div class="user-info">
+              <div class="user-name">{{ log.username }}</div>
+              <div class="user-id">{{ log.userId }}</div>
+            </div>
+          </td>
+          <td class="details-cell">{{ log.details }}</td>
+        </tr>
+      </tbody>
+    </table>
+    }
+
+    @if (isLoading) {
+    <div class="loading-spinner">
+      <div class="spinner"></div>
+      <p>Đang tải dữ liệu...</p>
+    </div>
+    }
+
+    @if (!isLoading && filteredLogs.length === 0) {
+    <div class="empty-state">
+      <p>Không có dữ liệu nhật ký hoạt động</p>
+    </div>
+    }
+  </div>
+
+  @if (!isLoading && totalPages > 1) {
+  <div class="pagination">
+    <button type="button" class="pagination-btn" (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1">
+      ← Trước
+    </button>
+
+    <div class="page-info">
+      Trang {{ currentPage }} / {{ totalPages }}
+    </div>
+
+    <button type="button" class="pagination-btn" (click)="goToPage(currentPage + 1)"
+      [disabled]="currentPage === totalPages">
+      Sau →
+    </button>
+  </div>
+  }
+</div>

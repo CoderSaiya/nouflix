@@ -50,27 +50,6 @@ export interface DashboardImage {
   url?: string
 }
 
-export interface Movie {
-  id: string
-  title: string
-  year: number
-  genres: string[]
-  status: "active" | "inactive" | "draft"
-  rating: number
-  poster: string
-  type: "single" | "series"
-  description: string
-  director: string
-  cast: string[]
-  backdrop: string
-  releaseDate: Date
-  images: MovieImage[]
-  videos: MovieVideo[]
-  subtitles: MovieSubtitle[]
-  numberOfSeasons?: number
-  numberOfEpisodes?: number
-}
-
 export interface MovieImage {
   id: string
   type: "poster" | "backdrop"
@@ -122,8 +101,32 @@ export interface Order {
 
 export interface AuditLog {
   id: string
+  timestampUtc: string
+  correlationId: string
   action: string
   userId: string
-  timestamp: Date
+  username: string
+  resourceType: string
+  resourceId: string
   details: string
+  clientIp: string
+  userAgent: string
+  route: string
+  httpMethod: string
+  statusCode: number
+}
+
+export interface LogItem {
+  _id: string
+  '@timestamp': string
+  level: string
+  message: string
+  audit?: AuditLog | null
+}
+
+export interface LogResponse {
+  total: number
+  page: number
+  size: number
+  items: LogItem[]
 }

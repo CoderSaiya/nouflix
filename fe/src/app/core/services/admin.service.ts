@@ -1,65 +1,22 @@
-import {inject, Injectable} from "@angular/core"
+import { inject, Injectable } from "@angular/core"
 import { type Observable, of } from "rxjs"
-import {delay, map} from "rxjs/operators"
-import {AdminDashboardStats, AuditLog, Genre, Movie, Order, User} from '../../models/admin.model';
-import {GlobalResponse} from '../../models/api-response.model';
-import {environment} from '../../../environments/environment';
-import {HttpClient} from '@angular/common/http';
+import { delay, map } from "rxjs/operators"
+import { AdminDashboardStats, AuditLog, Genre, LogResponse, Order, User } from '../../models/admin.model';
+import { GlobalResponse } from '../../models/api-response.model';
+import { environment } from '../../../environments/environment';
+import { HttpClient, HttpParams } from '@angular/common/http';
 
 @Injectable({
   providedIn: "root",
 })
 export class AdminService {
   private http = inject(HttpClient)
-  private apiUrl = `${environment.apiUrl}/api/dashboard`
+  private apiUrl = `${environment.apiUrl}/api`
 
   // Dashboard
   getDashboardStats(): Observable<AdminDashboardStats> {
-    return this.http.get<GlobalResponse<AdminDashboardStats>>(`${this.apiUrl}`)
+    return this.http.get<GlobalResponse<AdminDashboardStats>>(`${this.apiUrl}/dashboard`)
       .pipe(map(r => r.data));
-  }
-
-  // Movies
-  getMovies(): Observable<Movie[]> {
-    const mockMovies: Movie[] = [
-      {
-        id: "1",
-        title: "Hành Trình Vượt Thời Gian",
-        year: 2024,
-        genres: ["Sci-Fi", "Drama"],
-        status: "active",
-        rating: 8.5,
-        poster: "/placeholder.svg?height=300&width=200",
-        type: "single",
-        description: "",
-        director: "",
-        cast: [],
-        backdrop: "",
-        releaseDate: new Date(),
-        images: [],
-        videos: [],
-        subtitles: []
-      },
-      {
-        id: "2",
-        title: "Tình Yêu Nơi Thành Phố",
-        year: 2023,
-        genres: ["Romance", "Comedy"],
-        status: "active",
-        rating: 7.2,
-        poster: "/placeholder.svg?height=300&width=200",
-        type: "single",
-        description: "",
-        director: "",
-        cast: [],
-        backdrop: "",
-        releaseDate: new Date(),
-        images: [],
-        videos: [],
-        subtitles: []
-      },
-    ]
-    return of(mockMovies).pipe(delay(500))
   }
 
   // Genres
@@ -117,23 +74,24 @@ export class AdminService {
   }
 
   // Audit Logs
-  getAuditLogs(): Observable<AuditLog[]> {
-    const mockLogs: AuditLog[] = [
-      {
-        id: "1",
-        action: "Tạo phim mới",
-        userId: "admin",
-        timestamp: new Date(),
-        details: 'Tạo phim "Hành Trình Vượt Thời Gian"',
-      },
-      {
-        id: "2",
-        action: "Cập nhật người dùng",
-        userId: "admin",
-        timestamp: new Date(Date.now() - 3600000),
-        details: "Cập nhật thông tin người dùng ID: 1",
-      },
-    ]
-    return of(mockLogs).pipe(delay(500))
+  getAuditLogs(q?: string, page: number = 1, size: number = 25): Observable<AuditLog[]> {
+    let params = new HttpParams()
+      .set('page', page.toString())
+      .set('size', size.toString());
+
+    if (q && q.trim().length > 0) {
+      params = params.set('q', q.trim());
+    }
+
+    return this.http
+      .get<LogResponse>(`${this.apiUrl}/log`, { params })
+      .pipe(
+        map(r => r.items),
+        map(items =>
+          items
+            .map(i => i.audit)
+            .filter((a): a is AuditLog => !!a)
+        )
+      );
   }
 }
