@@ -1,4 +1,5 @@
-﻿using NouFlix.Models.ValueObject;
+﻿using System.Text.Json.Serialization;
+using NouFlix.Models.ValueObject;
 
 namespace NouFlix.DTOs;
 
@@ -148,5 +149,23 @@ public class SystemDto
         public string? Route { get; set; }
         public string? HttpMethod { get; set; }
         public int? StatusCode { get; set; }
+    }
+    
+    public class LogEntry<T>
+    {
+        [JsonPropertyName("_id")]
+        public string? Id { get; set; }
+
+        [JsonPropertyName("@timestamp")]
+        public DateTime Timestamp { get; set; }
+
+        [JsonPropertyName("level")]
+        public string? Level { get; set; }
+
+        [JsonPropertyName("message")]
+        public string? Message { get; set; }
+
+        [JsonPropertyName("audit")]
+        public T? Audit { get; set; }
     }
 }

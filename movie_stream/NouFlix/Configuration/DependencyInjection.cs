@@ -8,6 +8,7 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Microsoft.Extensions.Caching.StackExchangeRedis;
+using Nest;
 using NouFlix.Adapters;
 using NouFlix.DTOs;
 using NouFlix.Persistence.Data;
@@ -24,6 +25,14 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
+        var esUri = new Uri(configuration["Elasticsearch:Url"] ?? "http://localhost:9200");
+
+        var settings = new ConnectionSettings(esUri)
+            .DefaultIndex("audit-logs-*")
+            .EnableDebugMode(); // optional: giúp xem request ES
+
+        services.AddSingleton(new ElasticClient(settings));
+        
         services.AddDbContext<AppDbContext>(options =>
                 options.UseSqlServer(
                     connectionString: configuration["ConnectionStrings:Default"],
@@ -62,7 +71,7 @@ public static class DependencyInjection
         
         services.AddHttpContextAccessor();
         
-        services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+        services.AddScoped(typeof(Persistence.Repositories.Interfaces.IRepository<>), typeof(Repository<>));
         
         // Repositories
         services.AddScoped<IMovieRepository, MovieRepository>();
@@ -105,6 +114,7 @@ public static class DependencyInjection
         services.AddScoped<CsvService>();
         services.AddScoped<BulkEpisodesService>();
         services.AddScoped<DashboardService>();
+        services.AddScoped<LogService>();
         
         services.AddSingleton<IAppCache, DistributedCache>();
         

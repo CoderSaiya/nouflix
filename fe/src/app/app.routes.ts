@@ -55,11 +55,7 @@ export const routes: Routes = [
         path: "not-found",
         loadComponent: () => import("./pages/not-found/not-found.component").then((m) => m.NotFoundComponent),
         title: "404 - Trang Không Tồn Tại",
-      },
-      {
-        path: "**",
-        redirectTo: "/not-found",
-      },
+      }
     ]
   },
   {
@@ -100,11 +96,12 @@ export const routes: Routes = [
         path: "settings",
         loadComponent: () => import("./pages/admin/settings/settings.component").then((m) => m.SettingsComponent),
       },
-      // {
-      //   path: "audit-logs",
-      //   loadChildren: () => import("./features/audit-logs/audit-logs.module").then((m) => m.AuditLogsModule),
-      // },
+      {
+        path: "audit-logs",
+        loadComponent: () => import("./pages/admin/audit-logs/audit-logs.component").then((m) => m.AuditLogsComponent),
+      },
       { path: "", redirectTo: "dashboard", pathMatch: "full" },
     ]
   },
+  { path: '**', redirectTo: '/not-found' },
 ];
