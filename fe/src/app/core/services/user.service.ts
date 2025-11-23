@@ -1,11 +1,11 @@
-import {inject, Injectable} from '@angular/core';
-import {HttpClient} from '@angular/common/http';
-import {environment} from '../../../environments/environment';
-import {AuthService} from './auth.service';
-import {Observable} from 'rxjs';
-import {User, WatchHistoryItem, WatchlistItem} from '../../models/user.model';
-import {map} from 'rxjs/operators';
-import {GlobalResponse} from '../../models/api-response.model';
+import { inject, Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../environments/environment';
+import { AuthService } from './auth.service';
+import { Observable } from 'rxjs';
+import { User, WatchHistoryItem, WatchlistItem } from '../../models/user.model';
+import { map } from 'rxjs/operators';
+import { GlobalResponse } from '../../models/api-response.model';
 
 @Injectable({
   providedIn: "root",
@@ -52,7 +52,7 @@ export class UserService {
   }
 
   getUsers(): Observable<User[]> {
-    return this.http.get<GlobalResponse<User[]>>(`${this.apiUrl}/users`)
+    return this.http.get<GlobalResponse<User[]>>(`${this.apiUrl}`)
       .pipe(map(res => res.data ?? []));
   }
 }

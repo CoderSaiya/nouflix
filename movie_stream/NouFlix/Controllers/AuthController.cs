@@ -44,6 +44,17 @@ public class AuthController(
 
         return Ok(GlobalResponse<AuthRes>.Success(res));
     }
+    
+    [HttpPost("logout")]
+    [Authorize]
+    public IActionResult Logout()
+    {
+        cookie.DeleteRefresh(Response);
+
+        svc.LogoutAsync();
+
+        return Ok(GlobalResponse<string>.Success("Đã đăng xuất"));
+    }
 
     [HttpPost("refresh-token")]
     [AllowAnonymous]

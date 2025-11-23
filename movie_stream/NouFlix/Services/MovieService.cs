@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.Security.Claims;
 using Microsoft.EntityFrameworkCore;
 using NouFlix.DTOs;
 using NouFlix.Mapper;
@@ -7,15 +8,23 @@ using NouFlix.Models.Entities;
 using NouFlix.Models.ValueObject;
 using NouFlix.Persistence.Repositories.Interfaces;
 using NouFlix.Services.Interface;
+using Serilog;
 
 namespace NouFlix.Services;
 
 public class MovieService(
     IUnitOfWork uow,
     MinioObjectStorage storage,
-    IAppCache cache)
+    IAppCache cache,
+    IHttpContextAccessor accessor)
 {
     private readonly MovieSimWeights _w = new();
+    
+    private readonly Serilog.ILogger _logger = Log.ForContext<StreamService>();
+    private HttpContext? HttpContext => accessor.HttpContext;
+
+    private string? ClientIp => HttpContext?.Connection.RemoteIpAddress?.ToString();
+    private string? UserAgent => HttpContext?.Request.Headers["User-Agent"].ToString();
     
     public async Task<IEnumerable<MovieRes>> GetMostViewed(int take = 12, CancellationToken ct = default)
         => await (await uow.Movies.TopByViewsAsync(take, ct)).ToMovieResListAsync(storage, ct);
@@ -46,6 +55,29 @@ public class MovieService(
         var mov = await uow.Movies.GetBySlugAsync(slug);
         if (mov is null)
             throw new NotFoundException("movie", slug);
+        
+        var userId = HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);
+        var email = HttpContext?.User?.FindFirstValue(ClaimTypes.Email)
+                    ?? HttpContext?.User?.Identity?.Name;
+        
+        var audit = new SystemDto.AuditLog
+        {
+            Id = Guid.NewGuid().ToString(),
+            CorrelationId = (string?)HttpContext?.Request.Headers["X-Correlation-Id"] ?? HttpContext?.TraceIdentifier,
+            UserId = userId,
+            Username = email,
+            Action = "get",
+            ResourceType = "Movie",
+            ResourceId = mov.Id.ToString(),
+            Details = "GetDetailMovie",
+            ClientIp = ClientIp,
+            UserAgent = UserAgent,
+            Route = HttpContext?.Request.Path.ToString(),
+            HttpMethod = HttpContext?.Request.Method,
+            StatusCode = 200,
+        };
+
+        _logger.Information("Movie audit {@Audit}", audit);
         
         return await mov.ToMovieDetailAsync(storage, ct);
     }
@@ -148,14 +180,64 @@ public class MovieService(
         
         await uow.Movies.AddAsync(newMov, ct);
         await uow.SaveChangesAsync(ct);
+        
+        var userId = HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var email = HttpContext?.User.FindFirstValue(ClaimTypes.Email)
+                    ?? HttpContext?.User.Identity?.Name;
+        
+        var audit = new SystemDto.AuditLog
+        {
+            Id = Guid.NewGuid().ToString(),
+            CorrelationId = (string?)HttpContext?.Request.Headers["X-Correlation-Id"] ?? HttpContext?.TraceIdentifier,
+            UserId = userId,
+            Username = email,
+            Action = "create",
+            ResourceType = "Movie",
+            ResourceId = newMov.Id.ToString(),
+            Details = "CreateMovie",
+            ClientIp = ClientIp,
+            UserAgent = UserAgent,
+            Route = HttpContext?.Request.Path.ToString(),
+            HttpMethod = HttpContext?.Request.Method,
+            StatusCode = StatusCodes.Status201Created,
+        };
+
+        _logger.Information("Movie audit {@Audit}", audit);
 
         return newMov.Id;
     }
     
     public async Task UpdateAsync(int id, UpsertMovieReq req, CancellationToken ct = default)
     {
+        var userId = HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var email = HttpContext?.User.FindFirstValue(ClaimTypes.Email)
+                    ?? HttpContext?.User.Identity?.Name;
+        SystemDto.AuditLog? audit;
+        
         var mov = await uow.Movies.FindAsync(id, ct);
-        if (mov is null) throw new NotFoundException("movie", id);
+        if (mov is null)
+        {
+            audit = new SystemDto.AuditLog
+            {
+                Id = Guid.NewGuid().ToString(),
+                CorrelationId = (string?)HttpContext?.Request.Headers["X-Correlation-Id"] ?? HttpContext?.TraceIdentifier,
+                UserId = userId,
+                Username = email,
+                Action = "update",
+                ResourceType = "Movie",
+                ResourceId = null,
+                Details = "MovieNotFound",
+                ClientIp = ClientIp,
+                UserAgent = UserAgent,
+                Route = HttpContext?.Request.Path.ToString(),
+                HttpMethod = HttpContext?.Request.Method,
+                StatusCode = StatusCodes.Status404NotFound,
+            };
+
+            _logger.Information("Movie audit {@Audit}", audit);
+            
+            throw new NotFoundException("movie", id);
+        }
         
         mov.Title = req.Title;
         mov.AlternateTitle = req.AlternateTitle;
@@ -191,6 +273,25 @@ public class MovieService(
         
         uow.Movies.Update(mov);
         await uow.SaveChangesAsync(ct);
+        
+        audit = new SystemDto.AuditLog
+        {
+            Id = Guid.NewGuid().ToString(),
+            CorrelationId = (string?)HttpContext?.Request.Headers["X-Correlation-Id"] ?? HttpContext?.TraceIdentifier,
+            UserId = userId,
+            Username = email,
+            Action = "update",
+            ResourceType = "Movie",
+            ResourceId = id.ToString(),
+            Details = "UpdateMovie",
+            ClientIp = ClientIp,
+            UserAgent = UserAgent,
+            Route = HttpContext?.Request.Path.ToString(),
+            HttpMethod = HttpContext?.Request.Method,
+            StatusCode = StatusCodes.Status200OK,
+        };
+
+        _logger.Information("Movie audit {@Audit}", audit);
     }
 
     public async Task DeleteAsync(int id, CancellationToken ct = default)

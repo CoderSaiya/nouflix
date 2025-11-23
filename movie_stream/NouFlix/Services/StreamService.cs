@@ -7,6 +7,7 @@ using NouFlix.Adapters;
 using NouFlix.DTOs;
 using NouFlix.Models.Specification;
 using NouFlix.Persistence.Repositories.Interfaces;
+using Serilog;
 
 namespace NouFlix.Services;
 
@@ -16,12 +17,19 @@ public class StreamService(
     IHttpClientFactory http,
     IOptions<StorageOptions> opts,
     IUnitOfWork uow,
-    ViewCounter counter
+    ViewCounter counter,
+    IHttpContextAccessor accessor
     )
 {
     private string Bucket => opts.Value.Buckets.Videos ?? "videos";
     private static string BasePrefix(int movieId, int? seasonsNumber = null, int? episodeNumber = null)
         => seasonsNumber is not null && episodeNumber is not null ? $"hls/movies/{movieId}/ss{seasonsNumber}/ep{episodeNumber}" : $"hls/movies/{movieId}";
+   
+    private readonly Serilog.ILogger _logger = Log.ForContext<StreamService>();
+    private HttpContext? HttpContext => accessor.HttpContext;
+
+    private string? ClientIp => HttpContext?.Connection.RemoteIpAddress?.ToString();
+    private string? UserAgent => HttpContext?.Request.Headers["User-Agent"].ToString();
     
     public async Task<IResult> GetMovieMasterAsync(int movieId, HttpRequest req, HttpResponse res, CancellationToken ct)
     {
@@ -33,6 +41,30 @@ public class StreamService(
         var key = $"{BasePrefix(movieId)}/master.m3u8";
         var text = await DownloadTextAsync(key, ct);
         var rewritten = RewriteMaster(text, req, movieId, null);
+        
+        var userId = req.HttpContext.User?.FindFirstValue(ClaimTypes.NameIdentifier);
+        var email = req.HttpContext.User?.FindFirstValue(ClaimTypes.Email)
+                    ?? req.HttpContext.User?.Identity?.Name;
+        
+        var audit = new SystemDto.AuditLog
+        {
+            Id = Guid.NewGuid().ToString(),
+            CorrelationId = (string?)HttpContext?.Request.Headers["X-Correlation-Id"] ?? HttpContext?.TraceIdentifier,
+            UserId = userId,
+            Username = email,
+            Action = "play",
+            ResourceType = "Movie",
+            ResourceId = movieId.ToString(),
+            Details = "PlayMovieMaster",
+            ClientIp = ClientIp,
+            UserAgent = UserAgent,
+            Route = HttpContext?.Request.Path.ToString(),
+            HttpMethod = HttpContext?.Request.Method,
+            StatusCode = 200,
+        };
+
+        _logger.Information("Stream audit {@Audit}", audit);
+        
         return Results.Text(rewritten, "application/vnd.apple.mpegurl", Encoding.UTF8);
     }
 
@@ -44,6 +76,30 @@ public class StreamService(
 
         var key = $"{BasePrefix(movieId)}/{quality}/index.m3u8";
         await ProxyObjectAsync(ctx, key, "application/vnd.apple.mpegurl", TimeSpan.FromMinutes(10), ct);
+        
+        var userId = ctx.User?.FindFirstValue(ClaimTypes.NameIdentifier);
+        var email = ctx.User?.FindFirstValue(ClaimTypes.Email)
+                    ?? ctx.User?.Identity?.Name;
+        
+        var audit = new SystemDto.AuditLog
+        {
+            Id = Guid.NewGuid().ToString(),
+            CorrelationId = (string?)HttpContext?.Request.Headers["X-Correlation-Id"] ?? HttpContext?.TraceIdentifier,
+            UserId = userId,
+            Username = email,
+            Action = "update",
+            ResourceType = "Movie",
+            ResourceId = movieId.ToString(),
+            Details = $"ChangeQuality {quality}",
+            ClientIp = ClientIp,
+            UserAgent = UserAgent,
+            Route = HttpContext?.Request.Path.ToString(),
+            HttpMethod = HttpContext?.Request.Method,
+            StatusCode = 200,
+        };
+
+        _logger.Information("Stream audit {@Audit}", audit);
+        
         return Results.Empty;
     }
     
@@ -104,6 +160,30 @@ public class StreamService(
 
         var key = $"{BasePrefix(movieId)}/sub/{lang}/index.m3u8";
         await ProxyObjectAsync(ctx, key, "application/vnd.apple.mpegurl", TimeSpan.FromMinutes(5), ct);
+        
+        var userId = ctx.User?.FindFirstValue(ClaimTypes.NameIdentifier);
+        var email = ctx.User?.FindFirstValue(ClaimTypes.Email)
+                    ?? ctx.User?.Identity?.Name;
+        
+        var audit = new SystemDto.AuditLog
+        {
+            Id = Guid.NewGuid().ToString(),
+            CorrelationId = (string?)HttpContext?.Request.Headers["X-Correlation-Id"] ?? HttpContext?.TraceIdentifier,
+            UserId = userId,
+            Username = email,
+            Action = "update",
+            ResourceType = "Movie",
+            ResourceId = movieId.ToString(),
+            Details = $"EnableSubtitle {lang}",
+            ClientIp = ClientIp,
+            UserAgent = UserAgent,
+            Route = HttpContext?.Request.Path.ToString(),
+            HttpMethod = HttpContext?.Request.Method,
+            StatusCode = 200,
+        };
+
+        _logger.Information("Stream audit {@Audit}", audit);
+        
         return Results.Empty;
     }
 
@@ -129,6 +209,31 @@ public class StreamService(
         var key = $"{BasePrefix(movieId, ep!.Season!.Number, ep.Number)}/master.m3u8";
         var text = await DownloadTextAsync(key, ct);
         var rewritten = RewriteMaster(text, req, movieId, episodeId);
+
+        var ctx = req.HttpContext;
+        var userId = ctx.User?.FindFirstValue(ClaimTypes.NameIdentifier);
+        var email = ctx.User?.FindFirstValue(ClaimTypes.Email)
+                    ?? ctx.User?.Identity?.Name;
+        
+        var audit = new SystemDto.AuditLog
+        {
+            Id = Guid.NewGuid().ToString(),
+            CorrelationId = (string?)HttpContext?.Request.Headers["X-Correlation-Id"] ?? HttpContext?.TraceIdentifier,
+            UserId = userId,
+            Username = email,
+            Action = "play",
+            ResourceType = "Movie",
+            ResourceId = movieId.ToString(),
+            Details = $"PlayEpisodeMaster",
+            ClientIp = ClientIp,
+            UserAgent = UserAgent,
+            Route = HttpContext?.Request.Path.ToString(),
+            HttpMethod = HttpContext?.Request.Method,
+            StatusCode = 200,
+        };
+
+        _logger.Information("Stream audit {@Audit}", audit);
+        
         return Results.Text(rewritten, "application/vnd.apple.mpegurl", Encoding.UTF8);
     }
 

@@ -21,7 +21,7 @@ public class AuthService(
     IUnitOfWork uow
     )
 {
-    private Serilog.ILogger _logger = Log.ForContext<AuthService>();
+    private readonly Serilog.ILogger _logger = Log.ForContext<AuthService>();
 
     public async Task<UserDto.UserRes> GetCurrentUserAsync(Guid userId, CancellationToken ct = default)
     {
@@ -32,9 +32,35 @@ public class AuthService(
 
     public async Task RegisterAsync(RegisterReq req, CancellationToken ct = default)
     {
+        var httpContext = accessor.HttpContext;
+        var clientIp = httpContext?.Connection.RemoteIpAddress?.ToString();
+        var userAgent = httpContext?.Request.Headers["User-Agent"].ToString();
+        SystemDto.AuditLog audit;
+        
         if (await uow.Users.EmailExistsAsync(req.Email))
-            throw new EmailAlreadyUsedException("Email đã được sử dụng.");
+        {
+            audit = new SystemDto.AuditLog
+            {
+                Id = Guid.NewGuid().ToString(),
+                CorrelationId = (string?)httpContext?.Request.Headers["X-Correlation-Id"] ?? httpContext?.TraceIdentifier,
+                UserId = null,
+                Username = null,
+                Action = "create",
+                ResourceType = "User",
+                ResourceId = null,
+                Details = "UserAlreadyExists",
+                ClientIp = clientIp,
+                UserAgent = userAgent,
+                Route = httpContext?.Request.Path.ToString(),
+                HttpMethod = httpContext?.Request.Method,
+                StatusCode = 200,
+            };
 
+            _logger.Warning("Auth audit {@Audit}", audit);
+            
+            throw new EmailAlreadyUsedException("Email đã được sử dụng.");
+        }
+        
         var hashed = AuthHelper.HashPassword(req.Password);
         var user = new User
         {
@@ -43,6 +69,25 @@ public class AuthService(
         };
         await uow.Users.AddAsync(user, ct);
         await uow.SaveChangesAsync(ct);
+        
+        audit = new SystemDto.AuditLog
+        {
+            Id = Guid.NewGuid().ToString(),
+            CorrelationId = (string?)httpContext?.Request.Headers["X-Correlation-Id"] ?? httpContext?.TraceIdentifier,
+            UserId = user.Id.ToString(),
+            Username = user.Email.ToString(),
+            Action = "create",
+            ResourceType = "User",
+            ResourceId = user.Id.ToString(),
+            Details = "RegisterSuccess",
+            ClientIp = clientIp,
+            UserAgent = userAgent,
+            Route = httpContext?.Request.Path.ToString(),
+            HttpMethod = httpContext?.Request.Method,
+            StatusCode = 200,
+        };
+
+        _logger.Information("Auth audit {@Audit}", audit);
     }
     
     public async Task<AuthRes> LoginAsync(LoginReq req, CancellationToken ct = default)
@@ -148,7 +193,38 @@ public class AuthService(
             accessExpiresAt,
             userDto);
     }
-    
+
+    public Task LogoutAsync()
+    {
+        var httpContext = accessor.HttpContext;
+        var clientIp = httpContext?.Connection.RemoteIpAddress?.ToString();
+        var userAgent = httpContext?.Request.Headers["User-Agent"].ToString();
+        
+        var userId = httpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var email = httpContext?.User.FindFirstValue(ClaimTypes.Email)
+                    ?? httpContext?.User.Identity?.Name;
+        
+        var audit = new SystemDto.AuditLog
+        {
+            Id = Guid.NewGuid().ToString(),
+            CorrelationId = (string?)httpContext?.Request.Headers["X-Correlation-Id"] ?? httpContext?.TraceIdentifier,
+            UserId = userId,
+            Username = email,
+            Action = "logout",
+            ResourceType = "User",
+            ResourceId = userId,
+            Details = "LogoutSuccess",
+            ClientIp = clientIp,
+            UserAgent = userAgent,
+            Route = httpContext?.Request.Path.ToString(),
+            HttpMethod = httpContext?.Request.Method,
+            StatusCode = StatusCodes.Status200OK,
+        };
+
+        _logger.Information("Auth audit {@Audit}", audit);
+        
+        return Task.CompletedTask;
+    }
     public string GenerateAccessToken(IEnumerable<Claim> claims)
     {
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["JWT:Key"]!));
@@ -174,6 +250,10 @@ public class AuthService(
 
     public async Task<string?> RefreshTokenAsync(string refreshToken, CancellationToken ct = default)
     {
+        var httpContext = accessor.HttpContext;
+        var clientIp = httpContext?.Connection.RemoteIpAddress?.ToString();
+        var userAgent = httpContext?.Request.Headers["User-Agent"].ToString();
+        
         var existingToken = await uow.Refreshes.GetByTokenAsync(refreshToken);
         if (existingToken is null || existingToken.ExpiresAt < DateTime.Now || existingToken.IsRevoked)
             return null;
@@ -190,6 +270,25 @@ public class AuthService(
         
         var newAccessToken = GenerateAccessToken(claims);
         await uow.SaveChangesAsync(ct);
+        
+        var audit = new SystemDto.AuditLog
+        {
+            Id = Guid.NewGuid().ToString(),
+            CorrelationId = (string?)httpContext?.Request.Headers["X-Correlation-Id"] ?? httpContext?.TraceIdentifier,
+            UserId = user.Id.ToString(),
+            Username = user.Email.ToString(),
+            Action = "create",
+            ResourceType = "RefreshToken",
+            ResourceId = user.Id.ToString(),
+            Details = "RefreshTokenSuccess",
+            ClientIp = clientIp,
+            UserAgent = userAgent,
+            Route = httpContext?.Request.Path.ToString(),
+            HttpMethod = httpContext?.Request.Method,
+            StatusCode = 200,
+        };
+
+        _logger.Information("Auth audit {@Audit}", audit);
         
         return newAccessToken;
     }
