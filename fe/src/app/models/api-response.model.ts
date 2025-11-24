@@ -1,13 +1,13 @@
 export interface GlobalResponse<T> {
-    data: T
-    message: string
-    statusCode: number
-    isSuccess: boolean
+  data: T
+  message: string
+  statusCode: number
+  isSuccess: boolean
 }
 
 export interface ApiError {
-    message: string
-    statusCode: number
+  message: string
+  statusCode: number
 }
 
 export interface SearchResponse<T> {

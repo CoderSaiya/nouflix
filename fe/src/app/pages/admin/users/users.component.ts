@@ -1,7 +1,7 @@
-import {Component, inject, type OnInit} from "@angular/core"
+import { Component, inject, type OnInit } from "@angular/core"
 import { Router } from "@angular/router"
-import {User} from '../../../models/user.model';
-import {UserService} from '../../../core/services/user.service';
+import { User } from '../../../models/user.model';
+import { UserService } from '../../../core/services/user.service';
 import { UserTableComponent } from "../../../components/admin/user-table/user-table.component";
 
 @Component({
@@ -19,6 +19,8 @@ export class UsersListComponent implements OnInit {
   selectedUsers: Set<string> = new Set()
   isDeleteConfirmOpen = false
   userToDelete: string | null = null
+
+  searchTerm = ""
   currentPage = 1
   itemsPerPage = 10
 
@@ -26,17 +28,22 @@ export class UsersListComponent implements OnInit {
     this.loadUsers()
   }
 
-  loadUsers(): void {
+  loadUsers(page: number = this.currentPage): void {
     this.isLoading = true
-    this.userSvc.getUsers().subscribe({
-      next: (data) => {
-        this.users = data
-        this.isLoading = false
-      },
-      error: () => {
-        this.isLoading = false
-      },
-    })
+    this.currentPage = page
+
+    this.selectedUsers.clear()
+
+    this.userSvc.getUsers(this.searchTerm, this.currentPage, this.itemsPerPage)
+      .subscribe({
+        next: (data) => {
+          this.users = data
+          this.isLoading = false
+        },
+        error: () => {
+          this.isLoading = false
+        },
+      })
   }
 
   toggleSelectUser(userId: string): void {
@@ -110,13 +117,19 @@ export class UsersListComponent implements OnInit {
 
   previousPage(): void {
     if (this.currentPage > 1) {
-      this.currentPage--
+      this.loadUsers(--this.currentPage)
     }
   }
 
   nextPage(): void {
     if (this.currentPage < this.totalPages) {
-      this.currentPage++
+      this.loadUsers(++this.currentPage)
     }
+  }
+
+  onSearchChange(term: string): void {
+    this.searchTerm = term
+    this.currentPage = 1
+    this.loadUsers(1)
   }
 }

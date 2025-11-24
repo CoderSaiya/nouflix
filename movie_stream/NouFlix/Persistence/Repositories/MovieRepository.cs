@@ -60,7 +60,7 @@ public class MovieRepository(AppDbContext db) : Repository<Movie>(db), IMovieRep
         
         return query
             .OrderByDescending(m => m.UpdatedAt).ThenBy(m => m.Id)
-            .Skip(skip * take)
+            .Skip(skip)
             .Take(take)
             .ToListAsync(ct);
     }

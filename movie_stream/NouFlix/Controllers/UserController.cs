@@ -25,6 +25,15 @@ public class UserController(UserService svc) : Controller
         return Ok(GlobalResponse<IEnumerable<HistoryDto.Item>>.Success(histories));
     }
 
+    [HttpGet]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> Search(
+        [FromQuery] string? q = "",
+        [FromQuery] int skip = 1,
+        [FromQuery] int take = 10,
+        CancellationToken ct = default)
+        => Ok(GlobalResponse<SearchRes<IEnumerable<UserDto.UserRes>>>.Success(await svc.SearchAsync(q, skip, take, ct)));
+
     [HttpPost("history/progress")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [Authorize]

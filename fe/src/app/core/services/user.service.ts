@@ -1,11 +1,11 @@
 import { inject, Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import { AuthService } from './auth.service';
 import { Observable } from 'rxjs';
 import { User, WatchHistoryItem, WatchlistItem } from '../../models/user.model';
 import { map } from 'rxjs/operators';
-import { GlobalResponse } from '../../models/api-response.model';
+import { GlobalResponse, SearchResponse } from '../../models/api-response.model';
 
 @Injectable({
   providedIn: "root",
@@ -51,8 +51,16 @@ export class UserService {
       .pipe(map(res => res.data ?? []));
   }
 
-  getUsers(): Observable<User[]> {
-    return this.http.get<GlobalResponse<User[]>>(`${this.apiUrl}`)
-      .pipe(map(res => res.data ?? []));
+  getUsers(q?: string, page: number = 1, size: number = 10): Observable<User[]> {
+    let params = new HttpParams()
+      .set('page', page.toString())
+      .set('size', size.toString());
+
+    if (q && q.trim().length > 0) {
+      params = params.set('q', q.trim());
+    }
+
+    return this.http.get<GlobalResponse<SearchResponse<User[]>>>(`${this.apiUrl}`, { params })
+      .pipe(map(res => res.data?.data ?? []));
   }
 }

@@ -18,6 +18,25 @@ public class UserService(
     IOptions<StorageOptions> opt)
 {
     private const long MaxSize = 5 * 1024 * 1024;
+    
+    public async Task<SearchRes<IEnumerable<UserDto.UserRes>>> SearchAsync(
+        string? q, int skip, int take, CancellationToken ct = default)
+    {
+        // Bảo vệ tham số
+        skip = Math.Max(1, skip);
+        take = Math.Clamp(take, 1, 200);
+
+        var total = await uow.Users.CountAsync(q, skip, take, ct);
+        var users = await uow.Users.SearchAsync(q, skip, take, ct);
+        var res = await Task.WhenAll(
+            users.Select(u => u.ToUserResAsync(storage, ct))
+        );
+
+        return new SearchRes<IEnumerable<UserDto.UserRes>>(
+            Count: total,
+            Data: res
+        );
+    }
 
     public async Task<IEnumerable<HistoryDto.Item>> GetHistory(Guid userId, CancellationToken ct)
         => await (await uow.Histories.GetByUserAsync(userId, ct)).ToItemListResAsync(ct);
