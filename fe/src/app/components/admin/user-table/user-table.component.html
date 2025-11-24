@@ -4,30 +4,21 @@
     <thead>
       <tr>
         <th class="checkbox-column">
-          <input
-            type="checkbox"
-            class="checkbox-input"
-            [checked]="isAllSelectedValue()"
-            (change)="onToggleSelectAll()"
+          <input type="checkbox" class="checkbox-input" [checked]="isAllSelectedValue()" (change)="onToggleSelectAll()"
             aria-label="Chọn tất cả" />
         </th>
         <th>Tên</th>
         <th>Email</th>
         <th>Vai Trò</th>
         <th>Trạng Thái</th>
-        <th>Hành Động</th>
       </tr>
     </thead>
     <tbody>
       @for (user of users; track user.userId) {
       <tr>
         <td class="checkbox-column">
-          <input
-            type="checkbox"
-            class="checkbox-input"
-            [checked]="selectedUsers.has(user.userId)"
-            (change)="onToggleSelect(user.userId)"
-            [attr.aria-label]="'Chọn ' + getFullName(user)" />
+          <input type="checkbox" class="checkbox-input" [checked]="selectedUsers.has(user.userId)"
+            (change)="onToggleSelect(user.userId)" [attr.aria-label]="'Chọn ' + getFullName(user)" />
         </td>
         <td class="name-column">{{ getFullName(user) }}</td>
         <td class="email-column">{{ user.email }}</td>
@@ -37,23 +28,9 @@
           </span>
         </td>
         <td>
-          <button
-            class="status-toggle"
-            [class]="getStatusClass(user.isBanned)"
-            (click)="onToggleStatus(user.userId)"
+          <button class="status-toggle" [class]="getStatusClass(user.isBanned)" (click)="onToggleStatus(user.userId)"
             [title]="'Nhấp để thay đổi trạng thái'">
             {{ user.isBanned ? "Bị Cấm" : "Hoạt động" }}
-          </button>
-        </td>
-        <td class="actions-column">
-          <button class="action-btn edit" (click)="onEdit(user.userId)" title="Sửa">
-            ✎
-          </button>
-          <button
-            class="action-btn delete"
-            (click)="onDelete(user.userId)"
-            title="Xóa">
-            🗑
           </button>
         </td>
       </tr>

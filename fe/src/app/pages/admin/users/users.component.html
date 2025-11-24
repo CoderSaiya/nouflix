@@ -1,9 +1,6 @@
 <div class="users-container">
   <div class="users-header">
     <h1 class="users-title">Quản Lý Người Dùng</h1>
-    <button class="btn btn-primary" (click)="createUser()">
-      + Thêm Người Dùng Mới
-    </button>
   </div>
 
   @if (selectedUsers.size > 0) {
@@ -16,46 +13,20 @@
   </div>
   }
 
-  <app-user-table
-    [users]="paginatedUsers"
-    [selectedUsers]="selectedUsers"
-    [isLoading]="isLoading"
-    (toggleSelect)="toggleSelectUser($event)"
-    (toggleSelectAll)="toggleSelectAll()"
-    (edit)="editUser($event)"
-    (delete)="openDeleteConfirm($event)"
-    (toggleStatus)="toggleUserStatus($event)"></app-user-table>
+  <app-user-table [users]="paginatedUsers" [selectedUsers]="selectedUsers" [isLoading]="isLoading"
+    (toggleSelect)="toggleSelectUser($event)" (toggleSelectAll)="toggleSelectAll()" (edit)="editUser($event)"
+    (delete)="openDeleteConfirm($event)" (toggleStatus)="toggleUserStatus($event)"></app-user-table>
 
   @if (!isLoading && users.length > 0) {
   <div class="pagination">
-    <button
-      class="pagination-btn"
-      (click)="previousPage()"
-      [disabled]="currentPage === 1">
+    <button class="pagination-btn" (click)="previousPage()" [disabled]="currentPage === 1">
       ← Trước
     </button>
     <span class="pagination-info">Trang {{ currentPage }} / {{ totalPages
       }}</span>
-    <button
-      class="pagination-btn"
-      (click)="nextPage()"
-      [disabled]="currentPage === totalPages">
+    <button class="pagination-btn" (click)="nextPage()" [disabled]="currentPage === totalPages">
       Tiếp →
     </button>
-  </div>
-  }
-
-  @if (isDeleteConfirmOpen) {
-  <div class="modal-overlay">
-    (click)="cancelDelete()">
-    <div class="modal" (click)="$event.stopPropagation()">
-      <h2 class="modal-title">Xác Nhận Xóa</h2>
-      <p class="modal-message">Bạn có chắc chắn muốn xóa người dùng này?</p>
-      <div class="modal-actions">
-        <button class="btn btn-secondary" (click)="cancelDelete()">Hủy</button>
-        <button class="btn btn-danger" (click)="confirmDelete()">Xóa</button>
-      </div>
-    </div>
   </div>
   }
 </div>
