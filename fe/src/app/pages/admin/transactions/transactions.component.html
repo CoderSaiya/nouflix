@@ -1,0 +1,54 @@
+<div class="page-container">
+    <h1>Transactions</h1>
+
+    <div class="table-container">
+        <table class="transactions-table">
+            <thead>
+                <tr>
+                    <th>User</th>
+                    <th>Plan</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                    <th>Note</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @for (tx of transactions; track tx.id) {
+                <tr>
+                    <td>{{ tx.username }}</td>
+                    <td>{{ tx.planName }}</td>
+                    <td>\${{ tx.amount }}</td>
+                    <td>
+                        <span class="status-badge" [class.pending]="tx.status === 0" [class.completed]="tx.status === 1"
+                            [class.failed]="tx.status === 2" [class.refunded]="tx.status === 3">
+                            {{ getStatusText(tx.status) }}
+                        </span>
+                    </td>
+                    <td>{{ tx.createdAt | date:'medium' }}</td>
+                    <td class="text-gray-400 text-sm">{{ tx.note }}</td>
+                    <td>
+                        @if (tx.status === 1) {
+                        <button (click)="refund(tx)" class="btn-refund">
+                            Refund
+                        </button>
+                        }
+                    </td>
+                </tr>
+                }
+                @if (transactions.length === 0) {
+                <tr>
+                    <td colspan="7" class="no-data">No transactions found</td>
+                </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination (Simple) -->
+    <div class="pagination">
+        <button (click)="prevPage()" [disabled]="skip === 0" class="btn-page">Previous</button>
+        <button (click)="nextPage()" [disabled]="transactions.length < take" class="btn-page">Next</button>
+    </div>
+</div>

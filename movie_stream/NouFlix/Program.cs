@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.HttpOverrides;
 using NouFlix.Configuration;
 using NouFlix.Models.Specification;
 using Serilog;
+using Microsoft.EntityFrameworkCore;
+using NouFlix.Persistence.Data;
 using IPNetwork = Microsoft.AspNetCore.HttpOverrides.IPNetwork;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -39,6 +41,13 @@ builder.Services.AddSwagger(builder.Configuration);
 // });
 
 var app = builder.Build();
+
+// Auto-migrate database
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    await db.Database.MigrateAsync();
+}
 
 var fwd = new ForwardedHeadersOptions {
     ForwardedHeaders = ForwardedHeaders.XForwardedProto | ForwardedHeaders.XForwardedHost,

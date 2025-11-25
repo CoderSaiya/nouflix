@@ -28,7 +28,7 @@ export class SsoSuccessComponent implements OnInit {
     history.replaceState(null, '', location.pathname + location.search);
 
     if (!ok) {
-      this.router.navigate(['/auth/login'], { queryParams: { error: 'sso_missing_token' } });
+      this.router.navigate(['/login'], { queryParams: { error: 'sso_missing_token' } });
       return;
     }
 

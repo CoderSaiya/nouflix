@@ -52,10 +52,15 @@ export const routes: Routes = [
         title: "Thông Tin Cá Nhân - NouFlix",
       },
       {
+        path: "pricing",
+        loadComponent: () => import("./pages/pricing/pricing.component").then((m) => m.PricingComponent),
+        title: "Gói Cước - NouFlix",
+      },
+      {
         path: "not-found",
         loadComponent: () => import("./pages/not-found/not-found.component").then((m) => m.NotFoundComponent),
         title: "404 - Trang Không Tồn Tại",
-      }
+      },
     ]
   },
   {
@@ -99,6 +104,16 @@ export const routes: Routes = [
       {
         path: "audit-logs",
         loadComponent: () => import("./pages/admin/audit-logs/audit-logs.component").then((m) => m.AuditLogsComponent),
+      },
+      {
+        path: "plans",
+        loadComponent: () => import("./pages/admin/subscription-plans/subscription-plans.component").then((m) => m.SubscriptionPlansComponent),
+        title: "Gói Cước - Admin",
+      },
+      {
+        path: "transactions",
+        loadComponent: () => import("./pages/admin/transactions/transactions.component").then((m) => m.TransactionsComponent),
+        title: "Giao Dịch - Admin",
       },
       { path: "", redirectTo: "dashboard", pathMatch: "full" },
     ]

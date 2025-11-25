@@ -1,0 +1,33 @@
+<div class="modal-overlay">
+    <div class="modal-content">
+        <h2>Đăng ký gói {{ plan.name }} ({{ billingCycle === 'monthly' ? 'Tháng' : 'Năm' }})</h2>
+        <div class="total-price">
+            Tổng cộng: <span class="amount">{{ formatPrice(billingCycle === 'monthly' ? plan.priceMonthly :
+                plan.priceYearly) }}</span>
+        </div>
+
+        <div class="providers-list">
+            <div class="provider-btn" [class.selected]="selectedProvider === 'momo'" (click)="selectProvider('momo')">
+                <div class="provider-info">
+                    <div class="provider-logo momo">MOMO</div>
+                    <span>Ví MoMo</span>
+                </div>
+                <div class="radio-circle"></div>
+            </div>
+
+            <div class="provider-btn" [class.selected]="selectedProvider === 'stripe'"
+                (click)="selectProvider('stripe')">
+                <div class="provider-info">
+                    <div class="provider-logo stripe">STRIPE</div>
+                    <span>Thẻ Tín Dụng (Stripe)</span>
+                </div>
+                <div class="radio-circle"></div>
+            </div>
+        </div>
+
+        <div class="modal-actions">
+            <button class="btn-cancel" (click)="cancel.emit()">Hủy</button>
+            <button class="btn-confirm" (click)="confirm()" [disabled]="!selectedProvider">Thanh Toán</button>
+        </div>
+    </div>
+</div>

@@ -1,10 +1,10 @@
-import {inject, Injectable} from '@angular/core';
-import {HttpClient} from '@angular/common/http';
-import {environment} from '../../../environments/environment';
-import {Observable} from 'rxjs';
-import {Genre, Movie, Studio} from '../../models/movie.model';
-import {GlobalResponse} from '../../models/api-response.model';
-import {map} from 'rxjs/operators';
+import { inject, Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../environments/environment';
+import { Observable } from 'rxjs';
+import { Genre, Movie, Studio } from '../../models/movie.model';
+import { GlobalResponse } from '../../models/api-response.model';
+import { map } from 'rxjs/operators';
 
 @Injectable({
   providedIn: "root",
@@ -31,7 +31,17 @@ export class TaxonomyService {
 
   getGenreById(id: number): Observable<Genre | null> {
     return this.http.get<GlobalResponse<Genre | null>>(`${this.apiUrl}/genre/${id}`)
-      .pipe(map(res => (res.data)))
+      .pipe(map(res => (res?.data || null)))
+  }
+
+  createGenre(payload: Partial<Genre>): Observable<Genre | null> {
+    return this.http.post<GlobalResponse<Genre | null>>(`${this.apiUrl}/genre`, payload)
+      .pipe(map(res => res?.data || null));
+  }
+
+  updateGenre(id: number, payload: Partial<Genre>): Observable<Genre | null> {
+    return this.http.put<GlobalResponse<Genre | null>>(`${this.apiUrl}/genre/${id}`, payload)
+      .pipe(map(res => res?.data || null));
   }
 
   getStudios(q?: string | null): Observable<Studio[]> {
@@ -44,6 +54,6 @@ export class TaxonomyService {
 
   getStudioById(id: number): Observable<Studio | null> {
     return this.http.get<GlobalResponse<Studio | null>>(`${this.apiUrl}/studio/${id}`)
-      .pipe(map(res => (res.data)))
+      .pipe(map(res => (res?.data || null)))
   }
 }

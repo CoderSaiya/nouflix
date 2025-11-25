@@ -15,6 +15,9 @@ public interface IUnitOfWork
     IUserRepository Users { get; }
     IRefreshTokenRepository Refreshes { get; }
     IHistoryRepository Histories { get; }
+    ISubscriptionPlanRepository SubscriptionPlans { get; }
+    IUserSubscriptionRepository UserSubscriptions { get; }
+    ITransactionRepository Transactions { get; }
     
 
     Task<int> SaveChangesAsync(CancellationToken ct = default);

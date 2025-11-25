@@ -1,5 +1,5 @@
-import {Component, ElementRef, inject, Input, ViewChild} from "@angular/core"
-import {Router, RouterLink, RouterLinkActive} from "@angular/router"
+import { Component, ElementRef, inject, Input, ViewChild } from "@angular/core"
+import { Router, RouterLink, RouterLinkActive } from "@angular/router"
 
 interface SidebarItem {
   label: string
@@ -26,7 +26,9 @@ export class SidebarComponent {
     { label: "Dashboard", icon: "📊", route: "/admin/dashboard" },
     { label: "Phim", icon: "🎬", route: "/admin/movies" },
     { label: "Thể Loại", icon: "🏷️", route: "/admin/genres" },
+    { label: "Studio", icon: "🎥", route: "/admin/studios" },
     { label: "Người Dùng", icon: "👥", route: "/admin/users" },
+    { label: "Gói dịch vụ", icon: "💎", route: "/admin/plans" },
     { label: "Đơn Hàng", icon: "📦", route: "/admin/orders" },
     { label: "Thư Viện Media", icon: "🖼️", route: "/admin/media-library" },
     { label: "Cài Đặt", icon: "⚙️", route: "/admin/settings" },

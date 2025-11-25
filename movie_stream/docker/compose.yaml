@@ -124,7 +124,7 @@ services:
       - Auth__External__Google__ClientSecret=${GOOGLE_CLIENT_SECRET}
       - Auth__External__Facebook__ClientId=${FACEBOOK_CLIENT_ID}
       - Auth__External__Facebook__ClientSecret=${FACEBOOK_CLIENT_SECRET}
-      - Auth__Auth__FrontendBaseUrl=https://nouflix.nhatcuong.io.vn
+      - Auth__Auth__FrontendBaseUrl=${FRONTEND_BASE_URL}
       - Ffmpeg__Path=/usr/bin/ffmpeg
 
       - Serilog__Using__0=Serilog.Sinks.Console
@@ -146,6 +146,15 @@ services:
       - Serilog__WriteTo__1__Args__failureCallback=SerilogToElk.SerilogFailureHandler.Handle
       - Serilog__WriteTo__1__Args__emitEventFailure=WriteToSelfLog
       - Serilog__WriteTo__1__Args__bufferBaseFilename=app/LogsLogs/serilog-buffer
+
+      - Stripe__SecretKey=${STRIPE_SECRET_KEY}
+      - Momo__PartnerCode=MOMO
+      - Momo__Endpoint=https://test-payment.momo.vn/v2/gateway/api/create
+      - Momo__AccessKey=${MOMO_ACCESS_KEY}
+      - Momo__SecretKey=${MOMO_SECRET_KEY}
+      - Momo__StatusEndpoint=https://test-payment.momo.vn/v2/gateway/api/query
+      - Momo__ReturnUrl=${FRONTEND_BASE_URL}/payment/callback
+      - Momo__NotifyUrl=${BACKEND_BASE_URL}/api/Payment/webhook/momo
     ports:
       - "5003:8083"
     depends_on:

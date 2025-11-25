@@ -1,0 +1,142 @@
+<div class="page-container">
+    <div class="header">
+        <h1>Quản Lý Gói Dịch Vụ</h1>
+        <button (click)="openCreateModal()" class="btn btn-primary">
+            Tạo Gói Mới
+        </button>
+    </div>
+
+    <!-- Loading State -->
+    @if (isLoading && !plans.length) {
+    <div class="loading-container">
+        <div class="spinner"></div>
+    </div>
+    }
+
+    <!-- Error State -->
+    @if (error) {
+    <div class="error-alert">
+        {{ error }}
+    </div>
+    }
+
+    <!-- Empty State -->
+    @if (!isLoading && !plans.length && !error) {
+    <div class="empty-state">
+        <p class="text-xl">Chưa có gói dịch vụ nào</p>
+        <p class="mb-6">Hãy tạo gói mới để bắt đầu</p>
+        <button (click)="openCreateModal()" class="btn btn-primary">
+            Tạo Gói Mới
+        </button>
+    </div>
+    }
+
+    <!-- Plans Grid -->
+    @if (plans.length) {
+    <div class="plans-grid">
+        @for (plan of plans; track plan.id) {
+        <div class="plan-card">
+            <div class="card-header">
+                <div>
+                    <h3>{{ plan.name }}</h3>
+                    <span class="badge" [class.free]="plan.type === 0" [class.vip]="plan.type === 1"
+                        [class.svip]="plan.type === 2">
+                        {{ getPlanType(plan.type) }}
+                    </span>
+                </div>
+                <div class="prices">
+                    <p>Tháng: {{ plan.priceMonthly | number }} đ</p>
+                    <p>Năm: {{ plan.priceYearly | number }} đ</p>
+                </div>
+            </div>
+            <p class="description">{{ plan.description || 'Không có mô tả' }}</p>
+            <div class="card-footer">
+                <div class="duration">
+                    <i class="fas fa-clock"></i>
+                    @if (plan.type === 0) {
+                    Vĩnh viễn
+                    } @else {
+                    Tháng / Năm
+                    }
+                </div>
+                <div class="actions">
+                    <button (click)="openEditModal(plan)" class="btn-icon edit" title="Chỉnh sửa">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button (click)="deletePlan(plan)" class="btn-icon delete" title="Xóa">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        }
+    </div>
+    }
+
+    <!-- Create/Edit Modal -->
+    @if (showCreateModal) {
+    <div class="modal-overlay">
+        <div class="modal-content">
+            <h2>{{ isEditing ? 'Chỉnh Sửa Gói' : 'Tạo Gói Mới' }}</h2>
+            <form [formGroup]="planForm" (ngSubmit)="submitForm()">
+                <div class="form-group">
+                    <label>Tên Gói</label>
+                    <input formControlName="name" type="text" class="form-control" placeholder="Nhập tên gói">
+                </div>
+                <div class="form-group">
+                    <label>Loại Gói</label>
+                    <select formControlName="type" class="form-control">
+                        <option [value]="0">Miễn phí</option>
+                        <option [value]="1">VIP</option>
+                        <option [value]="2">SVIP</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Giá Tháng (VND)</label>
+                    <input formControlName="priceMonthly" type="number" class="form-control"
+                        [readonly]="planForm.get('type')?.value == 0">
+                </div>
+                <div class="form-group">
+                    <label>Giá Năm (VND)</label>
+                    <input formControlName="priceYearly" type="number" class="form-control"
+                        [readonly]="planForm.get('type')?.value == 0">
+                </div>
+                <div class="form-group">
+                    <label>Mô Tả</label>
+                    <textarea formControlName="description" rows="3" class="form-control"
+                        placeholder="Nhập mô tả gói"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Tính Năng (Features)</label>
+                    <div formArrayName="features">
+                        @for (feature of features.controls; track $index) {
+                        <div class="feature-item">
+                            <input [formControlName]="$index" type="text" class="form-control"
+                                placeholder="Nhập tính năng">
+                            <button type="button" (click)="removeFeature($index)" class="btn-icon delete"
+                                title="Xóa tính năng">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                        }
+                    </div>
+                    <button type="button" (click)="addFeature()" class="btn btn-secondary btn-sm mt-2">
+                        <i class="fas fa-plus"></i> Thêm Tính Năng
+                    </button>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" (click)="showCreateModal = false" class="btn btn-ghost">Hủy</button>
+                    <button type="submit" [disabled]="planForm.invalid || isLoading" class="btn btn-primary">
+                        @if (isLoading) {
+                        <span class="spinner-sm"></span>
+                        }
+                        {{ isEditing ? 'Cập Nhật' : 'Tạo Mới' }}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    }
+</div>

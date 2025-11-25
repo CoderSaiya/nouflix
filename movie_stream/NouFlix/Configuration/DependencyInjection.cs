@@ -7,7 +7,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using Microsoft.Extensions.Caching.StackExchangeRedis;
 using Nest;
 using NouFlix.Adapters;
 using NouFlix.DTOs;
@@ -18,6 +17,7 @@ using NouFlix.Services;
 using NouFlix.Services.Backgroud;
 using NouFlix.Services.Interface;
 using NouFlix.Middlewares;
+using NouFlix.Services.Payment;
 
 namespace NouFlix.Configuration;
 
@@ -67,6 +67,8 @@ public static class DependencyInjection
             AllowAutoRedirect = false
         });
         
+        services.Configure<PaymentDto.MomoSettings>(configuration.GetSection("MoMo"));
+        
         services.AddExceptionHandler<AppExceptionHandler>();
         
         services.AddHttpContextAccessor();
@@ -86,6 +88,9 @@ public static class DependencyInjection
         services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IHistoryRepository, HistoryRepository>();
+        services.AddScoped<ISubscriptionPlanRepository, SubscriptionPlanRepository>();
+        services.AddScoped<IUserSubscriptionRepository, UserSubscriptionRepository>();
+        services.AddScoped<ITransactionRepository, TransactionRepository>();
 
         // Unit of Work
         services.AddScoped<IUnitOfWork, UnitOfWork>();
@@ -115,6 +120,10 @@ public static class DependencyInjection
         services.AddScoped<BulkEpisodesService>();
         services.AddScoped<DashboardService>();
         services.AddScoped<LogService>();
+        services.AddScoped<SubscriptionService>();
+        services.AddScoped<PaymentGatewayFactory>();
+        services.AddHttpClient<IPaymentGateway, MomoPaymentGateway>();
+        services.AddHttpClient<IPaymentGateway, StripePaymentGateway>();
         
         services.AddSingleton<IAppCache, DistributedCache>();
         

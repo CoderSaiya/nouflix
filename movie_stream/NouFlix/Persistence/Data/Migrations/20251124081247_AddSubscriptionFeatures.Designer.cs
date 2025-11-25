@@ -3,17 +3,20 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NouFlix.Persistence.Data;
 
 #nullable disable
 
-namespace MoviePortal.Data.Migrations
+namespace NouFlix.Persistence.Data.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251124081247_AddSubscriptionFeatures")]
+    partial class AddSubscriptionFeatures
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -615,10 +618,6 @@ namespace MoviePortal.Data.Migrations
                     b.Property<int>("DurationDays")
                         .HasColumnType("int");
 
-                    b.Property<string>("Features")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -627,18 +626,12 @@ namespace MoviePortal.Data.Migrations
                     b.Property<decimal>("Price")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<decimal>("PriceMonthly")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal>("PriceYearly")
-                        .HasColumnType("decimal(18,2)");
-
                     b.Property<int>("Type")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
 
-                    b.ToTable("subscription_plans", (string)null);
+                    b.ToTable("SubscriptionPlans");
                 });
 
             modelBuilder.Entity("NouFlix.Models.Entities.SubtitleAsset", b =>
@@ -702,9 +695,6 @@ namespace MoviePortal.Data.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("DurationDays")
-                        .HasColumnType("int");
-
                     b.Property<string>("Note")
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
@@ -724,7 +714,7 @@ namespace MoviePortal.Data.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("transactions", (string)null);
+                    b.ToTable("Transactions");
                 });
 
             modelBuilder.Entity("NouFlix.Models.Entities.User", b =>
@@ -794,7 +784,7 @@ namespace MoviePortal.Data.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("user_subscriptions", (string)null);
+                    b.ToTable("UserSubscriptions");
                 });
 
             modelBuilder.Entity("NouFlix.Models.Entities.VideoAsset", b =>

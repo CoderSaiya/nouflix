@@ -7,17 +7,13 @@
       </p>
 
       <div class="search-bar-large">
-        <svg class="search-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <svg class="search-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="2">
           <circle cx="11" cy="11" r="8"></circle>
           <path d="m21 21-4.35-4.35"></path>
         </svg>
-        <input
-          type="text"
-          placeholder="Nhập tên phim, diễn viên, đạo diễn..."
-          [(ngModel)]="searchQuery"
-          (keyup.enter)="onSearch()"
-          class="search-input"
-        />
+        <input type="text" placeholder="Nhập tên phim, diễn viên, đạo diễn..." [(ngModel)]="searchQuery"
+          (keyup.enter)="onSearch()" class="search-input" />
         <button class="search-btn" (click)="onSearch()">
           Tìm Kiếm
         </button>
@@ -44,11 +40,7 @@
       <div class="filters-grid">
         <div class="filter-group">
           <label class="filter-label">Thể Loại</label>
-          <select
-            class="filter-select"
-            [(ngModel)]="selectedGenre"
-            (change)="onFilterChange()"
-          >
+          <select class="filter-select" [(ngModel)]="selectedGenre" (change)="onFilterChange()">
             <option [ngValue]="null">Tất Cả Thể Loại</option>
             <option *ngFor="let genre of genres" [ngValue]="genre.id">
               {{ genre.name }}
@@ -58,11 +50,7 @@
 
         <div class="filter-group">
           <label class="filter-label">Năm Phát Hành</label>
-          <select
-            class="filter-select"
-            [(ngModel)]="selectedYear"
-            (change)="onFilterChange()"
-          >
+          <select class="filter-select" [(ngModel)]="selectedYear" (change)="onFilterChange()">
             <option value="">Tất Cả Năm</option>
             <option *ngFor="let year of years" [value]="year">
               {{ year }}
@@ -72,11 +60,7 @@
 
         <div class="filter-group">
           <label class="filter-label">Đánh Giá</label>
-          <select
-            class="filter-select"
-            [(ngModel)]="selectedRating"
-            (change)="onFilterChange()"
-          >
+          <select class="filter-select" [(ngModel)]="selectedRating" (change)="onFilterChange()">
             <option *ngFor="let rating of ratings" [value]="rating.value">
               {{ rating.label }}
             </option>
@@ -85,11 +69,7 @@
 
         <div class="filter-group">
           <label class="filter-label">Sắp Xếp Theo</label>
-          <select
-            class="filter-select"
-            [(ngModel)]="sortBy"
-            (change)="onFilterChange()"
-          >
+          <select class="filter-select" [(ngModel)]="sortBy" (change)="onFilterChange()">
             <option *ngFor="let option of sortOptions" [value]="option.value">
               {{ option.label }}
             </option>
@@ -167,7 +147,8 @@
                 </div>
                 <div class="movie-rating">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                    <path
+                      d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
                   </svg>
                   {{ movie.avgRating.toFixed(1) }}
                 </div>

@@ -1,0 +1,188 @@
+.pricing-page {
+    min-height: 100vh;
+    background-color: var(--color-background);
+    padding: var(--spacing-9) var(--spacing-4) var(--spacing-6);
+
+    @media (min-width: 640px) {
+        padding-left: var(--spacing-6);
+        padding-right: var(--spacing-6);
+    }
+
+    @media (min-width: 1024px) {
+        padding-left: var(--spacing-8);
+        padding-right: var(--spacing-8);
+    }
+
+    .header {
+        text-align: center;
+        margin-bottom: var(--spacing-8);
+
+        h1 {
+            font-size: 2.25rem;
+            font-weight: 800;
+            color: var(--color-text-primary);
+            margin-bottom: var(--spacing-5);
+            line-height: 1;
+
+            @media (min-width: 640px) {
+                font-size: 3rem;
+            }
+
+            @media (min-width: 1024px) {
+                font-size: 3.75rem;
+            }
+        }
+
+        p {
+            margin-top: var(--spacing-5);
+            max-width: 36rem;
+            margin-left: auto;
+            margin-right: auto;
+            font-size: 1.25rem;
+            color: var(--color-text-secondary);
+        }
+    }
+
+    .plans-grid {
+        max-width: 80rem;
+        margin: 0 auto;
+        display: grid;
+        gap: var(--spacing-8);
+
+        @media (min-width: 1024px) {
+            grid-template-columns: repeat(3, 1fr);
+        }
+
+        .plan-card {
+            display: flex;
+            flex-direction: column;
+            border-radius: var(--radius-4);
+            box-shadow: var(--shadow-3);
+            overflow: hidden;
+            background-color: var(--color-surface);
+            border: 1px solid var(--color-border);
+            transition: all 0.3s ease;
+
+            &:hover {
+                border-color: rgba(229, 9, 20, 0.5); // primary/50
+                transform: translateY(-0.25rem);
+            }
+
+            .card-header {
+                padding: var(--spacing-8) var(--spacing-6) var(--spacing-6);
+
+                @media (min-width: 640px) {
+                    padding: var(--spacing-10) var(--spacing-10) var(--spacing-6);
+                }
+
+                .plan-type-wrapper {
+                    display: flex;
+                    justify-content: center;
+
+                    .plan-type {
+                        display: inline-flex;
+                        padding: var(--spacing-1) var(--spacing-4);
+                        border-radius: 9999px;
+                        font-size: 0.875rem;
+                        font-weight: 600;
+                        text-transform: uppercase;
+                        letter-spacing: 0.025em;
+                        background-color: var(--color-surface-elevated);
+                        color: var(--color-primary);
+                    }
+                }
+
+                .price-wrapper {
+                    margin-top: var(--spacing-4);
+                    display: flex;
+                    justify-content: center;
+                    align-items: baseline;
+                    font-size: 2.75rem;
+                    font-weight: 800;
+                    color: var(--color-text-primary);
+
+                    .currency {
+                        // implicit
+                    }
+
+                    .period {
+                        margin-left: var(--spacing-1);
+                        font-size: 1.5rem;
+                        font-weight: 500;
+                        color: var(--color-text-secondary);
+                    }
+                }
+
+                .description {
+                    margin-top: var(--spacing-5);
+                    font-size: 1.125rem;
+                    color: var(--color-text-secondary);
+                    text-align: center;
+                }
+            }
+
+            .card-body {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                justify-content: space-between;
+                padding: var(--spacing-6);
+                background-color: var(--color-surface);
+
+                @media (min-width: 640px) {
+                    padding: var(--spacing-10);
+                    padding-top: var(--spacing-6);
+                }
+
+                .features-list {
+                    list-style: none;
+                    padding: 0;
+                    margin: 0;
+
+                    // Space y-4 equivalent
+                    &>li+li {
+                        margin-top: var(--spacing-4);
+                    }
+
+                    li {
+                        display: flex;
+                        align-items: flex-start;
+
+                        .icon-wrapper {
+                            flex-shrink: 0;
+                            color: var(--color-success);
+                        }
+
+                        p {
+                            margin: 0 0 0 var(--spacing-3);
+                            font-size: 1rem;
+                            color: var(--color-text-secondary); // gray-300 equivalent
+                        }
+                    }
+                }
+
+                .btn-subscribe {
+                    width: 100%;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    padding: var(--spacing-3) var(--spacing-5);
+                    border: 1px solid transparent;
+                    font-size: 1rem;
+                    font-weight: 500;
+                    border-radius: var(--radius-3); // rounded-xl
+                    color: var(--color-text-primary);
+                    background-color: var(--color-primary);
+                    transition: background-color var(--transition-base);
+                    box-shadow: 0 10px 15px -3px rgba(229, 9, 20, 0.25); // shadow-lg shadow-primary/25
+                    margin-top: var(--spacing-6);
+                    cursor: pointer;
+
+                    &:hover {
+                        background-color: var(--color-primary-hover);
+                    }
+                }
+            }
+        }
+    }
+}

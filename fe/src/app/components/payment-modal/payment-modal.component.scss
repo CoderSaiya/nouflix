@@ -1,0 +1,153 @@
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    backdrop-filter: blur(4px);
+}
+
+.modal-content {
+    background-color: var(--color-surface);
+    border-radius: var(--radius-4);
+    padding: var(--spacing-8);
+    width: 100%;
+    max-width: 28rem;
+    border: 1px solid var(--color-border);
+    box-shadow: var(--shadow-4);
+
+    h2 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--color-text-primary);
+        margin-bottom: var(--spacing-2);
+    }
+
+    .total-price {
+        color: var(--color-text-secondary);
+        margin-bottom: var(--spacing-6);
+
+        .amount {
+            color: var(--color-primary);
+            font-weight: 700;
+            font-size: 1.125rem;
+        }
+    }
+
+    .providers-list {
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacing-4);
+        margin-bottom: var(--spacing-8);
+    }
+
+    .provider-btn {
+        width: 100%;
+        background-color: var(--color-surface-elevated);
+        padding: var(--spacing-4);
+        border-radius: var(--radius-3);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border: 1px solid var(--color-border);
+        cursor: pointer;
+        transition: all 0.2s ease;
+
+        &:hover {
+            background-color: var(--color-surface-hover);
+        }
+
+        &.selected {
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 2px var(--color-primary);
+
+            .radio-circle {
+                background-color: var(--color-primary);
+                border-color: var(--color-primary);
+            }
+        }
+
+        .provider-info {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-4);
+
+            .provider-logo {
+                width: 2.5rem;
+                height: 2.5rem;
+                border-radius: var(--radius-2);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: 700;
+                font-size: 0.75rem;
+                color: white;
+
+                &.momo {
+                    background-color: #A50064;
+                }
+
+                &.stripe {
+                    background-color: #635BFF;
+                }
+            }
+
+            span {
+                color: var(--color-text-primary);
+                font-weight: 500;
+            }
+        }
+
+        .radio-circle {
+            width: 1rem;
+            height: 1rem;
+            border-radius: 50%;
+            border: 1px solid var(--color-text-secondary);
+            transition: all 0.2s ease;
+        }
+    }
+
+    .modal-actions {
+        display: flex;
+        gap: var(--spacing-3);
+
+        button {
+            flex: 1;
+            padding: var(--spacing-3) var(--spacing-4);
+            border-radius: var(--radius-3);
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            border: none;
+
+            &.btn-cancel {
+                background-color: var(--color-surface-elevated);
+                color: var(--color-text-secondary);
+
+                &:hover {
+                    background-color: var(--color-surface-hover);
+                }
+            }
+
+            &.btn-confirm {
+                background-color: var(--color-primary);
+                color: white;
+                font-weight: 700;
+
+                &:hover {
+                    background-color: var(--color-primary-hover);
+                }
+
+                &:disabled {
+                    opacity: 0.5;
+                    cursor: not-allowed;
+                }
+            }
+        }
+    }
+}

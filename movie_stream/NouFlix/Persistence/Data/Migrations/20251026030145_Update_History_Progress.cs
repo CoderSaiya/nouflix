@@ -10,19 +10,19 @@ namespace NouFlix.Persistence.Data.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.RenameColumn(
-                name: "Duration",
-                table: "histories",
-                newName: "Progress");
+            // migrationBuilder.RenameColumn(
+            //     name: "Duration",
+            //     table: "histories",
+            //     newName: "Progress");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.RenameColumn(
-                name: "Progress",
-                table: "histories",
-                newName: "Duration");
+            // migrationBuilder.RenameColumn(
+            //     name: "Progress",
+            //     table: "histories",
+            //     newName: "Duration");
         }
     }
 }

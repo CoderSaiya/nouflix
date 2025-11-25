@@ -1,0 +1,73 @@
+<div class="pricing-page">
+    <div class="header">
+        <h1>Chọn Gói Cước Của Bạn</h1>
+        <p>Mở khóa kho phim và chương trình truyền hình không giới hạn với các gói đăng ký cao cấp của chúng tôi.</p>
+    </div>
+
+    <div class="billing-toggle">
+        <button [class.active]="billingCycle === 'monthly'" (click)="billingCycle = 'monthly'">Tháng</button>
+        <button [class.active]="billingCycle === 'yearly'" (click)="billingCycle = 'yearly'">Năm (Tiết kiệm
+            hơn)</button>
+    </div>
+
+    <div class="plans-grid">
+        @for (plan of plans; track plan.id) {
+        <div class="plan-card">
+            <div class="card-header">
+                <div class="plan-type-wrapper">
+                    <span class="plan-type">
+                        {{ getPlanType(plan.type) }}
+                    </span>
+                </div>
+                <div class="price-wrapper">
+                    {{ formatPrice(billingCycle === 'monthly' ? plan.priceMonthly : plan.priceYearly) }}
+                    <span class="period">/{{ billingCycle === 'monthly' ? 'tháng' : 'năm' }}</span>
+                </div>
+                <p class="description">{{ plan.description }}</p>
+            </div>
+            <div class="card-body">
+                <ul class="features-list">
+                    @if (plan.features && plan.features.length) {
+                    @for (feature of plan.features; track $index) {
+                    <li>
+                        <div class="icon-wrapper">
+                            <i class="fas fa-check"></i>
+                        </div>
+                        <p>{{ feature }}</p>
+                    </li>
+                    }
+                    } @else {
+                    <li>
+                        <div class="icon-wrapper">
+                            <i class="fas fa-check"></i>
+                        </div>
+                        <p>Xem phim không giới hạn</p>
+                    </li>
+                    <li>
+                        <div class="icon-wrapper">
+                            <i class="fas fa-check"></i>
+                        </div>
+                        <p>Không quảng cáo</p>
+                    </li>
+                    <li>
+                        <div class="icon-wrapper">
+                            <i class="fas fa-check"></i>
+                        </div>
+                        <p>Hủy bất cứ lúc nào</p>
+                    </li>
+                    }
+                </ul>
+                <button (click)="openPayment(plan)" class="btn-subscribe">
+                    Đăng Ký Ngay
+                </button>
+            </div>
+        </div>
+        }
+    </div>
+</div>
+
+@if (selectedPlan) {
+<app-payment-modal [plan]="selectedPlan" [billingCycle]="billingCycle" (cancel)="selectedPlan = null"
+    (pay)="onPay($event)">
+</app-payment-modal>
+}

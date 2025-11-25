@@ -1,12 +1,12 @@
-import {Component, inject, type OnInit} from "@angular/core"
+import { Component, inject, type OnInit } from "@angular/core"
 import { CommonModule } from "@angular/common"
 import { RouterModule, ActivatedRoute, Router } from "@angular/router"
 import { FormsModule } from "@angular/forms"
 import { Title, Meta } from "@angular/platform-browser"
 import { MovieService } from "../../core/services/movie.service"
-import type {Genre, Movie} from "../../models/movie.model"
-import {MovieItems} from '../../components/movie-items/movie-items.component';
-import {TaxonomyService} from '../../core/services/taxonomy.service';
+import type { Genre, Movie } from "../../models/movie.model"
+import { MovieItems } from '../../components/movie-items/movie-items.component';
+import { TaxonomyService } from '../../core/services/taxonomy.service';
 
 @Component({
   selector: "app-search",
@@ -32,7 +32,7 @@ export class SearchComponent implements OnInit {
   hasSearched = false
 
   // Filter options
-  selectedGenre : number | null = null
+  selectedGenre: number | null = null
   selectedYear = ""
   selectedRating = ""
   sortBy = "popularity"
