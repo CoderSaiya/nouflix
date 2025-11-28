@@ -3,168 +3,150 @@
 
   <!-- Single movie -->
   @if (!isSeries) {
-    <div class="video-section">
-      <h4 class="subsection-title">Trailer & Video Chính</h4>
+  <div class="video-section">
+    <h4 class="subsection-title">Trailer & Video Chính</h4>
 
-      <div class="file-upload-area">
-        <input
-          type="file"
-          id="video-input"
-          class="file-input"
-          accept="video/*"
-          (change)="onMovieFileChange($event)"
-        />
-        <label for="video-input" class="file-upload-label">
-          <span class="upload-icon">🎬</span>
-          <span class="upload-text">Chọn hoặc kéo thả file Video</span>
-        </label>
-      </div>
+    <div class="file-upload-area">
+      <input type="file" id="video-input" class="file-input" accept="video/*" (change)="onMovieFileChange($event)" />
+      <label for="video-input" class="file-upload-label">
+        <span class="upload-icon">🎬</span>
+        <span class="upload-text">Chọn hoặc kéo thả file Video</span>
+      </label>
+    </div>
 
-      @if (videos?.length) {
-        <div class="uploaded-videos">
-          @for (v of videos; track v.id) {
-            <div class="video-item">
-                  <span>{{ v.kind }} - {{ v.quality }}
-                    <small class="muted">({{ v.bucket }}/{{ v.objectKey }})</small>
-                  </span>
-              <div>
-                <button class="btn-small" type="button" (click)="goSubtitle.emit(v)">Phụ đề</button>
-                <button class="btn-small btn-danger" type="button" (click)="deleteAsset.emit(v.id)">Xoá</button>
-              </div>
-            </div>
-          }
+    @if (videos.length) {
+    <div class="uploaded-videos">
+      @for (v of videos; track v.id) {
+      <div class="video-item">
+        <span>{{ v.kind }} - {{ v.quality }}
+          <small class="muted">({{ v.bucket }}/{{ v.objectKey }})</small>
+        </span>
+        <div>
+          <button class="btn-small" type="button" (click)="goSubtitle.emit(v)">Phụ đề</button>
+          <button class="btn-small btn-danger" type="button" (click)="deleteAsset.emit(v.id)">Xoá</button>
         </div>
+      </div>
       }
     </div>
+    }
+  </div>
   }
 
   <!-- Series -->
   @if (isSeries) {
-    <div class="video-section">
-      <div class="d-flex justify-content-between" style="align-items:center; margin-bottom:1rem">
-        <h4 class="subsection-title" style="margin:0">Mùa & Tập</h4>
-        <button class="btn btn-sm btn-primary" type="button" (click)="addSeason.emit()">Thêm mùa</button>
+  <div class="video-section">
+    <div class="d-flex justify-content-between" style="align-items:center; margin-bottom:1rem">
+      <h4 class="subsection-title" style="margin:0">Mùa & Tập</h4>
+      <button class="btn btn-sm btn-primary" type="button" (click)="addSeason.emit()">Thêm mùa</button>
+    </div>
+
+    @if (seasons.length === 0) {
+    <div class="alert alert-warning">
+      Chưa có mùa nào. Nhấn <b>Thêm mùa</b> để tạo Season 1.
+    </div>
+    }
+
+    @for (s of seasons; track s.id) {
+    <div class="season-card"
+      style="border:1px solid var(--color-border); padding:1rem; border-radius:6px; margin-bottom:1rem;">
+      <div class="season-header" style="display:flex; justify-content:space-between; align-items:center;">
+        <div>
+          <strong>Mùa {{ s.number }}</strong>
+          <div class="small text-muted">Năm: {{ s.year }}</div>
+        </div>
+        <div style="display:flex; gap:0.5rem;">
+          <button class="btn btn-sm btn-outline-secondary" type="button" (click)="renameSeason.emit(s)">Đổi tên</button>
+          <button class="btn btn-sm btn-outline-danger" type="button" (click)="deleteSeason.emit(s)">Xoá mùa</button>
+        </div>
       </div>
 
-      @if (seasons.length === 0) {
-        <div class="alert alert-warning">
-          Chưa có mùa nào. Nhấn <b>Thêm mùa</b> để tạo Season 1.
-        </div>
-      }
+      <!-- Episodes table -->
+      <div style="margin-top:1rem; overflow-x:auto;">
+        <table class="table">
+          <thead>
+            <tr>
+              <th style="width:70px">Tập #</th>
+              <th>Tiêu đề</th>
+              <th style="width:140px">Ngày phát</th>
+              <th style="width:120px">Trạng thái</th>
+              <th style="width:180px">Video</th>
+              <th style="width:140px"></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (e of (epsBySeason[s.id] || []); track e.id) {
+            <tr>
+              <td>
+                <input type="number" class="form-input" [value]="safeEpisodeNumber(e)"
+                  (input)="onEpisodeNumberChange(e, $event)" />
+              </td>
+              <td>
+                <input type="text" class="form-input" [value]="e.title || ''"
+                  (input)="onEpisodeTitleChange(e, $event)" />
+              </td>
+              <td>
+                <input type="date" class="form-input" [value]="getEpisodeDateValue(e)"
+                  (input)="onEpisodeDateChange(e, $event)" />
+              </td>
+              <td>
+                <select class="form-input" [value]="e.status" (change)="onEpisodeStatusChange(e, $event)">
+                  @for (sst of publishStatusEntries; track sst[0]) {
+                  <option [value]="sst[0]">{{ sst[1] }}</option>
+                  }
+                </select>
+              </td>
+              <td>
+                <label class="form-label small mb-1">Video (nguồn để transcode HLS)</label>
+                <input type="file" accept="video/*" (change)="onEpisodeFileChange(s, e, $event)" />
+                @if (videosByEpisode[e.id] && videosByEpisode[e.id].length) {
+                <div style="margin-top:0.5rem;">
+                  @for (v of videosByEpisode[e.id]; track v.id) {
+                  <div class="small" style="margin-bottom:0.25rem;">
+                    {{ v.kind }} - {{ v.quality }} <span class="muted">({{ v.bucket }}/{{ v.objectKey }})</span>
+                  </div>
+                  }
+                </div>
+                }
+              </td>
+              <td class="text-end">
+                <button class="btn btn-sm btn-success" type="button" (click)="saveEpisode.emit(e)">Lưu</button>
+                <button class="btn btn-sm btn-danger" type="button"
+                  (click)="deleteEpisode.emit({ season: s, episode: e })">Xoá</button>
+              </td>
+            </tr>
+            }
+          </tbody>
+        </table>
 
-      @for (s of seasons; track s.id) {
-        <div class="season-card" style="border:1px solid var(--color-border); padding:1rem; border-radius:6px; margin-bottom:1rem;">
-          <div class="season-header" style="display:flex; justify-content:space-between; align-items:center;">
+        <div style="text-align:right;">
+          <button class="btn btn-sm btn-outline-primary" type="button" (click)="addEpisode.emit(s)">Thêm tập</button>
+        </div>
+
+        <!-- videos grouped by episodes -->
+        @if (hasVideosInSeason(s.id)) {
+        <div style="margin-top:1rem;">
+          <h5 class="subsection-title" style="margin:0 0 0.5rem 0">Video trong mùa {{ s.number }}</h5>
+          @for (epId of episodeIdsInSeason(s.id); track epId) {
+          @for (v of (videosByEpisode[epId] || []); track v.id) {
+          <div class="video-item"
+            style="display:flex; justify-content:space-between; align-items:center; padding:0.5rem; border:1px solid var(--color-border); border-radius:6px; margin-bottom:0.5rem;">
             <div>
-              <strong>Mùa {{ s.number }}</strong>
-              <div class="small text-muted">Năm: {{ s.year }}</div>
+              <div class="fw-bold">Tập {{ findEpisodeNumber(epId) }} → {{ v.kind }} - {{ v.quality }}</div>
+              <div class="small text-muted">{{ v.bucket }} / {{ v.objectKey }}</div>
             </div>
             <div style="display:flex; gap:0.5rem;">
-              <button class="btn btn-sm btn-outline-secondary" type="button" (click)="renameSeason.emit(s)">Đổi tên</button>
-              <button class="btn btn-sm btn-outline-danger" type="button" (click)="deleteSeason.emit(s)">Xoá mùa</button>
+              <button class="btn btn-sm btn-outline-secondary" type="button" (click)="goSubtitle.emit(v)">Phụ
+                đề</button>
+              <button class="btn btn-sm btn-outline-danger" type="button" (click)="deleteAsset.emit(v.id)">Xoá</button>
             </div>
           </div>
-
-          <!-- Episodes table -->
-          <div style="margin-top:1rem;">
-            <table class="table" style="width:100%; border-collapse:collapse;">
-              <thead>
-              <tr>
-                <th style="width:80px">Tập #</th>
-                <th>Tiêu đề</th>
-                <th style="width:160px">Ngày phát</th>
-                <th style="width:140px">Trạng thái</th>
-                <th style="width:240px">Video</th>
-                <th style="width:160px"></th>
-              </tr>
-              </thead>
-              <tbody>
-                @for (e of (epsBySeason[s.id] || []); track e.id) {
-                  <tr>
-                    <td>
-                      <input
-                        type="number"
-                        class="form-input"
-                        [value]="safeEpisodeNumber(e)"
-                        (input)="onEpisodeNumberChange(e, $event)"
-                      />
-                    </td>
-                    <td>
-                      <input
-                        type="text"
-                        class="form-input"
-                        [value]="e.title || ''"
-                        (input)="onEpisodeNumberChange(e, $event)"
-                      />
-                    </td>
-                    <td>
-                      <input
-                        type="date"
-                        class="form-input"
-                        [value]="getEpisodeDateValue(e)"
-                        (input)="onEpisodeNumberChange(e, $event)"
-                      />
-                    </td>
-                    <td>
-                      <select
-                        class="form-input"
-                        [value]="e.status"
-                        (change)="onEpisodeNumberChange(e, $event)"
-                      >
-                        @for (sst of publishStatusEntries; track sst[0]) {
-                          <option [value]="sst[0]">{{ sst[1] }}</option>
-                        }
-                      </select>
-                    </td>
-                    <td>
-                      <label class="form-label small mb-1">Video (nguồn để transcode HLS)</label>
-                      <input type="file" accept="video/*" (change)="onEpisodeFileChange(s, e, $event)" />
-                      @if (videosByEpisode[e.id] && videosByEpisode[e.id].length) {
-                        <div style="margin-top:0.5rem;">
-                          @for (v of videosByEpisode[e.id]; track v.id) {
-                            <div class="small" style="margin-bottom:0.25rem;">
-                              {{ v.kind }} - {{ v.quality }} <span class="muted">({{ v.bucket }}/{{ v.objectKey }})</span>
-                            </div>
-                          }
-                        </div>
-                      }
-                    </td>
-                    <td class="text-end">
-                      <button class="btn btn-sm btn-success" type="button" (click)="saveEpisode.emit(e)">Lưu</button>
-                      <button class="btn btn-sm btn-danger" type="button" (click)="deleteEpisode.emit({ season: s, episode: e })">>Xoá</button>
-                    </td>
-                  </tr>
-                }
-              </tbody>
-            </table>
-
-            <div style="text-align:right;">
-              <button class="btn btn-sm btn-outline-primary" type="button" (click)="addEpisode.emit(s)">Thêm tập</button>
-            </div>
-
-            <!-- videos grouped by episodes -->
-            @if (hasVideosInSeason(s.id)) {
-              <div style="margin-top:1rem;">
-                <h5 class="subsection-title" style="margin:0 0 0.5rem 0">Video trong mùa {{ s.number }}</h5>
-                @for (epId of episodeIdsInSeason(s.id); track epId) {
-                  @for (v of (videosByEpisode[epId] || []); track v.id) {
-                    <div class="video-item" style="display:flex; justify-content:space-between; align-items:center; padding:0.5rem; border:1px solid var(--color-border); border-radius:6px; margin-bottom:0.5rem;">
-                      <div>
-                        <div class="fw-bold">Tập {{ findEpisodeNumber(epId) }} → {{ v.kind }} - {{ v.quality }}</div>
-                        <div class="small text-muted">{{ v.bucket }} / {{ v.objectKey }}</div>
-                      </div>
-                      <div style="display:flex; gap:0.5rem;">
-                        <button class="btn btn-sm btn-outline-secondary" type="button" (click)="goSubtitle.emit(v)">Phụ đề</button>
-                        <button class="btn btn-sm btn-outline-danger" type="button" (click)="deleteAsset.emit(v.id)">Xoá</button>
-                      </div>
-                    </div>
-                  }
-                }
-              </div>
-            }
-          </div>
+          }
+          }
         </div>
-      }
+        }
+      </div>
     </div>
+    }
+  </div>
   }
 </div>

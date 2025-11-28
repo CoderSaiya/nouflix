@@ -162,6 +162,47 @@ export class MovieModalComponent implements OnInit {
         this.subtitles = [];
       }
 
+      // Load seasons and episodes for Series
+      if (movie.type === MovieType.Series) {
+        try {
+          // Load seasons
+          this.seasons = await firstValueFrom(this.movieService.getSeasons(id));
+          console.log('Loaded seasons:', this.seasons);
+
+          // Load all episodes for this movie
+          const allEpisodes = await firstValueFrom(this.movieService.getEpisodesByMovie(id));
+          console.log('Loaded episodes:', allEpisodes);
+
+          // Group episodes by seasonId
+          this.epsBySeason = {};
+          for (const ep of allEpisodes) {
+            if (!ep.seasonId) continue;
+            if (!this.epsBySeason[ep.seasonId]) {
+              this.epsBySeason[ep.seasonId] = [];
+            }
+            this.epsBySeason[ep.seasonId].push(ep);
+          }
+
+          // Load videos for each episode
+          for (const ep of allEpisodes) {
+            if (ep.id) {
+              try {
+                const epVideos = await firstValueFrom(this.video.getByEpisode(ep.id));
+                this.videosByEpisode[ep.id] = epVideos || [];
+              } catch (errEpVid) {
+                console.error(`Failed to load videos for episode ${ep.id}`, errEpVid);
+                this.videosByEpisode[ep.id] = [];
+              }
+            }
+          }
+        } catch (errSeries) {
+          console.error('Failed to load seasons/episodes', errSeries);
+          this.seasons = [];
+          this.epsBySeason = {};
+          this.videosByEpisode = {};
+        }
+      }
+
       const rd = movie.releaseDate ? new Date(movie.releaseDate) : null;
       this.infoForm.patchValue({
         ...movie,

@@ -1,1 +1,349 @@
 @import "../movie-modal.component";
+
+// Season and Episode Management Styles
+.d-flex {
+    display: flex;
+
+    &.justify-content-between {
+        justify-content: space-between;
+    }
+}
+
+.alert {
+    padding: var(--spacing-4) var(--spacing-5);
+    border-radius: 6px;
+    margin-bottom: var(--spacing-4);
+    font-size: 0.9rem;
+
+    &.alert-warning {
+        background-color: rgba(255, 193, 7, 0.1);
+        border: 1px solid rgba(255, 193, 7, 0.3);
+        color: #ffc107;
+
+        b {
+            font-weight: 600;
+            color: #ffca28;
+        }
+    }
+}
+
+.season-card {
+    border: 1px solid var(--color-border);
+    padding: var(--spacing-5);
+    border-radius: 8px;
+    margin-bottom: var(--spacing-5);
+    background-color: var(--color-background);
+    transition: all 0.2s ease;
+
+    &:hover {
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .season-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: var(--spacing-5);
+
+        strong {
+            font-size: 1.1rem;
+            color: var(--color-text-primary);
+            font-weight: 600;
+        }
+
+        .small {
+            font-size: 0.85rem;
+            margin-top: var(--spacing-2);
+            display: block;
+        }
+
+        .text-muted {
+            color: var(--color-text-secondary);
+        }
+
+        >div:last-child {
+            display: flex;
+            gap: var(--spacing-3);
+        }
+    }
+}
+
+// Table Styles
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: var(--spacing-4);
+    background-color: var(--color-surface);
+    border-radius: 6px;
+    overflow: hidden;
+
+    thead {
+        background-color: var(--color-background);
+
+        tr {
+            th {
+                padding: var(--spacing-4);
+                text-align: left;
+                font-size: 0.9rem;
+                font-weight: 600;
+                color: var(--color-text-primary);
+                border-bottom: 2px solid var(--color-border);
+            }
+        }
+    }
+
+    tbody {
+        tr {
+            border-bottom: 1px solid var(--color-border);
+            transition: background-color 0.2s ease;
+
+            &:hover {
+                background-color: var(--color-hover);
+            }
+
+            &:last-child {
+                border-bottom: none;
+            }
+
+            td {
+                padding: var(--spacing-4);
+                vertical-align: middle;
+
+                &.text-end {
+                    text-align: right;
+                }
+
+                input[type="number"],
+                input[type="text"],
+                input[type="date"],
+                input[type="file"],
+                select {
+                    width: 100%;
+                    background-color: var(--color-background);
+                    border: 1px solid var(--color-border);
+                    border-radius: 4px;
+                    padding: var(--spacing-2) var(--spacing-3);
+                    color: var(--color-text-primary);
+                    font-size: 0.9rem;
+                    transition: border-color 0.2s;
+
+                    &:focus {
+                        outline: none;
+                        border-color: var(--color-primary);
+                        box-shadow: 0 0 0 2px rgba(255, 51, 102, 0.1);
+                    }
+                }
+
+                input[type="file"] {
+                    font-size: 0.85rem;
+                    padding: var(--spacing-2);
+                }
+            }
+        }
+    }
+}
+
+// Button Styles
+.btn {
+    padding: var(--spacing-2) var(--spacing-4);
+    border: none;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: var(--font-sans), serif;
+
+    &:hover:not(:disabled) {
+        transform: translateY(-1px);
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+    }
+
+    &:active:not(:disabled) {
+        transform: translateY(0);
+    }
+
+    &.btn-sm {
+        padding: var(--spacing-2) var(--spacing-3);
+        font-size: 0.85rem;
+    }
+
+    &.btn-primary {
+        background-color: var(--color-primary);
+        color: white;
+
+        &:hover:not(:disabled) {
+            background-color: #e63666;
+        }
+    }
+
+    &.btn-success {
+        background-color: #28a745;
+        color: white;
+
+        &:hover:not(:disabled) {
+            background-color: #218838;
+        }
+    }
+
+    &.btn-danger {
+        background-color: #dc3545;
+        color: white;
+
+        &:hover:not(:disabled) {
+            background-color: #c82333;
+        }
+    }
+
+    &.btn-outline-secondary {
+        background-color: transparent;
+        color: var(--color-text-secondary);
+        border: 1px solid var(--color-border);
+
+        &:hover:not(:disabled) {
+            background-color: var(--color-hover);
+            color: var(--color-text-primary);
+        }
+    }
+
+    &.btn-outline-primary {
+        background-color: transparent;
+        color: var(--color-primary);
+        border: 1px solid var(--color-primary);
+
+        &:hover:not(:disabled) {
+            background-color: var(--color-primary);
+            color: white;
+        }
+    }
+
+    &.btn-outline-danger {
+        background-color: transparent;
+        color: #dc3545;
+        border: 1px solid #dc3545;
+
+        &:hover:not(:disabled) {
+            background-color: #dc3545;
+            color: white;
+        }
+    }
+
+    &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+}
+
+.btn-small {
+    padding: var(--spacing-2) var(--spacing-3);
+    font-size: 0.85rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    background-color: var(--color-background);
+    color: var(--color-text-primary);
+    border: 1px solid var(--color-border);
+
+    &:hover {
+        background-color: var(--color-hover);
+        transform: translateY(-1px);
+    }
+
+    &.btn-danger {
+        background-color: #dc3545;
+        color: white;
+        border-color: #dc3545;
+
+        &:hover {
+            background-color: #c82333;
+        }
+    }
+}
+
+// Video Item Styles
+.video-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-4);
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    margin-bottom: var(--spacing-3);
+    background-color: var(--color-background);
+    transition: all 0.2s ease;
+
+    &:hover {
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    span {
+        color: var(--color-text-primary);
+        font-size: 0.9rem;
+    }
+
+    .muted {
+        color: var(--color-text-secondary);
+        font-size: 0.85rem;
+    }
+
+    >div {
+        display: flex;
+        gap: var(--spacing-3);
+        flex-shrink: 0;
+    }
+
+    .fw-bold {
+        font-weight: 600;
+        margin-bottom: var(--spacing-2);
+    }
+
+    .small {
+        font-size: 0.85rem;
+    }
+}
+
+// Utility Classes
+.small {
+    font-size: 0.9rem;
+}
+
+.mb-1 {
+    margin-bottom: var(--spacing-2);
+}
+
+.text-muted {
+    color: var(--color-text-secondary);
+}
+
+.text-end {
+    text-align: right;
+}
+
+.fw-bold {
+    font-weight: 600;
+}
+
+// Form Label
+.form-label {
+    font-weight: 500;
+    color: var(--color-text-primary);
+    font-size: 0.9rem;
+    margin-bottom: var(--spacing-2);
+    display: inline-block;
+
+    &.small {
+        font-size: 0.85rem;
+    }
+}
+
+// Episode videos section
+.video-section {
+    h5 {
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--color-text-primary);
+        margin: var(--spacing-5) 0;
+    }
+}

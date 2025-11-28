@@ -1,6 +1,6 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
-import {Episode, Movie, MovieType, Season, VideoAsset} from '../../../../models/movie.model';
-import {FormGroup, FormsModule} from '@angular/forms';
+import { Episode, Movie, MovieType, Season, VideoAsset } from '../../../../models/movie.model';
+import { FormGroup, FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-movie-videos',
@@ -24,9 +24,9 @@ export class MovieVideosComponent {
   @Output() deleteSeason = new EventEmitter<Season>();
   @Output() addEpisode = new EventEmitter<Season>();
   @Output() saveEpisode = new EventEmitter<Episode>();
-  @Output() deleteEpisode = new EventEmitter<{season: Season, episode: Episode}>();
+  @Output() deleteEpisode = new EventEmitter<{ season: Season, episode: Episode }>();
   @Output() uploadMovieVideo = new EventEmitter<File>();
-  @Output() uploadEpisodeVideo = new EventEmitter<{season: Season, episode: Episode, file: File}>();
+  @Output() uploadEpisodeVideo = new EventEmitter<{ season: Season, episode: Episode, file: File }>();
   @Output() deleteAsset = new EventEmitter<number>();
   @Output() goSubtitle = new EventEmitter<VideoAsset>();
 
@@ -55,6 +55,24 @@ export class MovieVideosComponent {
     const v = input.value;
     const parsed = Number(v);
     e.number = Number.isFinite(parsed) ? parsed : 0;
+  }
+
+  onEpisodeTitleChange(e: Episode, ev: Event) {
+    const input = ev.target as HTMLInputElement;
+    e.title = input.value;
+  }
+
+  onEpisodeDateChange(e: Episode, ev: Event) {
+    const input = ev.target as HTMLInputElement;
+    if (input.value) {
+      e.releaseDate = new Date(input.value).toISOString();
+      (e as any).releaseDateStr = input.value;
+    }
+  }
+
+  onEpisodeStatusChange(e: Episode, ev: Event) {
+    const select = ev.target as HTMLSelectElement;
+    e.status = Number(select.value);
   }
 
   getEpisodeDateValue(e: Episode): string {
