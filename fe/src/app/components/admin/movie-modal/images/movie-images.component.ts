@@ -8,6 +8,8 @@ import { Component, Input, Output, EventEmitter } from '@angular/core';
 export class MovieImagesComponent {
   @Input() selectedPosters: File[] = [];
   @Input() selectedBackdrops: File[] = [];
+  @Input() currentPosterUrl: string | null = null;
+  @Input() currentBackdropUrl: string | null = null;
   @Output() postersSelected = new EventEmitter<File[]>();
   @Output() backdropsSelected = new EventEmitter<File[]>();
   @Output() removePoster = new EventEmitter<number>();

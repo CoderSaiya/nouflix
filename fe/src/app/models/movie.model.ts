@@ -126,6 +126,18 @@ export interface VideoAsset {
   episodeId?: number | null;
 }
 
+export interface Subtitle {
+  id: number;
+  movieId: number;
+  episodeId?: number | null;
+  language: string;
+  label: string;
+  bucket: string;
+  objectKey: string;
+  endpoint?: string;
+  publicUrl: string;
+}
+
 export enum MovieType {
   Single = 1,
   Series

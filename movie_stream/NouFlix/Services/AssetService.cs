@@ -104,6 +104,56 @@ public class AssetService(
             PublicUrl: BuildPublicUrl(entity.Endpoint, bucket, objectKey));
     }
 
+    public async Task<IEnumerable<SubtitleDto.SubtitleUploadRes>> GetSubtitlesByMovieAsync(int movieId, CancellationToken ct = default)
+    {
+        var list = await uow.SubtitleAssets
+            .Query()
+            .Where(x => x.MovieId == movieId && x.EpisodeId == null)
+            .ToListAsync(ct);
+
+        return list.Select(x => new SubtitleDto.SubtitleUploadRes(
+            Id: x.Id,
+            MovieId: x.MovieId ?? 0,
+            EpisodeId: x.EpisodeId,
+            Language: x.Language,
+            Label: x.Label,
+            Bucket: x.Bucket,
+            ObjectKey: x.ObjectKey,
+            Endpoint: x.Endpoint,
+            PublicUrl: BuildPublicUrl(x.Endpoint, x.Bucket, x.ObjectKey)
+        ));
+    }
+
+    public async Task<IEnumerable<SubtitleDto.SubtitleUploadRes>> GetSubtitlesByEpisodeAsync(int episodeId, CancellationToken ct = default)
+    {
+        var list = await uow.SubtitleAssets
+            .Query()
+            .Where(x => x.EpisodeId == episodeId)
+            .ToListAsync(ct);
+
+        return list.Select(x => new SubtitleDto.SubtitleUploadRes(
+            Id: x.Id,
+            MovieId: x.MovieId ?? 0,
+            EpisodeId: x.EpisodeId,
+            Language: x.Language,
+            Label: x.Label,
+            Bucket: x.Bucket,
+            ObjectKey: x.ObjectKey,
+            Endpoint: x.Endpoint,
+            PublicUrl: BuildPublicUrl(x.Endpoint, x.Bucket, x.ObjectKey)
+        ));
+    }
+
+    public async Task DeleteSubtitleAsync(int id, CancellationToken ct = default)
+    {
+        if (await uow.SubtitleAssets.FindAsync(id) is not { } sub)
+            throw new NotFoundException("subtitle", id);
+
+        await storage.DeleteAsync(sub.Bucket, sub.ObjectKey, ct);
+        uow.SubtitleAssets.Remove(sub);
+        await uow.SaveChangesAsync(ct);
+    }
+
     public async Task<IEnumerable<AssetsDto.ImageAssetRes>> GetImageByKind(int movieId, ImageKind kind,
         CancellationToken ct = default)
         => await (await uow.ImageAssets.GetByKind(movieId, kind)).ToImageAssetResListAsync(storage, ct);

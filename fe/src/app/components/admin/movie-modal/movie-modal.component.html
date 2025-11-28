@@ -1,12 +1,12 @@
 <div class="modal-container">
   @if (isBusy) {
-    <div class="busy-overlay">
-      <div class="busy-box">
-        <div class="spinner-border mb-3" role="status"></div>
-        <div class="fw-semibold">{{ busyText }}</div>
-        <div class="text-muted small">Vui lòng đợi…</div>
-      </div>
+  <div class="busy-overlay">
+    <div class="busy-box">
+      <div class="spinner-border mb-3" role="status"></div>
+      <div class="fw-semibold">{{ busyText }}</div>
+      <div class="text-muted small">Vui lòng đợi…</div>
     </div>
+  </div>
   }
 
   <div class="modal-header">
@@ -23,117 +23,69 @@
 
   <!-- tabs (chỉ hiển thị khi edit) -->
   @if (isEditMode) {
-    <div class="tabs-navigation" role="tablist" aria-label="Media tabs">
-      <button
-        type="button"
-        class="tab-btn"
-        [class.active]="activeTab === 'info'"
-        (click)="switchTab('info')"
-        role="tab"
-        [attr.aria-selected]="activeTab === 'info'"
-      >
-        <span class="tab-icon">ℹ️</span>
-        Thông Tin
-      </button>
+  <div class="tabs-navigation" role="tablist" aria-label="Media tabs">
+    <button type="button" class="tab-btn" [class.active]="activeTab === 'info'" (click)="switchTab('info')" role="tab"
+      [attr.aria-selected]="activeTab === 'info'">
+      <span class="tab-icon">ℹ️</span>
+      Thông Tin
+    </button>
 
-      <button
-        type="button"
-        class="tab-btn"
-        [class.active]="activeTab === 'images'"
-        (click)="switchTab('images')"
-        role="tab"
-        [attr.aria-selected]="activeTab === 'images'"
-      >
-        <span class="tab-icon">🖼️</span>
-        Ảnh
-      </button>
+    <button type="button" class="tab-btn" [class.active]="activeTab === 'images'" (click)="switchTab('images')"
+      role="tab" [attr.aria-selected]="activeTab === 'images'">
+      <span class="tab-icon">🖼️</span>
+      Ảnh
+    </button>
 
-      <button
-        type="button"
-        class="tab-btn"
-        [class.active]="activeTab === 'videos'"
-        (click)="switchTab('videos')"
-        role="tab"
-        [attr.aria-selected]="activeTab === 'videos'"
-      >
-        <span class="tab-icon">🎬</span>
-        Video
-      </button>
+    <button type="button" class="tab-btn" [class.active]="activeTab === 'videos'" (click)="switchTab('videos')"
+      role="tab" [attr.aria-selected]="activeTab === 'videos'">
+      <span class="tab-icon">🎬</span>
+      Video
+    </button>
 
-      <button
-        type="button"
-        class="tab-btn"
-        [class.active]="activeTab === 'subtitles'"
-        (click)="switchTab('subtitles')"
-        role="tab"
-        [attr.aria-selected]="activeTab === 'subtitles'"
-      >
-        <span class="tab-icon">📝</span>
-        Phụ Đề
-      </button>
-    </div>
+    <button type="button" class="tab-btn" [class.active]="activeTab === 'subtitles'" (click)="switchTab('subtitles')"
+      role="tab" [attr.aria-selected]="activeTab === 'subtitles'">
+      <span class="tab-icon">📝</span>
+      Phụ Đề
+    </button>
+  </div>
   }
 
   <!-- Content Area -->
   <div class="modal-content">
     @if (activeTab === 'info' || !isEditMode) {
-      <app-movie-info
-        [infoForm]="infoForm"
-        [genres]="genres"
-        [studios]="studios"
-        [movieTypeEntries]="movieTypeEntries"
-        [publishStatusEntries]="publishStatusEntries"
-        (toggleGenre)="toggleGenreId($event)"
-        (toggleStudio)="toggleStudioId($event)"
-      ></app-movie-info>
+    <app-movie-info [infoForm]="infoForm" [genres]="genres" [studios]="studios" [movieTypeEntries]="movieTypeEntries"
+      [publishStatusEntries]="publishStatusEntries" (toggleGenre)="toggleGenreId($event)"
+      (toggleStudio)="toggleStudioId($event)"></app-movie-info>
     }
 
     @if (activeTab === 'images' && isEditMode) {
-      <app-movie-images
-        [selectedPosters]="selectedPosters"
-        [selectedBackdrops]="selectedBackdrops"
-        (postersSelected)="onPosterFilesSelected($event)"
-        (backdropsSelected)="onBackdropFilesSelected($event)"
-        (removePoster)="removePoster($event)"
-        (removeBackdrop)="removeBackdrop($event)"
-      ></app-movie-images>
+    <app-movie-images [selectedPosters]="selectedPosters" [selectedBackdrops]="selectedBackdrops"
+      [currentPosterUrl]="movie?.posterUrl || null" [currentBackdropUrl]="movie?.backdropUrl || null"
+      (postersSelected)="onPosterFilesSelected($event)" (backdropsSelected)="onBackdropFilesSelected($event)"
+      (removePoster)="removePoster($event)" (removeBackdrop)="removeBackdrop($event)"></app-movie-images>
     }
 
     @if (activeTab === 'videos' && isEditMode) {
-      <app-movie-videos
-        [infoForm]="infoForm"
-        [movie]="movie"
-        [videos]="videos"
-        [seasons]="seasons"
-        [epsBySeason]="epsBySeason"
-        [videosByEpisode]="videosByEpisode"
-        (addSeason)="addSeason()"
-        (renameSeason)="renameSeason($event)"
-        (deleteSeason)="deleteSeason($event)"
-        (uploadMovieVideo)="onUploadMovieVideo($event)"
-        (uploadEpisodeVideo)="onUploadEpisodeVideo($event.season,$event.episode,$event.file)"
-        (addEpisode)="addEpisode($event)"
-        (saveEpisode)="saveEpisode($event)"
-        (deleteEpisode)="deleteEpisode($event.season,$event.episode)"
-        (deleteAsset)="removeVideoByAsset($event)"
-        (goSubtitle)="goSubtitleForAsset($event)"
-      ></app-movie-videos>
+    <app-movie-videos [infoForm]="infoForm" [movie]="movie" [videos]="videos" [seasons]="seasons"
+      [epsBySeason]="epsBySeason" [videosByEpisode]="videosByEpisode" (addSeason)="addSeason()"
+      (renameSeason)="renameSeason($event)" (deleteSeason)="deleteSeason($event)"
+      (uploadMovieVideo)="onUploadMovieVideo($event)"
+      (uploadEpisodeVideo)="onUploadEpisodeVideo($event.season,$event.episode,$event.file)"
+      (addEpisode)="addEpisode($event)" (saveEpisode)="saveEpisode($event)"
+      (deleteEpisode)="deleteEpisode($event.season,$event.episode)" (deleteAsset)="removeVideoByAsset($event)"
+      (goSubtitle)="goSubtitleForAsset($event)"></app-movie-videos>
     }
 
     @if (activeTab === 'subtitles' && isEditMode) {
-        <app-movie-subtitles (subtitlesSelected)="onSubtitleFileSelected($event)"></app-movie-subtitles>
+    <app-movie-subtitles [subtitles]="subtitles" (subtitlesSelected)="onSubtitleFileSelected($event)"
+      (deleteSubtitle)="removeSubtitle($event)"></app-movie-subtitles>
     }
   </div>
 
   <!-- Footer Actions -->
   <div class="modal-footer">
     <button type="button" class="btn btn-secondary" (click)="cancel()">Hủy</button>
-    <button
-      type="button"
-      class="btn btn-primary"
-      [disabled]="!infoForm.valid"
-      (click)="submit()"
-    >
+    <button type="button" class="btn btn-primary" [disabled]="!infoForm.valid" (click)="submit()">
       {{ isEditMode ? 'Cập Nhật' : 'Tạo Mới' }}
     </button>
   </div>

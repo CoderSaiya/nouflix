@@ -1,4 +1,5 @@
-import { Component, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Subtitle } from '../../../../models/movie.model';
 
 @Component({
   selector: 'app-movie-subtitles',
@@ -6,7 +7,10 @@ import { Component, Output, EventEmitter } from '@angular/core';
   styleUrls: ['./movie-subtitles.component.scss']
 })
 export class MovieSubtitlesComponent {
+  @Input() subtitles: Subtitle[] = [];
   @Output() subtitlesSelected = new EventEmitter<FileList>();
+  @Output() deleteSubtitle = new EventEmitter<number>();
+
   onSubtitleChange(ev: Event) {
     const input = ev.target as HTMLInputElement;
     if (!input.files) return;

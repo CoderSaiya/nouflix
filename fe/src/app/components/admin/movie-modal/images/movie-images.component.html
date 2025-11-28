@@ -5,28 +5,32 @@
   <div class="image-section">
     <h4 class="subsection-title">Poster</h4>
     <div class="file-upload-area">
-      <input
-        type="file"
-        id="poster-input"
-        class="file-input"
-        accept="image/*"
-        (change)="onPosterChange($event)"
-      />
+      <input type="file" id="poster-input" class="file-input" accept="image/*" (change)="onPosterChange($event)" />
       <label for="poster-input" class="file-upload-label">
         <span class="upload-icon">📤</span>
         <span class="upload-text">Chọn hoặc kéo thả ảnh Poster</span>
       </label>
     </div>
 
-    @if (selectedPosters.length > 0) {
-      <div class="uploaded-images">
-        @for (img of selectedPosters; let i = $index; track i) {
-          <div class="image-item">
-            <span>{{ img.name }}</span>
-            <button type="button" class="btn-remove" (click)="removePoster.emit(i)" aria-label="Xóa ảnh">✕</button>
-          </div>
-        }
+    @if (currentPosterUrl && selectedPosters.length === 0) {
+    <div class="uploaded-images">
+      <div class="image-item">
+        <img [src]="currentPosterUrl" alt="Current Poster"
+          style="height: 100px; object-fit: cover; border-radius: 4px;">
+        <span class="muted small">(Hiện tại)</span>
       </div>
+    </div>
+    }
+
+    @if (selectedPosters.length > 0) {
+    <div class="uploaded-images">
+      @for (img of selectedPosters; let i = $index; track i) {
+      <div class="image-item">
+        <span>{{ img.name }}</span>
+        <button type="button" class="btn-remove" (click)="removePoster.emit(i)" aria-label="Xóa ảnh">✕</button>
+      </div>
+      }
+    </div>
     }
   </div>
 
@@ -34,28 +38,32 @@
   <div class="image-section">
     <h4 class="subsection-title">Backdrop</h4>
     <div class="file-upload-area">
-      <input
-        type="file"
-        id="backdrop-input"
-        class="file-input"
-        accept="image/*"
-        (change)="onBackdropChange($event)"
-      />
+      <input type="file" id="backdrop-input" class="file-input" accept="image/*" (change)="onBackdropChange($event)" />
       <label for="backdrop-input" class="file-upload-label">
         <span class="upload-icon">📤</span>
         <span class="upload-text">Chọn hoặc kéo thả ảnh Backdrop</span>
       </label>
     </div>
 
-    @if (selectedBackdrops.length > 0) {
-      <div class="uploaded-images">
-        @for (img of selectedBackdrops; let i = $index; track i) {
-          <div class="image-item">
-            <span>{{ img.name }}</span>
-            <button type="button" class="btn-remove" (click)="removeBackdrop.emit(i)" aria-label="Xóa ảnh">✕</button>
-          </div>
-        }
+    @if (currentBackdropUrl && selectedBackdrops.length === 0) {
+    <div class="uploaded-images">
+      <div class="image-item">
+        <img [src]="currentBackdropUrl" alt="Current Backdrop"
+          style="height: 100px; object-fit: cover; border-radius: 4px;">
+        <span class="muted small">(Hiện tại)</span>
       </div>
+    </div>
+    }
+
+    @if (selectedBackdrops.length > 0) {
+    <div class="uploaded-images">
+      @for (img of selectedBackdrops; let i = $index; track i) {
+      <div class="image-item">
+        <span>{{ img.name }}</span>
+        <button type="button" class="btn-remove" (click)="removeBackdrop.emit(i)" aria-label="Xóa ảnh">✕</button>
+      </div>
+      }
+    </div>
     }
   </div>
 </div>

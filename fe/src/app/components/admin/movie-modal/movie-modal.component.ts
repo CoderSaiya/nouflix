@@ -1,17 +1,20 @@
-import {Component, inject, OnInit} from "@angular/core"
-import {FormBuilder, FormGroup, ReactiveFormsModule, Validators} from "@angular/forms"
-import {MAT_DIALOG_DATA, MatDialogRef} from "@angular/material/dialog"
-import {MovieService} from '../../../core/services/movie.service';
-import {Episode, Genre, Movie, MovieType, PublishStatus, Season, Studio, VideoAsset} from '../../../models/movie.model';
-import {TranscodeService, TranscodeStatus} from '../../../core/services/transcode.service';
-import {VideoService} from '../../../core/services/video.service';
-import {firstValueFrom} from 'rxjs';
-import {TaxonomyService} from '../../../core/services/taxonomy.service';
-import {toISODateString} from '../../../lib/utils/date.util';
-import {MovieInfoComponent} from './info/movie-info.component';
-import {MovieImagesComponent} from './images/movie-images.component';
-import {MovieVideosComponent} from './videos/movie-videos.component';
-import {MovieSubtitlesComponent} from './subtitles/movie-subtitles.component';
+import { Component, inject, OnInit } from "@angular/core"
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from "@angular/forms"
+import { MAT_DIALOG_DATA, MatDialogRef } from "@angular/material/dialog"
+import { MovieService } from '../../../core/services/movie.service';
+import { Episode, Genre, Movie, MovieType, PublishStatus, Season, Studio, VideoAsset, Subtitle } from '../../../models/movie.model';
+import { TranscodeService, TranscodeStatus } from '../../../core/services/transcode.service';
+import { VideoService } from '../../../core/services/video.service';
+import { SubtitleService } from '../../../core/services/subtitle.service';
+import { AdminService } from '../../../core/services/admin.service';
+import { firstValueFrom } from 'rxjs';
+import { TaxonomyService } from '../../../core/services/taxonomy.service';
+import { toISODateString } from '../../../lib/utils/date.util';
+import { MovieInfoComponent } from './info/movie-info.component';
+import { MovieImagesComponent } from './images/movie-images.component';
+import { MovieVideosComponent } from './videos/movie-videos.component';
+import { MovieSubtitlesComponent } from './subtitles/movie-subtitles.component';
+import { MatSnackBar } from "@angular/material/snack-bar";
 
 @Component({
   selector: "app-movie-modal",
@@ -33,11 +36,15 @@ export class MovieModalComponent implements OnInit {
   private transcode = inject(TranscodeService);
   private video = inject(VideoService)
   private taxo = inject(TaxonomyService)
+  private subtitleService = inject(SubtitleService);
+  private adminService = inject(AdminService);
+  private snack = inject(MatSnackBar);
 
   activeTab: "info" | "images" | "videos" | "subtitles" = "info"
   isEditMode = false
   movie: Movie | null = null
   videos: VideoAsset[] = [];
+  subtitles: Subtitle[] = [];
   genres: Genre[] = [];
   studios: Studio[] = [];
   seasons: Season[] = [];
@@ -139,11 +146,20 @@ export class MovieModalComponent implements OnInit {
       const genreIds = (movie.genres || []).map((g: any) => g.id);
       const studioIds = (movie.studios || []).map((s: any) => s.id);
 
+      // Load videos
       try {
         this.videos = await firstValueFrom(this.video.getByMovie(id));
       } catch (errVideos) {
         console.error('Failed to load videos for movie', errVideos);
         this.videos = [];
+      }
+
+      // Load subtitles
+      try {
+        this.subtitles = await firstValueFrom(this.subtitleService.getByMovie(id));
+      } catch (errSubs) {
+        console.error('Failed to load subtitles', errSubs);
+        this.subtitles = [];
       }
 
       const rd = movie.releaseDate ? new Date(movie.releaseDate) : null;
@@ -156,7 +172,6 @@ export class MovieModalComponent implements OnInit {
         studioIds: studioIds,
       });
 
-      this.videos = await firstValueFrom(this.video.getByMovie(id));
     } catch (err) {
       console.error('Load movie failed', err);
     }
@@ -277,7 +292,7 @@ export class MovieModalComponent implements OnInit {
 
   async onUploadMovieVideo(f: File) {
     if (!this.movie?.id) { alert('Phải lưu phim trước khi upload video.'); return; }
-    const profiles = ['1080','720','480'];
+    const profiles = ['1080', '720', '480'];
     try {
       await this.busyRun('Đang xử lý video phim lẻ…', async () => {
         const resp = await firstValueFrom(this.transcode.uploadAndEnqueue(this.movie!.id, null, null, null, null, this.movie!.language ?? 'vi', profiles, f));
@@ -485,19 +500,37 @@ export class MovieModalComponent implements OnInit {
     console.warn('goSubtitle not implemented in TS');
   }
 
-  async removeVideoByAsset(assetId: number) {
+  async removeVideoByAsset(id: number) {
+    if (!confirm('Bạn có chắc muốn xoá video này?')) return;
     try {
-      if (!assetId) return;
-      await firstValueFrom(this.video.delete(assetId));
-
-      // cập nhật local lists
-      this.videos = (this.videos || []).filter(x => x.id !== assetId);
+      this.isBusy = true;
+      await firstValueFrom(this.video.delete(id));
+      this.videos = this.videos.filter(v => v.id !== id);
+      // Also remove from episode videos if present
       for (const k of Object.keys(this.videosByEpisode || {})) {
-        this.videosByEpisode[+k] = (this.videosByEpisode[+k] || []).filter(x => x.id !== assetId);
+        this.videosByEpisode[+k] = (this.videosByEpisode[+k] || []).filter(v => v.id !== id);
       }
+      this.snack.open('Đã xoá video', 'Đóng', { duration: 2000 });
     } catch (err) {
-      console.error('removeVideoByAsset failed', err);
-      alert('Xoá video thất bại');
+      console.error(err);
+      this.snack.open('Lỗi khi xoá video', 'Đóng', { duration: 3000 });
+    } finally {
+      this.isBusy = false;
+    }
+  }
+
+  async removeSubtitle(id: number) {
+    if (!confirm('Bạn có chắc muốn xoá phụ đề này?')) return;
+    try {
+      this.isBusy = true;
+      await firstValueFrom(this.subtitleService.delete(id));
+      this.subtitles = this.subtitles.filter(s => s.id !== id);
+      this.snack.open('Đã xoá phụ đề', 'Đóng', { duration: 2000 });
+    } catch (err) {
+      console.error(err);
+      this.snack.open('Lỗi khi xoá phụ đề', 'Đóng', { duration: 3000 });
+    } finally {
+      this.isBusy = false;
     }
   }
 

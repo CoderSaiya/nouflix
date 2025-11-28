@@ -84,4 +84,22 @@ public class SubtitleController(
         var res = await svc.UploadRawVttAsync(movieId, episodeId, req.Lang, req.Label, req.File, ct);
         return Ok(GlobalResponse<SubtitleDto.SubtitleUploadRes>.Success(res));
     }
+    
+    [HttpGet("movie/{movieId}")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> GetByMovie(int movieId, CancellationToken ct)
+        => Ok(GlobalResponse<IEnumerable<SubtitleDto.SubtitleUploadRes>>.Success(await svc.GetSubtitlesByMovieAsync(movieId, ct)));
+
+    [HttpGet("episode/{episodeId}")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> GetByEpisode(int episodeId, CancellationToken ct)
+        => Ok(GlobalResponse<IEnumerable<SubtitleDto.SubtitleUploadRes>>.Success(await svc.GetSubtitlesByEpisodeAsync(episodeId, ct)));
+
+    [HttpDelete("{id}")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> Delete(int id, CancellationToken ct)
+    {
+        await svc.DeleteSubtitleAsync(id, ct);
+        return Ok(GlobalResponse<object>.Success(null));
+    }
 }
